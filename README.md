@@ -16,6 +16,7 @@ A system agnostic reputation and relations management module for Foundry VTT tha
 - Visual reputation bar with color-coded tiers
 - Support for custom display names
 - Automatic or manual reputation calculation modes
+![Actor Tracking](https://raw.githubusercontent.com/SweetyHake/fameosity/refs/heads/main/screenshots/actors.webp)
 
 ###  Faction System
 - Create and manage factions with custom images
@@ -25,15 +26,19 @@ A system agnostic reputation and relations management module for Foundry VTT tha
   - **Auto**: Automatically calculated from member reputations
   - **Hybrid**: Combines base reputation with member influence
 - Customizable ranks with reputation thresholds and multipliers
+![Faction System](https://raw.githubusercontent.com/SweetyHake/fameosity/refs/heads/main/screenshots/ranks.webp)
 
 ### Location Management
 - Create locations to represent cities, regions, or territories
 - Associate factions and actors with locations
-- **Wanted System**: Track bounties and warrants for player characters
+![Location Management](https://raw.githubusercontent.com/SweetyHake/fameosity/refs/heads/main/screenshots/locations.webp)
+### Wanted System
+  - Track bounties and warrants for player characters
   - 6-star wanted level system
   - Bounty rewards
   - Warrant reasons
   - Hide/show warrants from players
+![Bounties](https://raw.githubusercontent.com/SweetyHake/fameosity/refs/heads/main/screenshots/bounties.webp)
 
 ### Individual Relations
 - Track personal relationships between NPCs and PCs
