@@ -44,46 +44,25 @@ export function isHidden(type, id) {
 
 export async function toggleHidden(type, id) {
   if (!type || !id) return;
-  
   const data = getData();
   const key = getHiddenKey(type);
-  
-  if (!data.hiddenItems) {
-    data.hiddenItems = { factions: [], actors: [], locations: [] };
-  }
-  if (!Array.isArray(data.hiddenItems[key])) {
-    data.hiddenItems[key] = [];
-  }
-  
+  data.hiddenItems ??= { factions: [], actors: [], locations: [] };
+  if (!Array.isArray(data.hiddenItems[key])) data.hiddenItems[key] = [];
   const arr = data.hiddenItems[key];
   const index = arr.indexOf(id);
-  
-  if (index > -1) {
-    arr.splice(index, 1);
-  } else {
-    arr.push(id);
-  }
-  
+  index > -1 ? arr.splice(index, 1) : arr.push(id);
   await setData(data);
   ReputationEvents.emit(ReputationEvents.EVENTS.HIDDEN_CHANGED, { hidden: data.hiddenItems });
 }
 
 export async function setHidden(type, id, hide) {
   if (!type || !id) return;
-  
   const data = getData();
   const key = getHiddenKey(type);
-  
-  if (!data.hiddenItems) {
-    data.hiddenItems = { factions: [], actors: [], locations: [] };
-  }
-  if (!Array.isArray(data.hiddenItems[key])) {
-    data.hiddenItems[key] = [];
-  }
-  
+  data.hiddenItems ??= { factions: [], actors: [], locations: [] };
+  if (!Array.isArray(data.hiddenItems[key])) data.hiddenItems[key] = [];
   const arr = data.hiddenItems[key];
   const index = arr.indexOf(id);
-  
   if (hide && index === -1) {
     arr.push(id);
     await setData(data);
@@ -98,4 +77,122 @@ export async function setHidden(type, id, hide) {
 export function filterVisible(items, type) {
   if (game.user.isGM) return items;
   return items.filter(item => !isHidden(type, item.id));
+}
+
+export function isRelationHidden(type, entityId, targetId) {
+  const data = getData();
+  const hiddenRels = data.hiddenRelations || {};
+  if (type === 'individual') {
+    return hiddenRels.individual?.[entityId]?.[targetId] === true;
+  } else if (type === 'faction') {
+    return hiddenRels.faction?.[entityId]?.[targetId] === true;
+  } else if (type === 'actorFaction') {
+    return hiddenRels.actorFaction?.[entityId]?.[targetId] === true;
+  }
+  return false;
+}
+
+export async function toggleRelationHidden(type, entityId, targetId) {
+  const data = getData();
+  data.hiddenRelations ??= { individual: {}, faction: {}, actorFaction: {} };
+  const typeKey = type === 'individual' ? 'individual' : type === 'faction' ? 'faction' : 'actorFaction';
+  data.hiddenRelations[typeKey] ??= {};
+  data.hiddenRelations[typeKey][entityId] ??= {};
+  data.hiddenRelations[typeKey][entityId][targetId] = !data.hiddenRelations[typeKey][entityId][targetId];
+  if (!data.hiddenRelations[typeKey][entityId][targetId]) {
+    delete data.hiddenRelations[typeKey][entityId][targetId];
+    if (Object.keys(data.hiddenRelations[typeKey][entityId]).length === 0) {
+      delete data.hiddenRelations[typeKey][entityId];
+    }
+  }
+  await setData(data);
+  ReputationEvents.emit(ReputationEvents.EVENTS.HIDDEN_CHANGED, { type: 'relation', entityId, targetId });
+}
+
+export function isMemberHidden(factionId, actorId) {
+  const data = getData();
+  const hiddenMembers = data.hiddenMembers || {};
+  return Array.isArray(hiddenMembers[factionId]) && hiddenMembers[factionId].includes(actorId);
+}
+
+export async function toggleMemberHidden(factionId, actorId) {
+  const data = getData();
+  data.hiddenMembers ??= {};
+  data.hiddenMembers[factionId] ??= [];
+  const arr = data.hiddenMembers[factionId];
+  const index = arr.indexOf(actorId);
+  index > -1 ? arr.splice(index, 1) : arr.push(actorId);
+  if (arr.length === 0) delete data.hiddenMembers[factionId];
+  await setData(data);
+  ReputationEvents.emit(ReputationEvents.EVENTS.HIDDEN_CHANGED, { type: 'member', factionId, actorId });
+}
+
+export function isLocationItemHidden(locationId, type, itemId) {
+  const data = getData();
+  const hidden = data.hiddenLocationItems || {};
+  const key = type === 'faction' ? 'factions' : 'actors';
+  return Array.isArray(hidden[key]?.[locationId]) && hidden[key][locationId].includes(itemId);
+}
+
+export async function toggleLocationItemHidden(locationId, type, itemId) {
+  const data = getData();
+  data.hiddenLocationItems ??= { factions: {}, actors: {} };
+  const key = type === 'faction' ? 'factions' : 'actors';
+  data.hiddenLocationItems[key] ??= {};
+  data.hiddenLocationItems[key][locationId] ??= [];
+  const arr = data.hiddenLocationItems[key][locationId];
+  const index = arr.indexOf(itemId);
+  index > -1 ? arr.splice(index, 1) : arr.push(itemId);
+  if (arr.length === 0) delete data.hiddenLocationItems[key][locationId];
+  await setData(data);
+  ReputationEvents.emit(ReputationEvents.EVENTS.HIDDEN_CHANGED, { type: 'locationItem', locationId, itemType: type, itemId });
+}
+
+export function isWantedHidden(entityType, entityId, pcId) {
+  if (entityType === 'location') {
+    const data = getData();
+    const location = (data.locations || []).find(l => l.id === entityId);
+    return location?.wanted?.[pcId]?.hidden === true;
+  } else if (entityType === 'faction') {
+    const data = getData();
+    const faction = (data.factions || []).find(f => f.id === entityId);
+    return faction?.wanted?.[pcId]?.hidden === true;
+  }
+  return false;
+}
+
+export async function toggleWantedHidden(entityType, entityId, pcId) {
+  const data = getData();
+  if (entityType === 'location') {
+    const location = (data.locations || []).find(l => l.id === entityId);
+    if (location?.wanted?.[pcId]) {
+      location.wanted[pcId].hidden = !location.wanted[pcId].hidden;
+      await setData(data);
+      ReputationEvents.emit(ReputationEvents.EVENTS.HIDDEN_CHANGED, { type: 'wanted', entityType, entityId, pcId });
+    }
+  } else if (entityType === 'faction') {
+    const faction = (data.factions || []).find(f => f.id === entityId);
+    if (faction?.wanted?.[pcId]) {
+      faction.wanted[pcId].hidden = !faction.wanted[pcId].hidden;
+      await setData(data);
+      ReputationEvents.emit(ReputationEvents.EVENTS.HIDDEN_CHANGED, { type: 'wanted', entityType, entityId, pcId });
+    }
+  }
+}
+
+export function shouldShowNotification(type, entityId, targetId = null) {
+  if (isHidden('actor', entityId) || isHidden('faction', entityId) || isHidden('location', entityId)) {
+    return false;
+  }
+  if (targetId) {
+    if (isHidden('actor', targetId) || isHidden('faction', targetId)) {
+      return false;
+    }
+    if (type === 'individual' || type === 'faction' || type === 'actorFaction') {
+      if (isRelationHidden(type, entityId, targetId)) {
+        return false;
+      }
+    }
+  }
+  return true;
 }

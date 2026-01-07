@@ -52,12 +52,17 @@
   color: var(--fame-color-gold);
 }
 
-.fame-member-name,
-.fame-rel-name {
+.fame-member-name {
   flex: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.2s ease;
+}
+
+.fame-rel-name {
+  flex: 1;
+  word-break: break-word;
   transition: color 0.2s ease;
 }
 

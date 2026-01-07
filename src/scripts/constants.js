@@ -38,7 +38,22 @@ export const DEFAULT_DATA = {
   trackedActors: [],
   individualRelations: {},
   factionRelations: {},
-  hiddenItems: {},
+  actorFactionRelations: {},
+  hiddenItems: {
+    factions: [],
+    actors: [],
+    locations: []
+  },
+  hiddenRelations: {
+    individual: {},
+    faction: {},
+    actorFaction: {}
+  },
+  hiddenMembers: {},
+  hiddenLocationItems: {
+    factions: {},
+    actors: {}
+  },
   autoFlags: {},
   hybridFlags: {},
   actorNames: {},
@@ -50,5 +65,9 @@ export const DEFAULT_DATA = {
 export const SOCKET_TYPES = {
   SHOW_NOTIFICATION: "showNotification",
   UPDATE_DATA: "updateData",
-  REQUEST_DATA_UPDATE: "requestDataUpdate"
+  REQUEST_DATA_UPDATE: "requestDataUpdate",
+  SET_IND_REL: "setIndRel",
+  SET_FACTION_REL: "setFactionRel",
+  SET_ACTOR_FACTION_REL: "setActorFactionRel",
+  SET_CUSTOM_NAME: "setCustomName"
 };

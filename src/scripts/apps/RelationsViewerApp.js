@@ -11,9 +11,17 @@ import {
 import {
   getIndRel, setIndRel,
   getFactionRel, setFactionRel,
+  getActorFactionRel, setActorFactionRel,
   adjustIndRels
 } from '../core/relations.js';
-import { isHidden } from '../core/visibility.js';
+import {
+  isHidden, toggleHidden, filterVisible,
+  isRelationHidden, toggleRelationHidden,
+  isMemberHidden, toggleMemberHidden,
+  isLocationItemHidden, toggleLocationItemHidden,
+  isWantedHidden, toggleWantedHidden,
+  shouldShowNotification
+} from '../core/visibility.js';
 import {
   getFactions, getFaction, setFactions,
   addFaction, deleteFaction,
@@ -69,7 +77,12 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
       setFactionWantedLevel: RelationsViewerApp.#onSetFactionWantedLevel,
       changeImage: RelationsViewerApp.#onChangeImage,
       navigate: RelationsViewerApp.#onNavigate,
-      adjustRep: RelationsViewerApp.#onAdjustRep
+      adjustRep: RelationsViewerApp.#onAdjustRep,
+      toggleHidden: RelationsViewerApp.#onToggleHidden,
+      toggleRelationHidden: RelationsViewerApp.#onToggleRelationHidden,
+      toggleMemberHidden: RelationsViewerApp.#onToggleMemberHidden,
+      toggleLocationItemHidden: RelationsViewerApp.#onToggleLocationItemHidden,
+      toggleWantedHidden: RelationsViewerApp.#onToggleWantedHidden
     }
   };
 
@@ -138,9 +151,36 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     if (this.currentTab === 'character' && !showCharTab) this.currentTab = 'locations';
     else if (!this.currentTab) this.currentTab = showCharTab ? 'character' : 'locations';
 
-    const allActors = getTracked().map(id => this._buildActorData(id, min, max, pcs)).filter(Boolean);
-    const allFactions = getFactions().map(f => this._buildFactionData(f, pcs, min, max, isGM));
-    const allLocations = getLocations().map(l => this._buildLocationData(l, allFactions, allActors, isGM));
+    const rawFactions = getFactions();
+    let allActors = getTracked().map(id => this._buildActorData(id, min, max, pcs, rawFactions)).filter(Boolean);
+    let allFactions = rawFactions.map(f => this._buildFactionData(f, pcs, min, max, isGM));
+    let allLocations = getLocations().map(l => this._buildLocationData(l, allFactions, allActors, isGM));
+
+    if (!isGM) {
+      allActors = allActors.filter(a => !a.hidden);
+      allFactions = allFactions.filter(f => !f.hidden);
+      allLocations = allLocations.filter(l => !l.hidden);
+      
+      allActors = allActors.map(a => ({
+        ...a,
+        relations: a.relations.filter(r => !r.hidden),
+        factionRelations: a.factionRelations.filter(r => !r.hidden && !r.factionHidden && !r.memberHidden)
+      }));
+      
+      allFactions = allFactions.map(f => ({
+        ...f,
+        members: f.members.filter(m => !m.hidden && !m.actorHidden),
+        factionRels: f.factionRels.filter(r => !r.hidden),
+        wantedEntries: f.wantedEntries.filter(w => !w.hidden)
+      }));
+      
+      allLocations = allLocations.map(l => ({
+        ...l,
+        factionsList: l.factionsList.filter(f => !f.locItemHidden && !f.hidden),
+        actorsList: l.actorsList.filter(a => !a.locItemHidden && !a.hidden),
+        wantedEntries: l.wantedEntries.filter(w => !w.hidden)
+      }));
+    }
 
     const hasPlayerOwner = selectedActor ? Object.entries(selectedActor.ownership || {}).some(([userId, level]) => {
       const user = game.users.get(userId);
@@ -166,21 +206,44 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     };
   }
 
-  _buildActorData(id, min, max, pcs) {
+  _buildActorData(id, min, max, pcs, rawFactions) {
     const actor = game.actors.get(id);
     if (!actor) return null;
     const mode = getActorMode(id);
     const reputation = getEffectiveActorRep(id);
     const tier = getTier(reputation);
+    const hidden = isHidden('actor', id);
     
     const relations = pcs.filter(pc => pc.id !== id).map(pc => {
       const value = getIndRel(id, pc.id);
+      const relHidden = isRelationHidden('individual', id, pc.id);
       return {
         pcId: pc.id,
         pcName: getDisplayName(pc.id),
         pcImg: pc.img,
         value,
-        tier: getTier(value)
+        tier: getTier(value),
+        hidden: relHidden
+      };
+    });
+
+    const factionRelations = rawFactions.map(faction => {
+      const value = getActorFactionRel(id, faction.id);
+      const isMember = (faction.members || []).includes(id);
+      const memberHidden = isMemberHidden(faction.id, id);
+      const rank = isMember ? getFactionRank(faction.id, id) : null;
+      const relHidden = isRelationHidden('actorFaction', id, faction.id);
+      return {
+        factionId: faction.id,
+        factionName: faction.name,
+        factionImg: faction.image,
+        value,
+        tier: getTier(value),
+        isMember,
+        memberHidden,
+        rank,
+        hidden: relHidden,
+        factionHidden: isHidden('faction', faction.id)
       };
     });
 
@@ -193,9 +256,10 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
       reputation, 
       mode,
       tier,
-      hidden: isHidden('actor', id),
+      hidden,
       expanded: this.expandedActors.has(id),
       relations,
+      factionRelations,
       relationsOpen: this._isSectionOpen(id, 'actor-relations'),
       factionsOpen: this._isSectionOpen(id, 'actor-factions')
     };
@@ -205,26 +269,31 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     const mode = getFactionMode(faction.id);
     const reputation = getFactionRep(faction.id);
     const tier = getTier(reputation);
+    const hidden = isHidden('faction', faction.id);
     
     const factionRels = pcs.map(pc => {
       const value = getFactionRel(faction.id, pc.id);
+      const relHidden = isRelationHidden('faction', faction.id, pc.id);
       return {
         pcId: pc.id,
         pcName: getDisplayName(pc.id),
         pcImg: pc.img,
         value,
-        tier: getTier(value)
+        tier: getTier(value),
+        hidden: relHidden
       };
     });
 
     const wantedEntries = Object.entries(faction.wanted || {}).map(([pcId, data]) => {
       const pc = game.actors.get(pcId);
       if (!pc) return null;
+      const wantedHidden = data.hidden === true;
       return { 
         pcId, 
         pcName: getDisplayName(pcId), 
         pcImg: pc.img, 
         ...data,
+        hidden: wantedHidden,
         stars: Array.from({ length: 6 }, (_, i) => ({ active: i < data.level, value: i + 1 }))
       };
     }).filter(Boolean);
@@ -233,12 +302,15 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
       const actor = game.actors.get(id);
       if (!actor) return null;
       const rank = getFactionRank(faction.id, id);
+      const memberHidden = isMemberHidden(faction.id, id);
       return {
         id,
         name: getDisplayName(id),
         img: actor.img,
         rank,
-        manualRankId: faction.memberRanks?.[id] || null
+        manualRankId: faction.memberRanks?.[id] || null,
+        hidden: memberHidden,
+        actorHidden: isHidden('actor', id)
       };
     }).filter(Boolean);
 
@@ -248,7 +320,7 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
       mode,
       tier,
       members,
-      hidden: isHidden('faction', faction.id),
+      hidden,
       expanded: this.expandedFactions.has(faction.id),
       factionRels,
       wantedEntries,
@@ -261,22 +333,33 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
   }
 
   _buildLocationData(loc, allFactions, allActors, isGM) {
-    const factionsList = (loc.factions || []).map(fId => allFactions.find(f => f.id === fId)).filter(Boolean);
+    const hidden = isHidden('location', loc.id);
+    
+    const factionsList = (loc.factions || []).map(fId => {
+      const faction = allFactions.find(f => f.id === fId);
+      if (!faction) return null;
+      const locItemHidden = isLocationItemHidden(loc.id, 'faction', fId);
+      return { ...faction, locItemHidden };
+    }).filter(Boolean);
+    
     const actorsList = (loc.actors || []).map(aId => {
       const tracked = allActors.find(a => a.id === aId);
-      if (tracked) return { ...tracked, isTracked: true };
+      const locItemHidden = isLocationItemHidden(loc.id, 'actor', aId);
+      if (tracked) return { ...tracked, isTracked: true, locItemHidden };
       const actor = game.actors.get(aId);
-      return actor ? { id: aId, name: getDisplayName(aId), img: actor.img, isTracked: false } : null;
+      return actor ? { id: aId, name: getDisplayName(aId), img: actor.img, isTracked: false, locItemHidden, hidden: isHidden('actor', aId) } : null;
     }).filter(Boolean);
 
     const wantedEntries = Object.entries(loc.wanted || {}).map(([pcId, data]) => {
       const pc = game.actors.get(pcId);
       if (!pc) return null;
+      const wantedHidden = data.hidden === true;
       return { 
         pcId, 
         pcName: getDisplayName(pcId), 
         pcImg: pc.img, 
         ...data,
+        hidden: wantedHidden,
         stars: Array.from({ length: 6 }, (_, i) => ({ active: i < data.level, value: i + 1 }))
       };
     }).filter(Boolean);
@@ -289,7 +372,7 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
       factionCount: factionsList.length,
       actorCount: actorsList.length,
       wantedCount: wantedEntries.filter(w => w.level > 0).length,
-      hidden: isHidden('location', loc.id),
+      hidden,
       expanded: this.expandedLocations.has(loc.id),
       wantedOpen: this._isSectionOpen(loc.id, 'wanted'),
       factionsOpen: this._isSectionOpen(loc.id, 'loc-factions'),
@@ -300,6 +383,7 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
   _buildCharacterData(selectedActor, allFactions, allActors, allLocations, pcs, hasPlayerOwner, isGM, min, max) {
     const characterFactions = allFactions.map(faction => {
       const directRel = getFactionRel(faction.id, selectedActor.id);
+      const actorFactionRel = getActorFactionRel(selectedActor.id, faction.id);
       const memberRels = faction.members.filter(m => m.id !== selectedActor.id).map(m => getIndRel(m.id, selectedActor.id));
       const avgMemberRel = memberRels.length ? Math.round(memberRels.reduce((a, b) => a + b, 0) / memberRels.length) : 0;
       const isMember = faction.members.some(m => m.id === selectedActor.id);
@@ -312,6 +396,8 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
         ...faction, 
         directRel, 
         directRelTier: getTier(directRel),
+        actorFactionRel,
+        actorFactionRelTier: getTier(actorFactionRel),
         avgMemberRel, 
         avgMemberRelTier: getTier(avgMemberRel),
         isMember, 
@@ -544,30 +630,38 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
       if (f) { 
         f.reputation = value; 
         await setFactions(factions);
-        if (value !== oldValue) {
-          getPCs().forEach(pc => showRelationChangeNotification(faction.name, getDisplayName(pc.id), value - oldValue, pc.id));
+        if (value !== oldValue && shouldShowNotification('faction', id, null)) {
+          getPCs().forEach(pc => showRelationChangeNotification(faction.name, getDisplayName(pc.id), value - oldValue, pc.id, { sourceId: id, targetId: pc.id, relationType: 'faction' }));
         }
       }
     } else if (type === 'faction-rel') {
       const [factionId, pcId] = id.split(':');
       const oldValue = getFactionRel(factionId, pcId);
       await setFactionRel(factionId, pcId, value);
-      if (value !== oldValue) {
+      if (value !== oldValue && shouldShowNotification('faction', factionId, pcId)) {
         const faction = getFaction(factionId);
-        if (faction) showRelationChangeNotification(faction.name, getDisplayName(pcId), value - oldValue, pcId);
+        if (faction) showRelationChangeNotification(faction.name, getDisplayName(pcId), value - oldValue, pcId, { sourceId: factionId, targetId: pcId, relationType: 'faction' });
+      }
+    } else if (type === 'actor-faction') {
+      const [actorId, factionId] = id.split(':');
+      const oldValue = getActorFactionRel(actorId, factionId);
+      await setActorFactionRel(actorId, factionId, value);
+      if (value !== oldValue && shouldShowNotification('actorFaction', actorId, factionId)) {
+        const faction = getFaction(factionId);
+        if (faction) showRelationChangeNotification(getDisplayName(actorId), faction.name, value - oldValue, null, { sourceId: actorId, targetId: factionId, relationType: 'actorFaction' });
       }
     } else if (type === 'individual') {
       const [npcId, pcId] = id.split(':');
       const oldValue = getIndRel(npcId, pcId);
       await setIndRel(npcId, pcId, value);
-      if (value !== oldValue) {
-        showRelationChangeNotification(getDisplayName(npcId), getDisplayName(pcId), value - oldValue, pcId);
+      if (value !== oldValue && shouldShowNotification('individual', npcId, pcId)) {
+        showRelationChangeNotification(getDisplayName(npcId), getDisplayName(pcId), value - oldValue, pcId, { sourceId: npcId, targetId: pcId, relationType: 'individual' });
       }
     } else if (type === 'actor') {
       const oldValue = getActorRep(id);
       await setActorRep(id, value);
-      if (value !== oldValue) {
-        getPCs().filter(pc => pc.id !== id).forEach(pc => showRelationChangeNotification(getDisplayName(id), getDisplayName(pc.id), value - oldValue, pc.id));
+      if (value !== oldValue && shouldShowNotification('actor', id, null)) {
+        getPCs().filter(pc => pc.id !== id).forEach(pc => showRelationChangeNotification(getDisplayName(id), getDisplayName(pc.id), value - oldValue, pc.id, { sourceId: id, targetId: pc.id, relationType: 'individual' }));
       }
     }
   }
@@ -609,6 +703,31 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
 
   static #onSwitchTab(event, target) { this.currentTab = target.dataset.tab; this.render(); }
   static #onSwitchSubTab(event, target) { this.characterSubTab = target.dataset.subtab; this.render(); }
+
+  static async #onToggleHidden(event, target) {
+    if (!game.user.isGM) return;
+    await toggleHidden(target.dataset.type, target.dataset.id);
+  }
+
+  static async #onToggleRelationHidden(event, target) {
+    if (!game.user.isGM) return;
+    await toggleRelationHidden(target.dataset.relType, target.dataset.entityId, target.dataset.targetId);
+  }
+
+  static async #onToggleMemberHidden(event, target) {
+    if (!game.user.isGM) return;
+    await toggleMemberHidden(target.dataset.faction, target.dataset.actor);
+  }
+
+  static async #onToggleLocationItemHidden(event, target) {
+    if (!game.user.isGM) return;
+    await toggleLocationItemHidden(target.dataset.location, target.dataset.itemType, target.dataset.itemId);
+  }
+
+  static async #onToggleWantedHidden(event, target) {
+    if (!game.user.isGM) return;
+    await toggleWantedHidden(target.dataset.entityType, target.dataset.entityId, target.dataset.pc);
+  }
 
   static #onToggleExpand(event, target) {
     const { id, type } = target.dataset;
@@ -756,15 +875,18 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     } else if (type === 'faction' && mode !== 'auto') {
       await changeFactionRep(id, delta);
       getPCs().forEach(pc => showRelationChangeNotification(getFaction(id)?.name || '', getDisplayName(pc.id), delta, pc.id));
-    } else if (type === 'faction-rel' || type === 'individual') {
+    } else if (type === 'faction-rel') {
       const [entityId, pcId] = id.split(':');
-      if (type === 'faction-rel') {
-        await setFactionRel(entityId, pcId, getFactionRel(entityId, pcId) + delta);
-        showRelationChangeNotification(getFaction(entityId)?.name || '', getDisplayName(pcId), delta, pcId);
-      } else {
-        await setIndRel(entityId, pcId, getIndRel(entityId, pcId) + delta);
-        showRelationChangeNotification(getDisplayName(entityId), getDisplayName(pcId), delta, pcId);
-      }
+      await setFactionRel(entityId, pcId, getFactionRel(entityId, pcId) + delta);
+      showRelationChangeNotification(getFaction(entityId)?.name || '', getDisplayName(pcId), delta, pcId);
+    } else if (type === 'actor-faction') {
+      const [actorId, factionId] = id.split(':');
+      await setActorFactionRel(actorId, factionId, getActorFactionRel(actorId, factionId) + delta);
+      showRelationChangeNotification(getDisplayName(actorId), getFaction(factionId)?.name || '', delta, null);
+    } else if (type === 'individual') {
+      const [entityId, pcId] = id.split(':');
+      await setIndRel(entityId, pcId, getIndRel(entityId, pcId) + delta);
+      showRelationChangeNotification(getDisplayName(entityId), getDisplayName(pcId), delta, pcId);
     }
   }
 }

@@ -45,6 +45,7 @@ export async function setData(data) {
       
       try {
         await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
+        broadcastDataUpdate();
         ReputationEvents.emit(ReputationEvents.EVENTS.DATA_LOADED, { data: _dataCache });
       } catch (e) {
         console.error(`${MODULE_ID} | Save error:`, e);
@@ -57,11 +58,18 @@ export async function setData(data) {
   });
 }
 
+function broadcastDataUpdate() {
+  game.socket.emit(`module.${MODULE_ID}`, {
+    type: SOCKET_TYPES.UPDATE_DATA,
+    data: foundry.utils.deepClone(_dataCache)
+  });
+}
+
 async function requestGMUpdate(data) {
   return new Promise((resolve, reject) => {
     const requestId = foundry.utils.randomID();
-    
     const timeout = setTimeout(() => {
+      game.socket.off(`module.${MODULE_ID}`, handler);
       reject(new Error('GM update request timed out'));
     }, 10000);
     
@@ -69,16 +77,11 @@ async function requestGMUpdate(data) {
       if (response.requestId === requestId) {
         clearTimeout(timeout);
         game.socket.off(`module.${MODULE_ID}`, handler);
-        if (response.success) {
-          resolve();
-        } else {
-          reject(new Error(response.error || 'Update failed'));
-        }
+        response.success ? resolve() : reject(new Error(response.error || 'Update failed'));
       }
     };
     
     game.socket.on(`module.${MODULE_ID}`, handler);
-    
     game.socket.emit(`module.${MODULE_ID}`, {
       type: SOCKET_TYPES.REQUEST_DATA_UPDATE,
       data: foundry.utils.deepClone(data),
@@ -88,15 +91,53 @@ async function requestGMUpdate(data) {
   });
 }
 
+export function requestOperation(type, payload) {
+  return new Promise((resolve, reject) => {
+    const requestId = foundry.utils.randomID();
+    const timeout = setTimeout(() => {
+      game.socket.off(`module.${MODULE_ID}`, handler);
+      reject(new Error('Operation request timed out'));
+    }, 10000);
+    
+    const handler = (response) => {
+      if (response.requestId === requestId) {
+        clearTimeout(timeout);
+        game.socket.off(`module.${MODULE_ID}`, handler);
+        response.success ? resolve(response.result) : reject(new Error(response.error || 'Operation failed'));
+      }
+    };
+    
+    game.socket.on(`module.${MODULE_ID}`, handler);
+    game.socket.emit(`module.${MODULE_ID}`, { type, ...payload, requestId, userId: game.user.id });
+  });
+}
+
 export function handleSocketMessage(message) {
-  if (message.type === SOCKET_TYPES.REQUEST_DATA_UPDATE && game.user.isGM) {
-    handleGMDataUpdate(message);
-  } else if (message.type === SOCKET_TYPES.UPDATE_DATA && !game.user.isGM) {
-    _dataCache = message.data;
-    ReputationEvents.emit(ReputationEvents.EVENTS.DATA_LOADED, { data: _dataCache });
-  } else if (message.type === SOCKET_TYPES.SHOW_NOTIFICATION) {
-    const { showNotification } = require('./core/notifications.js');
-    showNotification(message.tokenName, message.actionText, message.delta, message.ownerIds);
+  switch (message.type) {
+    case SOCKET_TYPES.REQUEST_DATA_UPDATE:
+      if (game.user.isGM) handleGMDataUpdate(message);
+      break;
+    case SOCKET_TYPES.UPDATE_DATA:
+      if (!game.user.isGM) {
+        _dataCache = message.data;
+        ReputationEvents.emit(ReputationEvents.EVENTS.DATA_LOADED, { data: _dataCache });
+      }
+      break;
+    case SOCKET_TYPES.SHOW_NOTIFICATION:
+      import('./core/notifications.js').then(m => m.showNotification(message.tokenName, message.actionText, message.delta, message.ownerIds));
+      break;
+    case SOCKET_TYPES.SET_IND_REL:
+      if (game.user.isGM) handleSetIndRel(message);
+      break;
+    case SOCKET_TYPES.SET_FACTION_REL:
+      if (game.user.isGM) handleSetFactionRel(message);
+      break;
+    case SOCKET_TYPES.SET_ACTOR_FACTION_REL:
+      if (game.user.isGM) handleSetActorFactionRel(message);
+      break;
+    case SOCKET_TYPES.SET_CUSTOM_NAME:
+      if (game.user.isGM) handleSetCustomName(message);
+      break;
   }
 }
 
@@ -104,25 +145,82 @@ async function handleGMDataUpdate(message) {
   try {
     _dataCache = message.data;
     await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
-    
-    game.socket.emit(`module.${MODULE_ID}`, {
-      type: SOCKET_TYPES.UPDATE_DATA,
-      data: _dataCache
-    });
-    
-    game.socket.emit(`module.${MODULE_ID}`, {
-      requestId: message.requestId,
-      success: true
-    });
-    
+    broadcastDataUpdate();
+    game.socket.emit(`module.${MODULE_ID}`, { requestId: message.requestId, success: true });
     ReputationEvents.emit(ReputationEvents.EVENTS.DATA_LOADED, { data: _dataCache });
   } catch (e) {
     console.error(`${MODULE_ID} | GM update error:`, e);
-    game.socket.emit(`module.${MODULE_ID}`, {
-      requestId: message.requestId,
-      success: false,
-      error: e.message
-    });
+    game.socket.emit(`module.${MODULE_ID}`, { requestId: message.requestId, success: false, error: e.message });
+  }
+}
+
+async function handleSetIndRel(message) {
+  try {
+    const { fromId, toId, value, requestId } = message;
+    const data = getData();
+    data.individualRelations ??= {};
+    data.individualRelations[fromId] ??= {};
+    data.individualRelations[fromId][toId] = clamp(value);
+    _dataCache = data;
+    await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
+    broadcastDataUpdate();
+    game.socket.emit(`module.${MODULE_ID}`, { requestId, success: true });
+    ReputationEvents.emit(ReputationEvents.EVENTS.RELATION_CHANGED, { npcId: fromId, pcId: toId, newValue: data.individualRelations[fromId][toId] });
+  } catch (e) {
+    console.error(`${MODULE_ID} | handleSetIndRel error:`, e);
+    game.socket.emit(`module.${MODULE_ID}`, { requestId: message.requestId, success: false, error: e.message });
+  }
+}
+
+async function handleSetFactionRel(message) {
+  try {
+    const { factionId, pcId, value, requestId } = message;
+    const data = getData();
+    data.factionRelations ??= {};
+    data.factionRelations[factionId] ??= {};
+    data.factionRelations[factionId][pcId] = clamp(value);
+    _dataCache = data;
+    await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
+    broadcastDataUpdate();
+    game.socket.emit(`module.${MODULE_ID}`, { requestId, success: true });
+    ReputationEvents.emit(ReputationEvents.EVENTS.RELATION_CHANGED, { factionId, pcId, newValue: data.factionRelations[factionId][pcId], type: 'faction' });
+  } catch (e) {
+    console.error(`${MODULE_ID} | handleSetFactionRel error:`, e);
+    game.socket.emit(`module.${MODULE_ID}`, { requestId: message.requestId, success: false, error: e.message });
+  }
+}
+
+async function handleSetActorFactionRel(message) {
+  try {
+    const { actorId, factionId, value, requestId } = message;
+    const data = getData();
+    data.actorFactionRelations ??= {};
+    data.actorFactionRelations[actorId] ??= {};
+    data.actorFactionRelations[actorId][factionId] = clamp(value);
+    _dataCache = data;
+    await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
+    broadcastDataUpdate();
+    game.socket.emit(`module.${MODULE_ID}`, { requestId, success: true });
+    ReputationEvents.emit(ReputationEvents.EVENTS.RELATION_CHANGED, { actorId, factionId, newValue: data.actorFactionRelations[actorId][factionId], type: 'actor-faction' });
+  } catch (e) {
+    console.error(`${MODULE_ID} | handleSetActorFactionRel error:`, e);
+    game.socket.emit(`module.${MODULE_ID}`, { requestId: message.requestId, success: false, error: e.message });
+  }
+}
+
+async function handleSetCustomName(message) {
+  try {
+    const { actorId, name, requestId } = message;
+    const data = getData();
+    data.actorNames ??= {};
+    data.actorNames[actorId] = name;
+    _dataCache = data;
+    await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
+    broadcastDataUpdate();
+    game.socket.emit(`module.${MODULE_ID}`, { requestId, success: true });
+  } catch (e) {
+    console.error(`${MODULE_ID} | handleSetCustomName error:`, e);
+    game.socket.emit(`module.${MODULE_ID}`, { requestId: message.requestId, success: false, error: e.message });
   }
 }
 
@@ -130,10 +228,8 @@ export async function flushData() {
   if (_saveTimeout && _dataCache) {
     clearTimeout(_saveTimeout);
     _saveTimeout = null;
-    
     const resolvers = [..._pendingResolvers];
     _pendingResolvers = [];
-    
     try {
       if (game.user.isGM) {
         await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
@@ -143,7 +239,6 @@ export async function flushData() {
     } catch (e) {
       console.error(`${MODULE_ID} | Flush error:`, e);
     }
-    
     resolvers.forEach(r => r());
   }
 }
@@ -200,7 +295,6 @@ export function getTier(value) {
   if (!tiers || tiers.length === 0) {
     return { name: "Unknown", color: "#666666", minValue: -Infinity };
   }
-  
   if (value >= 0) {
     const positiveTiers = tiers.filter(t => t.minValue >= 0).sort((a, b) => b.minValue - a.minValue);
     return positiveTiers.find(tier => value >= tier.minValue) || positiveTiers[positiveTiers.length - 1] || tiers[0];

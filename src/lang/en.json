@@ -120,6 +120,7 @@
       "their-attitude": "Their attitude",
       "your-attitude": "Your attitude",
       "to-players": "Relations to Players",
+      "to-factions": "Relations to Factions",
       "faction-attitude": "Faction attitude",
       "members-avg": "Members (avg)",
       "faction-memberships": "Faction Memberships",
@@ -192,7 +193,10 @@
       "relation-worsened": "relation with {target} worsened"
     },
     "tooltips": {
-      "delete": "Delete"
+      "delete": "Delete",
+      "hide": "Hide from players",
+      "show": "Show to players",
+      "hidden": "Hidden from players"
     },
     "errors": {
       "saveFailed": "Failed to save reputation data"

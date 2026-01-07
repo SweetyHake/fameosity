@@ -120,6 +120,7 @@
       "their-attitude": "Su actitud",
       "your-attitude": "Tu actitud",
       "to-players": "Relaciones con Jugadores",
+      "to-factions": "Relaciones con Facciones",
       "faction-attitude": "Actitud de la facción",
       "members-avg": "Miembros (prom.)",
       "faction-memberships": "Membresías de Facción",
@@ -192,7 +193,10 @@
       "relation-worsened": "la relación con {target} empeoró"
     },
     "tooltips": {
-      "delete": "Eliminar"
+      "delete": "Eliminar",
+      "hide": "Ocultar a los jugadores",
+      "show": "Mostrar a los jugadores",
+      "hidden": "Oculto a los jugadores"
     },
     "errors": {
       "saveFailed": "Error al guardar los datos de reputación"

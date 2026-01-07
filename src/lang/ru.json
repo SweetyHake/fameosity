@@ -120,6 +120,7 @@
       "their-attitude": "Их отношение",
       "your-attitude": "Ваше отношение",
       "to-players": "Отношения к игрокам",
+      "to-factions": "Отношение к фракциям",
       "faction-attitude": "Отношение фракции",
       "members-avg": "Члены (средн.)",
       "faction-memberships": "Членство во фракциях",
@@ -192,7 +193,10 @@
       "relation-worsened": "отношения с {target} ухудшились"
     },
     "tooltips": {
-      "delete": "Удалить"
+      "delete": "Удалить",
+      "hide": "Скрыть от игроков",
+      "show": "Показать игрокам",
+      "hidden": "Скрыто от игроков"
     },
     "errors": {
       "saveFailed": "Не удалось сохранить данные репутации"

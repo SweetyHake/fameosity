@@ -3,6 +3,7 @@ import { getSettings, clamp } from '../data.js';
 import { getDisplayName, getActorMode, getActorRep, setActorRep, getPCs } from './actors.js';
 import { adjustIndRels } from './relations.js';
 import { getFaction, changeFactionRep, getFactionMode } from './factions.js';
+import { shouldShowNotification } from './visibility.js';
 
 const activeNotifications = new Map();
 const NOTIFICATION_TIMEOUT = 5000;
@@ -66,7 +67,12 @@ function scheduleRemoval(notification, key, container) {
 }
 
 export function showNotification(tokenName, actionText, delta, ownerIds = null) {
-  if (ownerIds && !ownerIds.includes(game.user.id) && !game.user.isGM) return;
+  if (ownerIds !== null) {
+    if (!ownerIds.includes(game.user.id) && !game.user.isGM) return;
+  } else {
+    if (!game.user.isGM) return;
+  }
+  
   const notificationKey = `${tokenName}-${actionText}-${delta > 0 ? 'up' : 'down'}`;
   if (activeNotifications.has(notificationKey)) return;
   const container = getOrCreateContainer();
@@ -77,21 +83,46 @@ export function showNotification(tokenName, actionText, delta, ownerIds = null) 
   scheduleRemoval(notification, notificationKey, container);
 }
 
-export function showRelationChangeNotification(sourceName, targetName, delta, targetPcId = null) {
+export function showRelationChangeNotification(sourceName, targetName, delta, targetPcId = null, options = {}) {
   const settings = getSettings();
   if (!settings.enabled || delta === 0) return;
   
-  const ownerIds = [];
+  const { sourceId, targetId, relationType } = options;
+  if (sourceId && targetId && relationType) {
+    if (!shouldShowNotification(relationType, sourceId, targetId)) return;
+  }
+  
+  const ownerIds = new Set();
+  
+  if (sourceId) {
+    const sourceActor = game.actors.get(sourceId);
+    if (sourceActor?.hasPlayerOwner) {
+      Object.entries(sourceActor.ownership || {})
+        .filter(([userId, level]) => level === CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER && userId !== 'default')
+        .forEach(([userId]) => ownerIds.add(userId));
+    }
+  }
+  
   if (targetPcId) {
-    const pc = game.actors.get(targetPcId);
-    if (pc) {
-      const owners = Object.entries(pc.ownership || {})
-        .filter(([, level]) => level === CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER)
-        .map(([userId]) => userId);
-      ownerIds.push(...owners);
+    const targetActor = game.actors.get(targetPcId);
+    if (targetActor?.hasPlayerOwner) {
+      Object.entries(targetActor.ownership || {})
+        .filter(([userId, level]) => level === CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER && userId !== 'default')
+        .forEach(([userId]) => ownerIds.add(userId));
+    }
+  }
+  
+  if (targetId && targetId !== targetPcId) {
+    const targetActor = game.actors.get(targetId);
+    if (targetActor?.hasPlayerOwner) {
+      Object.entries(targetActor.ownership || {})
+        .filter(([userId, level]) => level === CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER && userId !== 'default')
+        .forEach(([userId]) => ownerIds.add(userId));
     }
   }
 
+  const ownerIdsArray = [...ownerIds];
+  
   const actionKey = delta > 0 ? "relation-improved" : "relation-worsened";
   const actionText = game.i18n.format(`${MODULE_ID}.remember.${actionKey}`, { target: targetName });
 
@@ -100,10 +131,10 @@ export function showRelationChangeNotification(sourceName, targetName, delta, ta
     tokenName: sourceName,
     actionText,
     delta,
-    ownerIds: ownerIds.length ? ownerIds : null
+    ownerIds: ownerIdsArray
   });
 
-  showNotification(sourceName, actionText, delta, ownerIds.length ? ownerIds : null);
+  showNotification(sourceName, actionText, delta, ownerIdsArray);
 }
 
 export async function changeReputation(delta, actorId = null) {
@@ -137,19 +168,31 @@ export async function changeReputation(delta, actorId = null) {
   if (mode === 'auto') {
     await adjustIndRels(actor.id, delta);
     for (const pc of pcs) {
-      showRelationChangeNotification(displayName, getDisplayName(pc.id), delta, pc.id);
+      showRelationChangeNotification(displayName, getDisplayName(pc.id), delta, pc.id, {
+        sourceId: actor.id,
+        targetId: pc.id,
+        relationType: 'individual'
+      });
     }
   } else if (mode === 'hybrid') {
     const currentRep = getActorRep(actor.id);
     await setActorRep(actor.id, clamp(currentRep + delta));
     for (const pc of pcs) {
-      showRelationChangeNotification(displayName, getDisplayName(pc.id), delta, pc.id);
+      showRelationChangeNotification(displayName, getDisplayName(pc.id), delta, pc.id, {
+        sourceId: actor.id,
+        targetId: pc.id,
+        relationType: 'individual'
+      });
     }
   } else {
     const currentRep = getActorRep(actor.id);
     await setActorRep(actor.id, clamp(currentRep + delta));
     for (const pc of pcs) {
-      showRelationChangeNotification(displayName, getDisplayName(pc.id), delta, pc.id);
+      showRelationChangeNotification(displayName, getDisplayName(pc.id), delta, pc.id, {
+        sourceId: actor.id,
+        targetId: pc.id,
+        relationType: 'individual'
+      });
     }
   }
 }
@@ -160,17 +203,19 @@ export async function changeFactionRepWithNotify(factionId, delta) {
   if (!faction) return;
 
   const mode = getFactionMode(factionId);
-  
-  if (mode === 'auto') {
-    return;
-  }
+  if (mode === 'auto') return;
 
   await changeFactionRep(factionId, delta);
 
   if (!settings.enabled) return;
+  if (!shouldShowNotification('faction', factionId, null)) return;
 
   const pcs = getPCs();
   for (const pc of pcs) {
-    showRelationChangeNotification(faction.name, getDisplayName(pc.id), delta, pc.id);
+    showRelationChangeNotification(faction.name, getDisplayName(pc.id), delta, pc.id, {
+      sourceId: factionId,
+      targetId: pc.id,
+      relationType: 'faction'
+    });
   }
 }
