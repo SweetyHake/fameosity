@@ -1,7 +1,7 @@
 {
   "id": "fameosity",
   "title": "Fameosity",
-  "version": "13.2.1",
+  "version": "13.2.2",
   "compatibility": {
     "minimum": "13",
     "verified": "13"
@@ -45,7 +45,7 @@
     }
   ],
   "manifest": "https://raw.githubusercontent.com/SweetyHake/fameosity/refs/heads/main/module.json",
-  "download": "https://github.com/SweetyHake/fameosity/releases/download/13.2.1/module.zip",
+  "download": "https://github.com/SweetyHake/fameosity/releases/download/13.2.2/module.zip",
   "relationships": {
     "requires": [
       {
