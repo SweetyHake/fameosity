@@ -1,0 +1,212 @@
+<div class="fame-detail-header">
+  <img class="fame-detail-img {{#if @root.isGM}}editable{{/if}}" src="{{detail.image}}" {{#if @root.isGM}}data-action="changeImage" data-type="faction" data-id="{{detail.id}}"{{/if}}>
+  <div class="fame-detail-title-area">
+    <div class="fame-detail-name-row">
+      {{#if @root.isGM}}<input type="text" class="fame-detail-name-input" value="{{detail.name}}" data-id="{{detail.id}}" data-type="faction">
+      {{else}}<span class="fame-detail-name-display">{{detail.name}}</span>{{/if}}
+      {{#unless detail.isPartyActive}}
+        {{{tierText (or detail.partyTier detail.tier)}}}
+      {{/unless}}
+      {{#if @root.isGM}}
+        <span class="fame-type-select-badge">
+          <i class="fa-solid {{detail.typeInfo.icon}}"></i>
+          <select class="fame-type-select" data-id="{{detail.id}}" data-entity-type="faction" {{#if detail.isPartyActive}}disabled{{/if}}>
+            {{#each @root.factionTypes}}<option value="{{id}}" {{#if (eq id ../detail.factionType)}}selected{{/if}}>{{name}}</option>{{/each}}
+          </select>
+        </span>
+      {{else}}
+        <span class="fame-entity-type-badge"><i class="fa-solid {{detail.typeInfo.icon}}"></i> {{detail.typeInfo.name}}</span>
+      {{/if}}
+    </div>
+    {{#if detail.isPartyActive}}
+      <div class="fame-member-status">
+        <i class="fa-solid fa-star fame-member-status-icon"></i>
+        <span class="fame-member-status-text">{{localize (concat @root.moduleId '.context.activate-party')}}</span>
+      </div>
+    {{else}}
+      {{#if detail.hasActiveParty}}
+        {{#if @root.isGM}}
+          <div class="fame-detail-rep-bar">
+            {{> "relations/partials/rep-bar"
+              barId=(concat detail.id ":" @root.activePartyId)
+              barType="faction-to-faction"
+              barMode=detail.mode
+              value=detail.partyReputation
+              tierColor=detail.partyTier.color
+              canEdit=true
+              isAuto=(eq detail.mode "auto")
+              isHybrid=(eq detail.mode "hybrid")
+            }}
+          </div>
+        {{else}}
+          <span class="fame-bar-value" style="color:{{detail.partyTier.color}}">{{#if (gt detail.partyReputation 0)}}+{{/if}}{{detail.partyReputation}}</span>
+        {{/if}}
+      {{else}}
+        <div class="fame-no-items" style="padding: 0.25rem 0; margin: 0;">
+          {{#if @root.isGM}}
+            <i class="fa-solid fa-exclamation-triangle" style="color:var(--fame-color-warning)"></i>
+            {{localize (concat @root.moduleId '.ui.no-active-party-gm')}}
+          {{else}}
+            {{localize (concat @root.moduleId '.ui.no-active-party-player')}}
+          {{/if}}
+        </div>
+      {{/if}}
+    {{/if}}
+  </div>
+  <div class="fame-detail-actions">
+    {{#if @root.isGM}}
+      {{#unless detail.isPartyActive}}
+        <button type="button" class="fame-mode-btn fame-icon-btn {{#unless (eq detail.mode 'manual')}}active{{/unless}} {{#if (eq detail.mode 'hybrid')}}hybrid{{/if}}" data-action="cycleFactionMode" data-id="{{detail.id}}" title="{{localize (concat @root.moduleId '.mode.' detail.mode '-hint')}}">
+          <i class="fa-solid fa-{{#if (eq detail.mode 'auto')}}robot{{else if (eq detail.mode 'hybrid')}}shuffle{{else}}hand{{/if}}"></i>
+        </button>
+      {{/unless}}
+      {{#if detail.canAddChild}}<button type="button" class="fame-icon-btn fame-add-child-btn" data-action="addChildFaction" data-parent="{{detail.id}}" title="{{localize (concat @root.moduleId '.tooltips.add-child')}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
+      {{#if (gt detail.level 0)}}<button type="button" class="fame-icon-btn fame-unnest-btn" data-action="unnest" data-id="{{detail.id}}" data-type="faction" title="{{localize (concat @root.moduleId '.tooltips.unnest')}}"><i class="fa-solid fa-arrow-up"></i></button>{{/if}}
+      <button type="button" class="fame-icon-btn fame-hide-btn {{#if detail.hidden}}active{{/if}}" data-action="toggleHidden" data-type="faction" data-id="{{detail.id}}">
+        <i class="fa-solid fa-{{#if detail.hidden}}eye{{else}}eye-slash{{/if}}"></i>
+      </button>
+      <button type="button" class="fame-icon-btn" data-action="delete" data-type="faction" data-id="{{detail.id}}"><i class="fa-solid fa-trash"></i></button>
+    {{/if}}
+  </div>
+</div>
+<div class="fame-detail-body">
+  {{#if @root.isGM}}
+    <textarea class="fame-detail-description" data-id="{{detail.id}}" data-entity-type="factions" placeholder="{{localize (concat @root.moduleId '.ui.description-placeholder')}}">{{detail.description}}</textarea>
+  {{else}}
+    {{#if detail.description}}<div class="fame-detail-description-display">{{detail.description}}</div>{{/if}}
+  {{/if}}
+
+  {{#if detail.factionPcRels.length}}
+  <div class="fame-detail-section" data-section-id="fac-pc-rels-{{detail.id}}">
+    <div class="fame-detail-section-header" data-action="toggleDetailSection" data-section="fac-pc-rels-{{detail.id}}">
+      <i class="fa-solid fa-chevron-right fame-section-chevron"></i>
+      <i class="fa-solid fa-user fame-section-icon"></i>
+      <span>{{#if detail.activePartyName}}{{detail.activePartyName}}{{else}}{{localize (concat @root.moduleId '.ui.player-characters')}}{{/if}}</span>
+      <span class="fame-detail-section-count">{{detail.factionPcRels.length}}</span>
+    </div>
+    <div class="fame-detail-section-body">
+      {{#each detail.factionPcRels}}
+        {{> "relations/partials/rel-row"
+          relId=pcId relName=pcName relImg=pcImg relValue=value relTier=tier relHidden=hidden
+          relType="faction-rel" barId=(concat ../detail.id ":" pcId)
+          entityType="actor" entityId=pcId
+          canEdit=@root.isGM
+          relTypeKey="faction" sourceEntityId=../detail.id targetEntityId=pcId
+        }}
+      {{/each}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if detail.factionNpcRels.length}}
+  <div class="fame-detail-section" data-section-id="fac-npc-rels-{{detail.id}}">
+    <div class="fame-detail-section-header" data-action="toggleDetailSection" data-section="fac-npc-rels-{{detail.id}}">
+      <i class="fa-solid fa-chevron-right fame-section-chevron"></i>
+      <i class="fa-solid fa-user-tie fame-section-icon"></i>
+      <span>{{localize (concat @root.moduleId '.ui.npcs')}}</span>
+      <span class="fame-detail-section-count">{{detail.factionNpcRels.length}}</span>
+    </div>
+    <div class="fame-detail-section-body">
+      {{#each detail.factionNpcRels}}
+        {{> "relations/partials/rel-row"
+          relId=pcId relName=pcName relImg=pcImg relValue=value relTier=tier relHidden=hidden
+          relType="faction-rel" barId=(concat ../detail.id ":" pcId)
+          entityType="actor" entityId=pcId
+          canEdit=@root.isGM
+          relTypeKey="faction" sourceEntityId=../detail.id targetEntityId=pcId
+        }}
+      {{/each}}
+    </div>
+  </div>
+  {{/if}}
+
+  {{#if detail.factionToFactionRels.length}}
+  <div class="fame-detail-section" data-section-id="fac-fac-rels-{{detail.id}}">
+    <div class="fame-detail-section-header" data-action="toggleDetailSection" data-section="fac-fac-rels-{{detail.id}}">
+      <i class="fa-solid fa-chevron-right fame-section-chevron"></i>
+      <i class="fa-solid fa-flag fame-section-icon"></i>
+      <span>{{localize (concat @root.moduleId '.relations.to-factions')}}</span>
+      <span class="fame-detail-section-count">{{detail.factionToFactionRels.length}}</span>
+    </div>
+    <div class="fame-detail-section-body">
+      {{#each detail.factionToFactionRels}}
+        {{> "relations/partials/rel-row"
+          relId=targetFactionId relName=targetFactionName relImg=targetFactionImg relValue=value relTier=tier relHidden=(or hidden targetHidden)
+          relType="faction-to-faction" barId=(concat ../detail.id ":" targetFactionId)
+          entityType="faction" entityId=targetFactionId
+          canEdit=@root.isGM
+          relTypeKey="factionToFaction" sourceEntityId=../detail.id targetEntityId=targetFactionId
+        }}
+      {{/each}}
+    </div>
+  </div>
+  {{/if}}
+
+  <div class="fame-detail-section" data-section-id="fac-members-{{detail.id}}">
+    <div class="fame-detail-section-header" data-action="toggleDetailSection" data-section="fac-members-{{detail.id}}">
+      <i class="fa-solid fa-chevron-right fame-section-chevron"></i>
+      <i class="fa-solid fa-users fame-section-icon"></i>
+      <span>{{localize (concat @root.moduleId '.ranks.members')}}</span>
+      <span class="fame-detail-section-count">{{detail.members.length}}</span>
+      {{#if @root.isGM}}<button type="button" class="fame-detail-section-add" data-action="addMember" data-faction="{{detail.id}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
+    </div>
+    <div class="fame-detail-section-body">
+      {{#each detail.members}}
+        <div class="fame-detail-member-row {{#if hidden}}is-hidden{{/if}} {{#if actorHidden}}is-hidden{{/if}}">
+          <img class="fame-detail-rel-img" src="{{img}}">
+          <div class="fame-detail-member-info">
+            <div class="fame-detail-member-name-row">
+              <span class="fame-detail-member-name" data-action="selectEntity" data-entity-type="actor" data-entity-id="{{id}}">{{name}}</span>
+              {{#if sourceName}}<span class="fame-detail-source-badge clickable" data-action="selectEntity" data-entity-type="faction" data-entity-id="{{sourceFactionId}}"><i class="fa-solid fa-link"></i> {{sourceName}}</span>{{/if}}
+              {{#if rank}}
+                <span class="fame-member-rank-badge" style="background:{{rank.color}}">{{rank.name}}</span>
+              {{/if}}
+            </div>
+          </div>
+          {{#if @root.isGM}}
+            {{#if ../detail.hasRanks}}
+              <select class="fame-member-rank-select" data-faction="{{#if sourceName}}{{sourceFactionId}}{{else}}{{../detail.id}}{{/if}}" data-actor="{{id}}">
+                <option value="">—</option>
+                {{#if sourceName}}
+                {{else}}
+                  {{#each ../detail.ranks}}
+                    <option value="{{this.id}}" {{#if (eq this.id ../manualRankId)}}selected{{/if}}>{{this.name}}</option>
+                  {{/each}}
+                {{/if}}
+              </select>
+            {{/if}}
+            {{#unless sourceName}}
+              <button type="button" class="fame-icon-btn fame-hide-btn {{#if hidden}}active{{/if}}" data-action="toggleMemberHidden" data-faction="{{../detail.id}}" data-actor="{{id}}">
+                <i class="fa-solid fa-{{#if hidden}}eye{{else}}eye-slash{{/if}}"></i>
+              </button>
+              <button type="button" class="fame-icon-btn" data-action="removeMember" data-faction="{{../detail.id}}" data-actor="{{id}}"><i class="fa-solid fa-trash"></i></button>
+            {{/unless}}
+          {{/if}}
+        </div>
+      {{else}}<div class="fame-no-items">{{localize (concat @root.moduleId '.relations.no-members')}}</div>{{/each}}
+    </div>
+  </div>
+
+  {{#if @root.isGM}}
+  <div class="fame-detail-section" data-section-id="fac-ranks-{{detail.id}}">
+    <div class="fame-detail-section-header" data-action="toggleDetailSection" data-section="fac-ranks-{{detail.id}}">
+      <i class="fa-solid fa-chevron-right fame-section-chevron"></i>
+      <i class="fa-solid fa-medal fame-section-icon"></i>
+      <span>{{localize (concat @root.moduleId '.ranks.title')}}</span>
+      <span class="fame-detail-section-count">{{detail.ranks.length}}</span>
+      <button type="button" class="fame-detail-section-add" data-action="addRank" data-faction="{{detail.id}}"><i class="fa-solid fa-plus"></i></button>
+    </div>
+    <div class="fame-detail-section-body">
+      {{#each detail.ranks}}
+        <div class="fame-detail-rank-row" data-rank-id="{{this.id}}" data-faction-id="{{../detail.id}}">
+          <span class="fame-rank-drag-handle"><i class="fa-solid fa-grip-vertical"></i></span>
+          <input type="color" class="fame-rank-color" value="{{this.color}}" data-faction="{{../detail.id}}" data-rank="{{this.id}}">
+          <input type="text" class="fame-rank-name" value="{{this.name}}" data-faction="{{../detail.id}}" data-rank="{{this.id}}">
+          <input type="number" class="fame-rank-multiplier" value="{{this.multiplier}}" step="0.1" data-faction="{{../detail.id}}" data-rank="{{this.id}}">
+          <button type="button" class="fame-icon-btn" data-action="deleteRank" data-faction="{{../detail.id}}" data-rank="{{this.id}}"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      {{else}}<div class="fame-no-items">—</div>{{/each}}
+    </div>
+  </div>
+  {{/if}}
+</div>

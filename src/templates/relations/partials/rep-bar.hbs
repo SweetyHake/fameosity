@@ -1,0 +1,28 @@
+{{!--
+  @param barId       - data-id for the bar
+  @param barType     - data-type (faction, faction-rel, individual, actor-faction, etc.)
+  @param barMode     - data-mode (manual, auto, hybrid)
+  @param value       - current value
+  @param tierColor   - color from tier
+  @param canEdit     - boolean, show controls
+  @param isAuto      - boolean, auto mode (readonly slider)
+  @param isHybrid    - boolean, hybrid mode
+  @param compact     - boolean, use compact class
+--}}
+<div class="fame-bar-container {{#if compact}}compact{{/if}} {{#if isAuto}}auto-mode{{/if}} {{#if isHybrid}}hybrid-mode{{/if}}" data-id="{{barId}}" data-type="{{barType}}" data-mode="{{barMode}}">
+  <span class="fame-bar-min">{{@root.min}}</span>
+  <div class="fame-bar">
+    <div class="fame-bar-track">
+      <div class="fame-bar-zero" style="left:50%"></div>
+      <div class="fame-bar-fill" style="left:{{fillLeft value @root.min @root.max}}%;width:{{fillWidth value @root.min @root.max}}%;background:{{tierColor}}"></div>
+      <div class="fame-bar-thumb" style="left:{{percentage value @root.min @root.max}}%;background:{{tierColor}}"></div>
+    </div>
+    {{#unless (or isAuto isHybrid)}}<input type="range" class="fame-bar-slider" min="{{@root.min}}" max="{{@root.max}}" value="{{value}}" data-id="{{barId}}" data-type="{{barType}}">{{/unless}}
+  </div>
+  <span class="fame-bar-max">{{@root.max}}</span>
+  <div class="fame-bar-controls">
+    <button type="button" class="fame-bar-adj fame-minus" data-action="adjustRep" data-id="{{barId}}" data-type="{{barType}}" data-mode="{{barMode}}" data-direction="minus"><i class="fa-solid fa-minus"></i></button>
+    <input type="number" class="fame-bar-val" value="{{value}}" min="{{@root.min}}" max="{{@root.max}}" data-id="{{barId}}" data-type="{{barType}}" data-mode="{{barMode}}" {{#if (or isAuto isHybrid)}}readonly{{/if}} style="color:{{tierColor}}">
+    <button type="button" class="fame-bar-adj fame-plus" data-action="adjustRep" data-id="{{barId}}" data-type="{{barType}}" data-mode="{{barMode}}" data-direction="plus"><i class="fa-solid fa-plus"></i></button>
+  </div>
+</div>

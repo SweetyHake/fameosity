@@ -31,31 +31,38 @@ export async function setData(data) {
   
   return new Promise(resolve => {
     _pendingResolvers.push(resolve);
-    
     if (_saveTimeout) clearTimeout(_saveTimeout);
-    
-    _saveTimeout = setTimeout(async () => {
-      if (_isSaving) return;
-      
-      _isSaving = true;
-      _saveTimeout = null;
-      
-      const resolvers = [..._pendingResolvers];
-      _pendingResolvers = [];
-      
-      try {
-        await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
-        broadcastDataUpdate();
-        ReputationEvents.emit(ReputationEvents.EVENTS.DATA_LOADED, { data: _dataCache });
-      } catch (e) {
-        console.error(`${MODULE_ID} | Save error:`, e);
-        ui.notifications.error(game.i18n.localize(`${MODULE_ID}.errors.saveFailed`));
-      } finally {
-        _isSaving = false;
-        resolvers.forEach(r => r());
-      }
-    }, SAVE_DELAY);
+    _saveTimeout = setTimeout(() => _executeSave(), SAVE_DELAY);
   });
+}
+
+async function _executeSave() {
+  if (_isSaving) {
+    if (_saveTimeout) clearTimeout(_saveTimeout);
+    _saveTimeout = setTimeout(() => _executeSave(), SAVE_DELAY);
+    return;
+  }
+  
+  _isSaving = true;
+  _saveTimeout = null;
+  
+  const resolvers = [..._pendingResolvers];
+  _pendingResolvers = [];
+  
+  try {
+    await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
+    broadcastDataUpdate();
+    ReputationEvents.emit(ReputationEvents.EVENTS.DATA_LOADED, { data: _dataCache });
+  } catch (e) {
+    console.error(`${MODULE_ID} | Save error:`, e);
+    ui.notifications.error(game.i18n.localize(`${MODULE_ID}.errors.saveFailed`));
+  } finally {
+    _isSaving = false;
+    resolvers.forEach(r => r());
+    if (_pendingResolvers.length > 0) {
+      _saveTimeout = setTimeout(() => _executeSave(), SAVE_DELAY);
+    }
+  }
 }
 
 function broadcastDataUpdate() {
@@ -124,7 +131,7 @@ export function handleSocketMessage(message) {
       }
       break;
     case SOCKET_TYPES.SHOW_NOTIFICATION:
-      import('./core/notifications.js').then(m => m.showNotification(message.tokenName, message.actionText, message.delta, message.ownerIds));
+      import('./core/notifications.js').then(m => m.showNotification(message.message, message.delta));
       break;
     case SOCKET_TYPES.SET_IND_REL:
       if (game.user.isGM) handleSetIndRel(message);
@@ -340,25 +347,15 @@ export async function setEntityInfo(entityType, entityId, info) {
   await setData(data);
 }
 
-export function getEntityJournalId(entityType, entityId) {
+export function getDescription(entityType, entityId) {
   const data = getData();
-  data.entityJournals ??= {};
-  data.entityJournals[entityType] ??= {};
-  return data.entityJournals[entityType][entityId] || null;
+  return data.descriptions?.[entityType]?.[entityId] || "";
 }
 
-export async function setEntityJournalId(entityType, entityId, journalId) {
+export async function setDescription(entityType, entityId, description) {
   const data = getData();
-  data.entityJournals ??= {};
-  data.entityJournals[entityType] ??= {};
-  data.entityJournals[entityType][entityId] = journalId;
+  data.descriptions ??= { actors: {}, factions: {}, locations: {} };
+  data.descriptions[entityType] ??= {};
+  data.descriptions[entityType][entityId] = description;
   await setData(data);
-}
-
-export async function removeEntityJournalId(entityType, entityId) {
-  const data = getData();
-  if (data.entityJournals?.[entityType]?.[entityId]) {
-    delete data.entityJournals[entityType][entityId];
-    await setData(data);
-  }
 }

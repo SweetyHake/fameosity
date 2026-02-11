@@ -1,12 +1,10 @@
 import { MODULE_ID, CONFIG_REMEMBER } from '../constants.js';
-import { getSettings, clamp } from '../data.js';
-import { getDisplayName, getActorMode, getActorRep, setActorRep, getPCs } from './actors.js';
-import { adjustIndRels } from './relations.js';
-import { getFaction, changeFactionRep, getFactionMode } from './factions.js';
-import { shouldShowNotification } from './visibility.js';
+import * as Data from '../data.js';
+import * as Actors from './actors.js';
 
 const activeNotifications = new Map();
-const NOTIFICATION_TIMEOUT = 5000;
+const pendingDeltas = new Map();
+const ACCUMULATE_DELAY = 800;
 
 function playNotificationSound() {
   if (!CONFIG_REMEMBER.sound) return;
@@ -29,132 +27,155 @@ function getOrCreateContainer() {
   return container;
 }
 
-function createNotificationElement(tokenName, actionText, delta) {
-  const icon = delta > 0 ? "+" : "−";
-  const iconColor = delta > 0 ? "var(--fame-color-success)" : "var(--fame-color-error)";
+function escapeHtmlLocal(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function createNotificationElement(message, delta) {
+  const isPositive = delta > 0;
   const notification = document.createElement("div");
-  notification.className = "fame-notification";
+  notification.className = `fame-notification ${isPositive ? 'positive' : 'negative'}`;
   notification.innerHTML = `
-    <div class="fame-notification-icon" style="border-color:${iconColor};color:${iconColor}">${icon}</div>
-    <div class="fame-notification-content">
-      <span class="fame-notification-name">${escapeHtml(tokenName)}</span>
-      <span class="fame-notification-action">${escapeHtml(actionText)}</span>
+    <div class="fame-notification-icon">
+      <i class="fa-solid fa-${isPositive ? 'arrow-up' : 'arrow-down'}"></i>
     </div>
+    <div class="fame-notification-content">
+      <span class="fame-notification-message">${escapeHtmlLocal(message)}</span>
+    </div>
+    <span class="fame-notification-delta">${isPositive ? '+' : ''}${delta}</span>
   `;
   return notification;
 }
 
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+function updateNotificationElement(notification, delta) {
+  const isPositive = delta > 0;
+  notification.className = `fame-notification ${isPositive ? 'positive' : 'negative'}`;
+  const icon = notification.querySelector('.fame-notification-icon i');
+  if (icon) icon.className = `fa-solid fa-${isPositive ? 'arrow-up' : 'arrow-down'}`;
+  const deltaEl = notification.querySelector('.fame-notification-delta');
+  if (deltaEl) deltaEl.textContent = `${isPositive ? '+' : ''}${delta}`;
 }
 
 function scheduleRemoval(notification, key, container) {
   const cleanup = () => {
     if (notification.parentNode) notification.remove();
     activeNotifications.delete(key);
+    pendingDeltas.delete(key);
     if (container && !container.children.length) container.remove();
   };
-  setTimeout(() => {
+  if (notification._removalTimeout) clearTimeout(notification._removalTimeout);
+  if (notification._cleanupTimeout) clearTimeout(notification._cleanupTimeout);
+  notification._removalTimeout = setTimeout(() => {
     notification.classList.add('out');
     notification.addEventListener('animationend', cleanup, { once: true });
-    setTimeout(cleanup, CONFIG_REMEMBER.fadeOutDuration + 100);
+    notification._cleanupTimeout = setTimeout(cleanup, CONFIG_REMEMBER.fadeOutDuration + 100);
   }, CONFIG_REMEMBER.displayDuration);
-  setTimeout(() => {
-    if (activeNotifications.has(key)) cleanup();
-  }, CONFIG_REMEMBER.displayDuration + NOTIFICATION_TIMEOUT);
 }
 
-export function showNotification(tokenName, actionText, delta, ownerIds = null) {
-  if (ownerIds !== null) {
-    if (!ownerIds.includes(game.user.id) && !game.user.isGM) return;
-  } else {
-    if (!game.user.isGM) return;
-  }
-  
-  const notificationKey = `${tokenName}-${actionText}-${delta > 0 ? 'up' : 'down'}`;
-  if (activeNotifications.has(notificationKey)) return;
+function flushPending(key) {
+  const pending = pendingDeltas.get(key);
+  if (!pending) return;
+  clearTimeout(pending.timer);
+  pendingDeltas.delete(key);
+  const totalDelta = pending.delta;
+  if (totalDelta === 0) return;
   const container = getOrCreateContainer();
-  const notification = createNotificationElement(tokenName, actionText, delta);
+  const existing = activeNotifications.get(key);
+  if (existing && existing.parentNode) {
+    updateNotificationElement(existing, totalDelta);
+    scheduleRemoval(existing, key, container);
+  } else {
+    const notification = createNotificationElement(pending.message, totalDelta);
+    container.appendChild(notification);
+    activeNotifications.set(key, notification);
+    playNotificationSound();
+    scheduleRemoval(notification, key, container);
+  }
+}
+
+
+export function showNotification(message, delta, ownerIds = null) {
+  if (delta === 0) return;
+
+  const key = message;
+  const pending = pendingDeltas.get(key);
+  if (pending) {
+    pending.delta += delta;
+    clearTimeout(pending.timer);
+    pending.timer = setTimeout(() => flushPending(key), ACCUMULATE_DELAY);
+    const existing = activeNotifications.get(key);
+    if (existing && existing.parentNode && pending.delta !== 0) {
+      updateNotificationElement(existing, pending.delta);
+      scheduleRemoval(existing, key, getOrCreateContainer());
+    }
+  } else {
+    pendingDeltas.set(key, {
+      delta, message,
+      timer: setTimeout(() => flushPending(key), ACCUMULATE_DELAY)
+    });
+  }
+}
+
+export function showBroadcastNotification(message) {
+  const container = getOrCreateContainer();
+  const notification = document.createElement("div");
+  notification.className = 'fame-notification negative';
+  notification.innerHTML = `
+    <div class="fame-notification-icon">
+      <i class="fa-solid fa-exclamation-triangle"></i>
+    </div>
+    <div class="fame-notification-content">
+      <span class="fame-notification-message">${escapeHtmlLocal(message)}</span>
+    </div>
+  `;
   container.appendChild(notification);
-  activeNotifications.set(notificationKey, notification);
   playNotificationSound();
-  scheduleRemoval(notification, notificationKey, container);
+  const key = `broadcast-${Date.now()}`;
+  activeNotifications.set(key, notification);
+  scheduleRemoval(notification, key, container);
 }
 
 export function showRelationChangeNotification(sourceName, targetName, delta, targetPcId = null, options = {}) {
-  const settings = getSettings();
+  const settings = Data.getSettings();
   if (!settings.enabled || delta === 0) return;
-  
-  const { sourceId, targetId, relationType } = options;
-  if (sourceId && targetId && relationType) {
-    if (!shouldShowNotification(relationType, sourceId, targetId)) return;
-  }
-  
-  const ownerIds = new Set();
-  
-  if (sourceId) {
-    const sourceActor = game.actors.get(sourceId);
-    if (sourceActor?.hasPlayerOwner) {
-      Object.entries(sourceActor.ownership || {})
-        .filter(([userId, level]) => level === CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER && userId !== 'default')
-        .forEach(([userId]) => ownerIds.add(userId));
-    }
-  }
-  
-  if (targetPcId) {
-    const targetActor = game.actors.get(targetPcId);
-    if (targetActor?.hasPlayerOwner) {
-      Object.entries(targetActor.ownership || {})
-        .filter(([userId, level]) => level === CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER && userId !== 'default')
-        .forEach(([userId]) => ownerIds.add(userId));
-    }
-  }
-  
-  if (targetId && targetId !== targetPcId) {
-    const targetActor = game.actors.get(targetId);
-    if (targetActor?.hasPlayerOwner) {
-      Object.entries(targetActor.ownership || {})
-        .filter(([userId, level]) => level === CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER && userId !== 'default')
-        .forEach(([userId]) => ownerIds.add(userId));
-    }
-  }
 
-  const ownerIdsArray = [...ownerIds];
-  
-  const actionKey = delta > 0 ? "relation-improved" : "relation-worsened";
-  const actionText = game.i18n.format(`${MODULE_ID}.remember.${actionKey}`, { target: targetName });
+  const locKey = delta > 0 ? `${MODULE_ID}.remember.relation-improved` : `${MODULE_ID}.remember.relation-worsened`;
+  const message = game.i18n.format(locKey, { source: sourceName, target: targetName });
 
   game.socket.emit(`module.${MODULE_ID}`, {
-    type: "showNotification",
-    tokenName: sourceName,
-    actionText,
-    delta,
-    ownerIds: ownerIdsArray
+    type: "showNotification", message, delta
   });
 
-  showNotification(sourceName, actionText, delta, ownerIdsArray);
+  showNotification(message, delta);
+}
+
+export function broadcastWantedAnnouncement(pcName, locationName, level) {
+  const message = game.i18n.format(`${MODULE_ID}.wanted.announced`, {
+    name: pcName, location: locationName, level: '★'.repeat(level)
+  });
+
+  game.socket.emit(`module.${MODULE_ID}`, {
+    type: "showNotification", message, delta: -1, ownerIds: null
+  });
+
+  showBroadcastNotification(message);
 }
 
 export async function changeReputation(delta, actorId = null) {
-  const settings = getSettings();
+  const { addRep } = await import('./api.js');
+  const { getActiveParty } = await import('./party.js');
+  const settings = Data.getSettings();
   if (!settings.enabled) return;
 
-  let actor, displayName;
-
+  let actor;
   if (actorId) {
     actor = game.actors.get(actorId);
-    displayName = getDisplayName(actorId);
   } else {
     const token = canvas.tokens.controlled[0];
-    if (token) {
-      actor = token.actor;
-      displayName = token.name;
-    } else {
-      actor = game.user.character;
-      if (actor) displayName = getDisplayName(actor.id);
-    }
+    if (token) actor = token.actor;
+    else actor = game.user.character;
   }
 
   if (!actor) {
@@ -162,60 +183,11 @@ export async function changeReputation(delta, actorId = null) {
     return;
   }
 
-  const mode = getActorMode(actor.id);
-  const pcs = getPCs().filter(pc => pc.id !== actor.id);
-
-  if (mode === 'auto') {
-    await adjustIndRels(actor.id, delta);
-    for (const pc of pcs) {
-      showRelationChangeNotification(displayName, getDisplayName(pc.id), delta, pc.id, {
-        sourceId: actor.id,
-        targetId: pc.id,
-        relationType: 'individual'
-      });
-    }
-  } else if (mode === 'hybrid') {
-    const currentRep = getActorRep(actor.id);
-    await setActorRep(actor.id, clamp(currentRep + delta));
-    for (const pc of pcs) {
-      showRelationChangeNotification(displayName, getDisplayName(pc.id), delta, pc.id, {
-        sourceId: actor.id,
-        targetId: pc.id,
-        relationType: 'individual'
-      });
-    }
-  } else {
-    const currentRep = getActorRep(actor.id);
-    await setActorRep(actor.id, clamp(currentRep + delta));
-    for (const pc of pcs) {
-      showRelationChangeNotification(displayName, getDisplayName(pc.id), delta, pc.id, {
-        sourceId: actor.id,
-        targetId: pc.id,
-        relationType: 'individual'
-      });
-    }
+  const party = getActiveParty();
+  if (!party) {
+    ui.notifications.warn(game.i18n.localize(`${MODULE_ID}.remember.warn-no-party`));
+    return;
   }
-}
 
-export async function changeFactionRepWithNotify(factionId, delta) {
-  const settings = getSettings();
-  const faction = getFaction(factionId);
-  if (!faction) return;
-
-  const mode = getFactionMode(factionId);
-  if (mode === 'auto') return;
-
-  await changeFactionRep(factionId, delta);
-
-  if (!settings.enabled) return;
-  if (!shouldShowNotification('faction', factionId, null)) return;
-
-  const pcs = getPCs();
-  for (const pc of pcs) {
-    showRelationChangeNotification(faction.name, getDisplayName(pc.id), delta, pc.id, {
-      sourceId: factionId,
-      targetId: pc.id,
-      relationType: 'faction'
-    });
-  }
+  await addRep(actor.id, { type: 'faction', id: party.id }, delta);
 }

@@ -4,7 +4,7 @@
       "reputationSettings": {
         "name": "Configuración de Reputación",
         "label": "Configurar",
-        "hint": "Configurar los ajustes del sistema de reputación",
+        "hint": "Configurar el sistema de reputación",
         "title": "Configuración de Reputación"
       },
       "tab-general": "General",
@@ -12,14 +12,14 @@
       "tab-modes": "Modos",
       "tab-data": "Datos",
       "enabled": {
-        "name": "Activar Sistema de Reputación",
+        "name": "Habilitar sistema de reputación",
         "hint": "Activar o desactivar el sistema de reputación"
       },
       "displayMode": {
-        "name": "Modo de Visualización",
+        "name": "Modo de visualización",
         "hint": "Cómo se muestran los cambios de reputación a los jugadores",
-        "show": "Mostrar Valores",
-        "hide": "Ocultar Valores"
+        "show": "Mostrar valores",
+        "hide": "Ocultar valores"
       },
       "reputationMin": {
         "name": "Reputación Mínima"
@@ -28,12 +28,12 @@
         "name": "Reputación Máxima"
       },
       "defaultActorMode": {
-        "name": "Modo de Actor por Defecto",
-        "hint": "Modo para los nuevos actores rastreados"
+        "name": "Modo por defecto para Actores",
+        "hint": "Modo para nuevos actores rastreados"
       },
       "defaultFactionMode": {
-        "name": "Modo de Facción por Defecto",
-        "hint": "Modo para las nuevas facciones creadas"
+        "name": "Modo por defecto para Facciones",
+        "hint": "Modo para nuevas facciones"
       },
       "hybridBalance": {
         "name": "Balance del Modo Híbrido",
@@ -43,36 +43,36 @@
         "name": "Peso Base"
       },
       "hybridAuto": {
-        "name": "Peso de Relaciones"
+        "name": "Peso Relaciones"
       },
-      "dragActorHint": "Arrastra un actor aquí para rastrear",
-      "dragActorHintFull": "Arrastra y suelta actores desde la barra lateral para añadirlos al rastreo",
+      "dragActorHint": "Arrastra el actor aquí",
+      "dragActorHintFull": "Arrastra actores desde la barra lateral para añadirlos al seguimiento",
       "exportImport": {
         "name": "Exportar / Importar",
-        "hint": "Respaldar o restaurar todos los datos del módulo incluyendo configuración, niveles, facciones, ubicaciones y relaciones"
+        "hint": "Copia de seguridad o restauración de todos los datos del módulo, incluyendo ajustes, niveles, facciones, ubicaciones y relaciones"
       },
       "export": "Exportar",
       "import": "Importar",
-      "importSettings": "Importar configuración",
-      "importTiers": "Importar niveles de relación",
-      "importData": "Importar facciones, ubicaciones y relaciones",
-      "exportSuccess": "Datos exportados exitosamente",
-      "importSuccess": "Datos importados exitosamente",
+      "importSettings": "Importar Ajustes",
+      "importTiers": "Importar Niveles de Relación",
+      "importData": "Importar Facciones, Ubicaciones y Relaciones",
+      "exportSuccess": "Datos exportados correctamente",
+      "importSuccess": "Datos importados correctamente",
       "importError": "Error al importar datos",
-      "importInvalid": "Formato de archivo de importación inválido",
+      "importInvalid": "Formato de archivo de importación no válido",
       "dangerZone": "Zona de Peligro",
-      "resetAll": "Restablecer Todos los Datos",
-      "resetConfirmTitle": "Restablecer Todos los Datos",
-      "resetConfirmContent": "¿Estás seguro de que quieres restablecer TODOS los datos del módulo? Esto eliminará todas las facciones, ubicaciones, relaciones y configuración. ¡Esta acción no se puede deshacer!",
-      "resetSuccess": "Todos los datos han sido restablecidos"
+      "resetAll": "Restablecer todos los datos",
+      "resetConfirmTitle": "Restablecer todos los datos",
+      "resetConfirmContent": "¿Estás seguro de que quieres restablecer TODOS los datos del módulo? Esto eliminará todas las facciones, ubicaciones, relaciones y ajustes. ¡Esta acción no se puede deshacer!",
+      "resetSuccess": "Todos los datos restablecidos"
     },
     "keybindings": {
       "increase": {
-        "name": "Aumentar Reputación",
+        "name": "Aumentar reputación",
         "hint": "Aumentar la reputación del token seleccionado"
       },
       "decrease": {
-        "name": "Disminuir Reputación",
+        "name": "Disminuir reputación",
         "hint": "Disminuir la reputación del token seleccionado"
       }
     },
@@ -80,7 +80,7 @@
       "nemesis": "Némesis",
       "hostile": "Hostil",
       "unfriendly": "Antipático",
-      "wary": "Cauteloso",
+      "wary": "Receloso",
       "neutral": "Neutral",
       "friendly": "Amistoso",
       "allied": "Aliado",
@@ -90,14 +90,14 @@
       "manual": "Manual",
       "auto": "Auto",
       "hybrid": "Híbrido",
-      "manual-hint": "Modo manual: establecer reputación directamente",
-      "auto-hint": "Modo auto: calculado a partir de las relaciones",
-      "hybrid-hint": "Modo híbrido: base + bonificación de relaciones (máx. 50%)"
+      "manual-hint": "Modo Manual: La reputación se establece directamente",
+      "auto-hint": "Modo Auto: Se calcula a partir de las relaciones",
+      "hybrid-hint": "Modo Híbrido: Base + Bono por relación (máx. 50%)"
     },
     "reputation": {
       "window-title": "Reputación",
       "current-label": "Reputación Actual",
-      "disabled": "El sistema de reputación está desactivado"
+      "disabled": "Sistema de reputación desactivado"
     },
     "relations": {
       "viewer-title": "Relaciones",
@@ -105,7 +105,7 @@
       "tab-locations": "Ubicaciones",
       "tab-factions": "Facciones",
       "tab-actors": "Actores",
-      "tab-character-hint": "Ver las relaciones del personaje seleccionado",
+      "tab-character-hint": "Ver relaciones del personaje seleccionado",
       "tab-locations-hint": "Gestionar ubicaciones y estado de búsqueda",
       "tab-factions-hint": "Gestionar facciones y sus miembros",
       "tab-actors-hint": "Gestionar NPCs rastreados",
@@ -119,12 +119,14 @@
       "newTier": "Nuevo Nivel",
       "their-attitude": "Su actitud",
       "your-attitude": "Tu actitud",
-      "to-players": "Relaciones con Jugadores",
-      "to-factions": "Relaciones con Facciones",
-      "faction-attitude": "Actitud de la facción",
-      "members-avg": "Miembros (prom.)",
-      "faction-memberships": "Membresías de Facción",
-      "no-faction-memberships": "No es miembro de ninguna facción"
+      "to-players": "Actitud hacia los Jugadores",
+      "to-factions": "Actitud hacia Facciones",
+      "to-other-factions": "Actitud hacia Facciones",
+      "faction-attitude": "Actitud de la Facción",
+      "members-avg": "Miembros (Prom.)",
+      "faction-memberships": "Membresía en Facciones",
+      "no-faction-memberships": "No es miembro de ninguna facción",
+      "faction-member": "Miembro de la Facción"
     },
     "factions": {
       "add": "Añadir Facción",
@@ -136,9 +138,11 @@
       "add": "Añadir Ubicación",
       "add-hint": "Crear una nueva ubicación",
       "new-location": "Nueva Ubicación",
-      "wanted": "Buscado",
+      "wanted": "Se Busca",
       "factions-here": "Facciones",
-      "actors-here": "Actores"
+      "actors-here": "Actores",
+      "controlled-by": "Controlado por",
+      "no-control": "No especificado"
     },
     "ranks": {
       "title": "Rangos",
@@ -148,12 +152,14 @@
       "auto": "Auto"
     },
     "wanted": {
-      "no-warrants": "Sin órdenes de captura",
-      "no-bounties": "Sin recompensas emitidas",
-      "unknown": "Desconocido"
+      "no-warrants": "Sin órdenes de arresto",
+      "no-bounties": "Sin recompensas establecidas",
+      "unknown": "Desconocido",
+      "announced": "¡Se busca a {name} en {location}! {level}",
+      "announce": "Anunciar estado de Búsqueda"
     },
     "character": {
-      "wanted-summary": "Buscado",
+      "wanted-summary": "Se Busca",
       "subtab-locations": "Ubicaciones",
       "subtab-factions": "Facciones",
       "subtab-actors": "Actores",
@@ -164,8 +170,8 @@
     "info": {
       "title": "Información",
       "tab-public": "Público",
-      "tab-gm": "Solo DJ",
-      "no-info": "No hay información disponible"
+      "tab-gm": "Solo GM",
+      "no-info": "Información no disponible"
     },
     "picker": {
       "search": "Buscar...",
@@ -178,28 +184,93 @@
       "delete-title": "Confirmar Eliminación",
       "delete-faction": "¿Estás seguro de que quieres eliminar esta facción?",
       "delete-location": "¿Estás seguro de que quieres eliminar esta ubicación?",
-      "delete-actor": "¿Estás seguro de que quieres eliminar este actor del rastreo?",
-      "delete-member": "¿Estás seguro de que quieres eliminar este miembro?",
+      "delete-actor": "¿Estás seguro de que quieres dejar de rastrear a este actor?",
+      "delete-member": "¿Estás seguro de que quieres eliminar a este miembro?",
       "delete-rank": "¿Estás seguro de que quieres eliminar este rango?",
-      "delete-wanted": "¿Estás seguro de que quieres eliminar esta orden de captura?",
+      "delete-wanted": "¿Estás seguro de que quieres eliminar esta orden?",
       "remove-from-location": "¿Estás seguro de que quieres eliminar esto de la ubicación?"
     },
     "remember": {
       "warn-no-token": "Ningún token seleccionado",
-      "action-approves": "aprueba",
-      "action-disapproves": "desaprueba",
-      "faction-prefix": "Facción",
-      "relation-improved": "la relación con {target} mejoró",
-      "relation-worsened": "la relación con {target} empeoró"
+      "warn-no-party": "Ningún grupo activo seleccionado. Asigna un grupo en la configuración.",
+      "relation-improved": "La relación de {source} con {target} ha mejorado",
+      "relation-worsened": "La relación de {source} con {target} ha empeorado"
     },
     "tooltips": {
       "delete": "Eliminar",
       "hide": "Ocultar a los jugadores",
       "show": "Mostrar a los jugadores",
-      "hidden": "Oculto a los jugadores"
+      "hidden": "Oculto a los jugadores",
+      "unnest": "Sacar del elemento padre",
+      "add-child": "Añadir elemento hijo",
+      "add-to-tracking": "Añadir al seguimiento",
+      "announce-wanted": "Anunciar estado de búsqueda y notificar a todos"
     },
     "errors": {
-      "saveFailed": "Error al guardar los datos de reputación"
+      "saveFailed": "Fallo al guardar los datos de reputación",
+      "cannotNest": "No se puede anidar este tipo de entidad en el objetivo"
+    },
+    "context": {
+      "select": "Seleccionar",
+      "open-sheet": "Abrir Hoja",
+      "duplicate": "Duplicar",
+      "copy-suffix": "Copia",
+      "activate-party": "Establecer como Grupo Activo"
+    },
+    "party": {
+      "default-name": "Grupo de Aventureros"
+    },
+    "ui": {
+      "type": "Tipo",
+      "description-placeholder": "Descripción...",
+      "player-characters": "Personajes Jugadores",
+      "active-characters": "Miembros del Grupo",
+      "npcs": "Personajes",
+      "select-entity-hint": "Selecciona un elemento del navegador",
+      "relations-to-players": "Relaciones con Personajes Jugadores",
+      "relations-to-characters": "Relaciones con otros personajes",
+      "no-active-party-gm": "No hay grupo activo asignado. Crea un grupo y establécelo como activo.",
+      "no-active-party-player": "No eres parte de un grupo activo.",
+      "personal-reputation": "Reputación Personal",
+      "custom-type-name-placeholder": "Nombre de tipo personalizado..."
+    },
+    "creator": {
+      "title-location": "Crear Ubicación",
+      "title-faction": "Crear Facción",
+      "title-actor": "Añadir Actores",
+      "select-location-type": "Seleccionar tipo de ubicación",
+      "select-faction-type": "Seleccionar tipo de facción",
+      "name-label": "Nombre",
+      "location-name-placeholder": "Nombre de la ubicación...",
+      "faction-name-placeholder": "Nombre de la facción...",
+      "create-btn": "Crear",
+      "actors-label": "Actores",
+      "drop-actors-hint": "Arrastra actores aquí o usa los botones de abajo",
+      "add-player-characters": "Añadir PJs",
+      "add-important-npcs": "Añadir NPCs Importantes",
+      "add-all-btn": "Añadir Todos",
+      "location-types": {
+        "continent": "Continente",
+        "country": "País",
+        "settlement": "Asentamiento",
+        "poi": "Punto de Interés"
+      },
+      "faction-types": {
+        "organization": "Organización",
+        "group": "Grupo"
+      }
+    },
+    "types": {
+      "location": {
+        "continent": "Continente",
+        "country": "País",
+        "settlement": "Asentamiento",
+        "poi": "Punto de Interés"
+      },
+      "faction": {
+        "organization": "Organización",
+        "group": "Grupo"
+      }
     }
   }
 }

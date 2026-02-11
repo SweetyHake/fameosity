@@ -7,22 +7,18 @@
   gap: 0.5rem;
 }
 
-.fame-notification {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1.25rem;
-  background: rgba(0, 0, 0, 0.85);
-  border: 1px solid var(--fame-color-gold);
-  border-radius: 4px;
-  box-shadow: 0 4px 12px var(--fame-shadow-45);
-  opacity: 0;
-  transform: translateX(-30px) scale(0.95);
-  animation: fameSlideIn 500ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+.fame-notification.positive {
+  background: var(--fame-notification-bg-positive);
+  border: 1px solid var(--fame-notification-border-positive);
+}
+
+.fame-notification.negative {
+  background: var(--fame-notification-bg-negative);
+  border: 1px solid var(--fame-notification-border-negative);
 }
 
 .fame-notification.out {
-  animation: fameSlideOut 350ms cubic-bezier(0.55, 0, 1, 0.45) forwards !important;
+  animation: fameSlideOut 300ms cubic-bezier(0.55, 0, 1, 0.45) forwards !important;
 }
 
 .fame-notification-icon {
@@ -32,37 +28,53 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border-width: 2px;
-  border-style: solid;
-  font-weight: 700;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  flex-shrink: 0;
   opacity: 0;
   transform: scale(0.5);
-  animation: fameIconPop 400ms cubic-bezier(0.34, 1.56, 0.64, 1) 150ms forwards;
+  animation: fameIconPop 350ms cubic-bezier(0.34, 1.56, 0.64, 1) 100ms forwards;
+}
+
+.fame-notification.positive .fame-notification-icon {
+  background: var(--fame-notification-icon-bg-positive);
+  color: var(--fame-notification-icon-positive);
+  box-shadow: 0 0 10px var(--fame-notification-glow-positive);
+}
+
+.fame-notification.negative .fame-notification-icon {
+  background: var(--fame-notification-icon-bg-negative);
+  color: var(--fame-notification-icon-negative);
+  box-shadow: 0 0 10px var(--fame-notification-glow-negative);
+}
+
+.fame-notification-icon i {
+  font-size: 0.8rem;
 }
 
 .fame-notification-content {
-  display: flex;
-  align-items: baseline;
-  gap: 0.375rem;
-}
-
-.fame-notification-name,
-.fame-notification-action {
-  color: var(--fame-color-text-emphatic);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  flex: 1;
+  min-width: 0;
   opacity: 0;
-  transform: translateY(5px);
+  transform: translateY(4px);
+  animation: fameTextIn 300ms ease-out 150ms forwards;
 }
 
-.fame-notification-name {
+.fame-notification-delta {
   font-weight: 700;
-  color: var(--fame-color-gold);
-  animation: fameTextIn 350ms ease-out 200ms forwards;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  min-width: 36px;
+  text-align: right;
+  opacity: 0;
+  transform: scale(0.5);
+  animation: fameIconPop 350ms cubic-bezier(0.34, 1.56, 0.64, 1) 200ms forwards;
 }
 
-.fame-notification-action {
-  animation: fameTextIn 350ms ease-out 300ms forwards;
+.fame-notification.positive .fame-notification-delta {
+  color: var(--fame-notification-delta-positive);
+}
+
+.fame-notification.negative .fame-notification-delta {
+  color: var(--fame-notification-delta-negative);
 }
 
 @keyframes fameSlideIn {
@@ -95,4 +107,29 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.fame-notification {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 1rem;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  transform: translateX(-30px) scale(0.95);
+  animation: fameSlideIn 400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  min-width: 260px;
+  max-width: 600px;
+}
+
+.fame-notification-message {
+  color: var(--fame-notification-text);
+  font-size: 0.85rem;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  word-break: break-word;
+  white-space: normal;
 }

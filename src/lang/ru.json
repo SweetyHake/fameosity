@@ -121,10 +121,12 @@
       "your-attitude": "Ваше отношение",
       "to-players": "Отношения к игрокам",
       "to-factions": "Отношение к фракциям",
+      "to-other-factions": "Отношения к фракциям",
       "faction-attitude": "Отношение фракции",
       "members-avg": "Члены (средн.)",
       "faction-memberships": "Членство во фракциях",
-      "no-faction-memberships": "Не состоит ни в одной фракции"
+      "no-faction-memberships": "Не состоит ни в одной фракции",
+      "faction-member": "Член фракции"
     },
     "factions": {
       "add": "Добавить фракцию",
@@ -138,7 +140,9 @@
       "new-location": "Новая локация",
       "wanted": "В розыске",
       "factions-here": "Фракции",
-      "actors-here": "Персонажи"
+      "actors-here": "Персонажи",
+      "controlled-by": "Под контролем",
+      "no-control": "Не указано"
     },
     "ranks": {
       "title": "Ранги",
@@ -150,7 +154,9 @@
     "wanted": {
       "no-warrants": "Нет ордеров",
       "no-bounties": "Награды не назначены",
-      "unknown": "Неизвестно"
+      "unknown": "Неизвестно",
+      "announced": "{name} объявлен(а) в розыск в {location}! {level}",
+      "announce": "Объявить розыск"
     },
     "character": {
       "wanted-summary": "В розыске",
@@ -186,20 +192,85 @@
     },
     "remember": {
       "warn-no-token": "Токен не выбран",
-      "action-approves": "одобряет",
-      "action-disapproves": "не одобряет",
-      "faction-prefix": "Фракция",
-      "relation-improved": "отношения с {target} улучшились",
-      "relation-worsened": "отношения с {target} ухудшились"
+      "warn-no-party": "Активная группа не выбрана. Назначьте группу в настройках.",
+      "relation-improved": "Отношения {source} с {target} улучшились",
+      "relation-worsened": "Отношения {source} с {target} ухудшились"
     },
     "tooltips": {
       "delete": "Удалить",
       "hide": "Скрыть от игроков",
       "show": "Показать игрокам",
-      "hidden": "Скрыто от игроков"
+      "hidden": "Скрыто от игроков",
+      "unnest": "Убрать из родителя",
+      "add-child": "Добавить дочерний элемент",
+      "add-to-tracking": "Добавить в отслеживание",
+      "announce-wanted": "Объявить розыск и уведомить всех"
     },
     "errors": {
-      "saveFailed": "Не удалось сохранить данные репутации"
+      "saveFailed": "Не удалось сохранить данные репутации",
+      "cannotNest": "Невозможно вложить этот тип сущности в указанную цель"
+    },
+    "context": {
+      "select": "Выбрать",
+      "open-sheet": "Открыть лист",
+      "duplicate": "Дублировать",
+      "copy-suffix": "Копия",
+      "activate-party": "Активная группа"
+    },
+    "party": {
+      "default-name": "Группа приключенцев"
+    },
+    "ui": {
+      "type": "Тип",
+      "description-placeholder": "Описание...",
+      "player-characters": "Персонажи игроков",
+      "active-characters": "Участники группы",
+      "npcs": "Персонажи",
+      "select-entity-hint": "Выберите элемент из навигатора",
+      "relations-to-players": "Отношения к персонажам игроков",
+      "relations-to-characters": "Отношения к другим персонажам",
+      "no-active-party-gm": "Активная группа не назначена. Создайте группу и назначьте её активной, используя ПКМ в списке.",
+      "no-active-party-player": "Вы не состоите в активной группе.",
+      "personal-reputation": "Личная репутация",
+      "custom-type-name-placeholder": "Своё название типа..."
+    },
+    "creator": {
+      "title-location": "Создать локацию",
+      "title-faction": "Создать фракцию",
+      "title-actor": "Добавить персонажей",
+      "select-location-type": "Выберите тип локации",
+      "select-faction-type": "Выберите тип фракции",
+      "name-label": "Название",
+      "location-name-placeholder": "Название локации...",
+      "faction-name-placeholder": "Название фракции...",
+      "create-btn": "Создать",
+      "actors-label": "Персонажи",
+      "drop-actors-hint": "Перетащите персонажей сюда или используйте кнопки ниже",
+      "add-player-characters": "Добавить персонажей игроков",
+      "add-important-npcs": "Добавить важных ПМ",
+      "add-all-btn": "Добавить всех",
+      "location-types": {
+        "continent": "Континент",
+        "country": "Страна",
+        "settlement": "Поселение",
+        "poi": "Точка интереса"
+      },
+      "faction-types": {
+        "organization": "Организация",
+        "group": "Группа"
+      }
+    },
+    "types": {
+      "location": {
+        "continent": "Континент",
+        "country": "Страна",
+        "settlement": "Поселение",
+        "poi": "Точка интереса"
+      },
+      "faction": {
+        "organization": "Организация",
+        "group": "Группа"
+      }
     }
   }
 }

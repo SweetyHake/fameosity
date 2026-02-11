@@ -3,76 +3,75 @@
   border: none;
   color: var(--fame-color-text-secondary);
   cursor: pointer;
-  padding: 0.25rem;
+  padding: var(--fame-space-xs);
   flex-shrink: 0;
-  transition: color 0.2s ease;
+  transition: color 0.1s ease, transform 0.1s ease;
 }
 
 .fame-icon-btn:hover {
   color: var(--fame-color-gold);
+  transform: scale(1.1);
+}
+
+.fame-icon-btn:active {
+  transform: scale(0.95);
 }
 
 .fame-add-btn {
-  margin-bottom: 0.375rem;
+  margin-bottom: var(--fame-space-sm);
   flex-shrink: 0;
-  padding: 0.375rem 0.75rem;
+  padding: var(--fame-space-sm) var(--fame-space-lg);
   border: 1px solid var(--fame-color-border);
-  border-radius: 4px;
+  border-radius: var(--fame-radius-md);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .fame-add-btn:hover {
   border-color: var(--fame-color-gold);
   color: var(--fame-color-gold);
+  box-shadow: var(--fame-shadow-glow-gold);
 }
 
 .fame-save-btn {
-  padding: 0.5rem 1rem;
+  padding: var(--fame-space-md) var(--fame-space-xl);
   border: 1px solid var(--fame-color-border);
-  border-radius: 4px;
+  border-radius: var(--fame-radius-md);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .fame-save-btn:hover {
   border-color: var(--fame-color-gold);
   color: var(--fame-color-gold);
+  box-shadow: var(--fame-shadow-glow-gold);
 }
 
 .fame-mode-btn {
   position: relative;
   width: 24px;
   height: 24px;
-  border: 1px solid var(--fame-color-border);
-  border-radius: 3px;
+  border: none;
+  border-radius: var(--fame-radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   background: transparent;
-  transition: all 0.2s ease;
+  color: var(--fame-color-text-secondary);
+  cursor: pointer;
+  transition: color 0.15s ease;
 }
 
 .fame-mode-btn:hover {
-  border-color: var(--fame-color-gold);
   color: var(--fame-color-gold);
 }
 
 .fame-mode-btn.active {
-  background: var(--fame-color-gold);
-  border-color: var(--fame-color-gold);
-}
-
-.fame-mode-btn.active i {
-  color: var(--fame-color-text-emphatic);
+  color: var(--fame-color-gold);
 }
 
 .fame-mode-btn.active.hybrid {
-  background: linear-gradient(90deg, var(--fame-color-gold) 50%, transparent 50%);
-}
-
-.fame-mode-btn.active.hybrid i {
-  color: var(--fame-color-text-secondary);
+  color: var(--fame-color-warning);
 }
 
 .fame-hide-btn {
@@ -98,17 +97,50 @@
 
 .fame-relation-item.is-hidden,
 .fame-member-item.is-hidden,
-.fame-location-member.is-hidden,
-.fame-wanted-item.is-hidden {
+.fame-location-member.is-hidden {
   opacity: 0.5;
   border-left: 2px solid var(--fame-color-warning);
-  padding-left: calc(0.25rem - 2px);
+  padding-left: calc(var(--fame-space-xs) - 2px);
 }
 
 .fame-char-actor-rel-row.is-hidden,
 .fame-char-faction-rel-row.is-hidden {
   opacity: 0.5;
   border-left: 2px solid var(--fame-color-warning);
-  padding-left: 0.25rem;
-  margin-left: -0.25rem;
+  padding-left: var(--fame-space-xs);
+  margin-left: calc(-1 * var(--fame-space-xs));
+}
+
+.fame-icon-btn:focus,
+.fame-icon-btn:focus-visible,
+.fame-icon-btn:active {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+.fame-icon-btn,
+.fame-icon-btn:focus,
+.fame-icon-btn:focus-visible,
+.fame-icon-btn:active,
+.fame-icon-btn:hover {
+  outline: none;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.fame-relations-content button:focus,
+.fame-relations-content button:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.fame-bar-adj:focus,
+.fame-bar-adj:focus-visible,
+.fame-detail-section-add:focus,
+.fame-detail-section-add:focus-visible,
+.fame-nav-action-btn:focus,
+.fame-nav-action-btn:focus-visible {
+  outline: none;
 }

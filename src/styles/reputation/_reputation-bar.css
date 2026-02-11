@@ -1,7 +1,7 @@
 .fame-bar-container {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--fame-space-xs);
   width: 100%;
 }
 
@@ -25,7 +25,7 @@
 .fame-bar {
   flex: 1;
   position: relative;
-  height: 18px;
+  height: 20px;
   min-width: 50px;
 }
 
@@ -37,8 +37,9 @@
   height: 6px;
   transform: translateY(-50%);
   background: var(--fame-shadow-25);
-  border-radius: 3px;
-  border: 1px solid var(--fame-color-border);
+  border-radius: var(--fame-radius-sm);
+  border: 1px solid var(--fame-color-border-soft);
+  box-shadow: var(--fame-shadow-inset);
 }
 
 .fame-bar-zero {
@@ -49,24 +50,31 @@
   background: var(--fame-color-text-subtle);
   transform: translateX(-50%);
   border-radius: 1px;
+  opacity: 0.6;
 }
 
 .fame-bar-fill {
   position: absolute;
   top: 0;
   height: 100%;
-  border-radius: 2px;
+  border-radius: var(--fame-radius-sm);
 }
 
 .fame-bar-thumb {
   position: absolute;
   top: 50%;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  border: 2px solid var(--fame-color-border);
-  box-shadow: 0 0 3px var(--fame-shadow-45);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 1px 4px var(--fame-shadow-45), 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.fame-bar:hover .fame-bar-thumb {
+  transform: translate(-50%, -50%) scale(1.15);
+  box-shadow: 0 1px 6px var(--fame-shadow-45), 0 0 8px currentColor;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
 .fame-bar-slider {
@@ -84,11 +92,16 @@
   cursor: grabbing;
 }
 
+.fame-bar-slider:active ~ .fame-bar-thumb {
+  transform: translate(-50%, -50%) scale(1.2);
+}
+
 .fame-bar-min,
 .fame-bar-max {
   color: var(--fame-color-text-subtle);
   min-width: 22px;
   flex-shrink: 0;
+  font-size: 0.75rem;
 }
 
 .fame-bar-min {
@@ -111,7 +124,7 @@
   width: 42px;
   text-align: center;
   border: 1px solid var(--fame-color-border);
-  border-radius: 3px;
+  border-radius: var(--fame-radius-sm);
   padding: 0.125rem;
   flex-shrink: 0;
 }
@@ -119,6 +132,7 @@
 .fame-bar-val:focus {
   border-color: var(--fame-color-gold);
   outline: none;
+  box-shadow: var(--fame-shadow-glow-gold);
 }
 
 .fame-bar-adj {
@@ -129,15 +143,20 @@
   align-items: center;
   justify-content: center;
   border: 1px solid var(--fame-color-border);
-  border-radius: 3px;
+  border-radius: var(--fame-radius-sm);
   cursor: pointer;
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  transition: all 0.1s ease;
 }
 
 .fame-bar-adj:hover:not([disabled]) {
   border-color: var(--fame-color-gold);
   color: var(--fame-color-gold);
+  box-shadow: var(--fame-shadow-glow-gold);
+}
+
+.fame-bar-adj:active:not([disabled]) {
+  transform: scale(0.92);
 }
 
 .fame-bar-controls {

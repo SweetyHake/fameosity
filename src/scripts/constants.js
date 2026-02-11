@@ -27,9 +27,7 @@ export const DEFAULT_SETTINGS = {
   min: -100,
   max: 100,
   defaultActorMode: "manual",
-  defaultFactionMode: "manual",
-  hybridBaseWeight: 50,
-  hybridAutoWeight: 50
+  defaultFactionMode: "manual"
 };
 
 export const DEFAULT_DATA = {
@@ -39,6 +37,11 @@ export const DEFAULT_DATA = {
   individualRelations: {},
   factionRelations: {},
   actorFactionRelations: {},
+  factionToFactionRelations: {},
+  modeFlags: {
+    actors: {},
+    factions: {}
+  },
   hiddenItems: {
     factions: [],
     actors: [],
@@ -54,12 +57,17 @@ export const DEFAULT_DATA = {
     factions: {},
     actors: {}
   },
-  autoFlags: {},
-  hybridFlags: {},
   actorNames: {},
   personalVisibility: {},
   locations: [],
-  entityInfo: {}
+  entityInfo: {},
+  descriptions: {
+    actors: {},
+    factions: {},
+    locations: {}
+  },
+  customPCs: [],
+  activePartyId: null
 };
 
 export const SOCKET_TYPES = {

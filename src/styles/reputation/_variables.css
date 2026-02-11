@@ -1,47 +1,119 @@
+
 :root {
   --fame-color-gold: #9f9275;
   --fame-color-text-emphatic: #e7d1b1;
   --fame-color-text-secondary: #b5a88a;
   --fame-color-text-subtle: #9f8475;
   --fame-color-border: #3d3d3d;
+  --fame-color-border-soft: #333333;
   --fame-color-scrollbar: #4a4a4a;
   --fame-color-success: #50cd67;
   --fame-color-warning: #e9a03a;
   --fame-color-error: #e93a3a;
-  
+
+  --fame-color-surface: rgba(255, 255, 255, 0.03);
+  --fame-color-surface-hover: rgba(255, 255, 255, 0.06);
+  --fame-color-surface-active: rgba(255, 255, 255, 0.09);
+
+  --fame-bg-context-menu: #1a1a1a;
+
   --fame-shadow-15: rgba(0, 0, 0, 0.15);
   --fame-shadow-25: rgba(0, 0, 0, 0.25);
   --fame-shadow-45: rgba(0, 0, 0, 0.45);
-  
+
   --fame-wanted-accent: #ee9b3a;
   --fame-wanted-bg: rgba(238, 155, 58, 0.15);
   --fame-success-bg: rgba(80, 205, 103, 0.15);
   --fame-danger-bg: rgba(233, 58, 58, 0.1);
   --fame-danger-border: rgba(233, 58, 58, 0.3);
-  
+
   --fame-hidden-pattern: rgba(128, 128, 128, 0.1);
+
+  --fame-notification-bg-positive: rgba(20, 25, 20, 0.95);
+  --fame-notification-bg-negative: rgba(25, 20, 20, 0.95);
+  --fame-notification-border-positive: rgba(80, 205, 103, 0.4);
+  --fame-notification-border-negative: rgba(233, 88, 88, 0.4);
+  --fame-notification-icon-bg-positive: rgba(80, 205, 103, 0.2);
+  --fame-notification-icon-bg-negative: rgba(233, 88, 88, 0.2);
+  --fame-notification-icon-positive: #50cd67;
+  --fame-notification-icon-negative: #e95858;
+  --fame-notification-glow-positive: rgba(80, 205, 103, 0.4);
+  --fame-notification-glow-negative: rgba(233, 88, 88, 0.4);
+  --fame-notification-text: #e0e0e0;
+  --fame-notification-delta-positive: #6de882;
+  --fame-notification-delta-negative: #ff7b7b;
+
+  --fame-radius-sm: 3px;
+  --fame-radius-md: 6px;
+  --fame-radius-lg: 8px;
+
+  --fame-space-xs: 0.25rem;
+  --fame-space-sm: 0.375rem;
+  --fame-space-md: 0.5rem;
+  --fame-space-lg: 0.75rem;
+  --fame-space-xl: 1rem;
+
+  --fame-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.15);
+  --fame-shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --fame-shadow-inset: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+  --fame-shadow-glow-gold: 0 0 8px rgba(159, 146, 117, 0.3);
+  --fame-shadow-nav: 2px 0 8px rgba(0, 0, 0, 0.25);
+
+  --fame-line-height: 1.45;
+  --fame-letter-spacing-caps: 0.05em;
 }
 
-[data-theme="light"] {
-  --fame-color-gold: #7a6a4a;
-  --fame-color-text-emphatic: #1a1a1a;
-  --fame-color-text-secondary: #555555;
-  --fame-color-text-subtle: #777777;
-  --fame-color-border: #c8c8c8;
-  --fame-color-scrollbar: #b0b0b0;
-  --fame-color-success: #2d9a42;
+[data-theme="light"],
+.theme-light {
+  --fame-color-gold: #605030;
+  --fame-color-text-emphatic: #000000;
+  --fame-color-text-secondary: #222222;
+  --fame-color-text-subtle: #444444;
+  --fame-color-border: #999999;
+  --fame-color-border-soft: #bbbbbb;
+  --fame-color-scrollbar: #888888;
+  --fame-color-success: #208030;
   --fame-color-warning: #cc8800;
   --fame-color-error: #cc2222;
-  
-  --fame-shadow-15: rgba(0, 0, 0, 0.06);
-  --fame-shadow-25: rgba(0, 0, 0, 0.1);
-  --fame-shadow-45: rgba(0, 0, 0, 0.18);
-  
+
+  --fame-color-surface: rgba(0, 0, 0, 0.05);
+  --fame-color-surface-hover: rgba(0, 0, 0, 0.08);
+  --fame-color-surface-active: rgba(0, 0, 0, 0.12);
+
+  --fame-bg-context-menu: #ffffff;
+
+  --fame-shadow-15: rgba(0, 0, 0, 0.08);
+  --fame-shadow-25: rgba(0, 0, 0, 0.15);
+  --fame-shadow-45: rgba(0, 0, 0, 0.25);
+
   --fame-wanted-accent: #cc8800;
   --fame-wanted-bg: rgba(204, 136, 0, 0.12);
   --fame-success-bg: rgba(45, 154, 66, 0.12);
   --fame-danger-bg: rgba(204, 34, 34, 0.08);
   --fame-danger-border: rgba(204, 34, 34, 0.25);
-  
-  --fame-hidden-pattern: rgba(128, 128, 128, 0.15);
+
+  --fame-hidden-pattern: rgba(0, 0, 0, 0.1);
+
+  --fame-notification-bg-positive: rgba(245, 255, 245, 0.98);
+  --fame-notification-bg-negative: rgba(255, 245, 245, 0.98);
+  --fame-notification-border-positive: rgba(45, 154, 66, 0.5);
+  --fame-notification-border-negative: rgba(204, 68, 68, 0.5);
+  --fame-notification-icon-bg-positive: rgba(45, 154, 66, 0.15);
+  --fame-notification-icon-bg-negative: rgba(204, 68, 68, 0.15);
+  --fame-notification-icon-positive: #2d9a42;
+  --fame-notification-icon-negative: #cc4444;
+  --fame-notification-glow-positive: rgba(45, 154, 66, 0.3);
+  --fame-notification-glow-negative: rgba(204, 68, 68, 0.3);
+  --fame-notification-text: #000000;
+  --fame-notification-delta-positive: #1d7a32;
+  --fame-notification-delta-negative: #b33333;
+
+  --fame-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.1);
+  --fame-shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+  --fame-shadow-inset: inset 0 1px 3px rgba(0, 0, 0, 0.15);
+  --fame-shadow-glow-gold: 0 0 8px rgba(122, 106, 74, 0.3);
+  --fame-shadow-nav: 2px 0 8px rgba(0, 0, 0, 0.1);
+
+  --fame-line-height: 1.45;
+  --fame-letter-spacing-caps: 0.05em;
 }

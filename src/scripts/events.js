@@ -8,7 +8,6 @@ export class ReputationEvents {
     ACTOR_REP_CHANGED: 'actor:reputation:changed',
     RELATION_CHANGED: 'relation:changed',
     LOCATION_CHANGED: 'location:changed',
-    WANTED_CHANGED: 'wanted:changed',
     DATA_LOADED: 'data:loaded',
     SETTINGS_CHANGED: 'settings:changed',
     MEMBER_CHANGED: 'member:changed',

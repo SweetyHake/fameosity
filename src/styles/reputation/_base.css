@@ -1,5 +1,16 @@
+.fame-relations-content.no-transitions,
+.fame-relations-content.no-transitions *,
+.fame-relations-content.no-transitions *::before,
+.fame-relations-content.no-transitions *::after {
+  transition: none !important;
+  animation: none !important;
+}
+
 .fame-relations-viewer .window-content {
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .fame-relations-content {
@@ -7,18 +18,22 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-}
+  font-size: 0.875rem;
+  line-height: var(--fame-line-height);
+  color: var(--fame-color-text-emphatic);
+} 
 
 .fame-scroll-list {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: var(--fame-space-sm);
 }
 
 .fame-no-items {
   color: var(--fame-color-text-subtle);
   font-style: italic;
-  padding: 0.5rem;
+  padding: var(--fame-space-md);
+  line-height: var(--fame-line-height);
 }
 
 .fame-no-items.center {
@@ -28,11 +43,11 @@
 
 .fame-drop-zone {
   border: 2px dashed var(--fame-color-border);
-  border-radius: 4px;
+  border-radius: var(--fame-radius-md);
   padding: 0.625rem;
   text-align: center;
   color: var(--fame-color-text-subtle);
-  margin-bottom: 0.375rem;
+  margin-bottom: var(--fame-space-sm);
   flex-shrink: 0;
   transition: border-color 0.2s ease, color 0.2s ease;
 }
@@ -40,20 +55,13 @@
 .fame-drop-zone.member-drop,
 .fame-drop-zone.faction-drop,
 .fame-drop-zone.actor-drop {
-  padding: 0.375rem;
-  margin-bottom: 0.25rem;
+  padding: var(--fame-space-sm);
+  margin-bottom: var(--fame-space-xs);
 }
 
 .fame-drop-zone.drag-over {
   border-color: var(--fame-color-gold);
   color: var(--fame-color-gold);
-}
-
-.fame-relations-viewer .window-content {
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
 }
 
 .fame-relations-viewer .window-content > .fame-tabs {
@@ -63,11 +71,158 @@
 .fame-relations-viewer .fame-tab-panel {
   flex: 1;
   overflow-y: auto;
-  padding: 0.5rem;
+  padding: var(--fame-space-md);
   display: none;
 }
 
 .fame-relations-viewer .fame-tab-panel.active {
   display: flex;
   flex-direction: column;
+}
+
+.fame-search-row {
+  display: flex;
+  align-items: center;
+  gap: var(--fame-space-sm);
+  flex-shrink: 0;
+  margin-bottom: var(--fame-space-md);
+}
+
+.fame-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.fame-search-box i {
+  position: absolute;
+  left: 0.625rem;
+  color: var(--fame-color-text-secondary);
+  pointer-events: none;
+}
+
+.fame-search-input {
+  width: 100%;
+  padding: var(--fame-space-md) var(--fame-space-lg) var(--fame-space-md) 2rem;
+  border: 1px solid var(--fame-color-border);
+  border-radius: var(--fame-radius-sm);
+  transition: none;
+  line-height: var(--fame-line-height);
+}
+
+.fame-search-input:focus {
+  border-color: var(--fame-color-gold);
+  outline: none;
+  box-shadow: var(--fame-shadow-glow-gold);
+}
+
+.fame-search-input::placeholder {
+  color: var(--fame-color-text-subtle);
+}
+
+.fame-search-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--fame-color-border);
+  border-radius: var(--fame-radius-sm);
+  background: transparent;
+  color: var(--fame-color-text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.fame-search-add-btn:hover {
+  border-color: var(--fame-color-gold);
+  color: var(--fame-color-gold);
+  box-shadow: var(--fame-shadow-glow-gold);
+}
+
+.fame-global-drop-zone.drag-over {
+  box-shadow: inset 0 0 0 2px var(--fame-color-gold);
+}
+
+*:focus-visible {
+  outline: 2px solid var(--fame-color-gold);
+  outline-offset: 1px;
+}
+
+.fame-relations-content input:focus-visible,
+.fame-relations-content select:focus-visible,
+.fame-relations-content textarea:focus-visible,
+.fame-relations-content button:focus-visible {
+  outline: 2px solid var(--fame-color-gold);
+  outline-offset: 1px;
+  box-shadow: var(--fame-shadow-glow-gold);
+}
+
+.fame-relations-content ::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.fame-relations-content ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fame-relations-content ::-webkit-scrollbar-thumb {
+  background: var(--fame-color-gold);
+  border-radius: var(--fame-radius-sm);
+  opacity: 0.5;
+}
+
+.fame-relations-content ::-webkit-scrollbar-thumb:hover {
+  background: var(--fame-color-gold);
+  opacity: 1;
+}
+
+.fame-relations-content {
+  scrollbar-color: var(--fame-color-gold) transparent;
+  scrollbar-width: thin;
+}
+
+.fame-relations-content *::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.fame-relations-content *::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fame-relations-content *::-webkit-scrollbar-thumb {
+  background: var(--fame-color-gold);
+  border-radius: var(--fame-radius-sm);
+}
+
+.fame-relations-content *::-webkit-scrollbar-thumb:hover {
+  background: var(--fame-color-text-emphatic);
+}
+
+.fame-relations-content * {
+  scrollbar-color: var(--fame-color-gold) transparent;
+  scrollbar-width: thin;
+}
+
+.fame-relations-viewer .window-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.fame-relations-viewer .window-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fame-relations-viewer .window-content::-webkit-scrollbar-thumb {
+  background: var(--fame-color-gold);
+  border-radius: var(--fame-radius-sm);
+}
+
+.fame-relations-viewer .window-content {
+  scrollbar-color: var(--fame-color-gold) transparent;
+  scrollbar-width: thin;
 }

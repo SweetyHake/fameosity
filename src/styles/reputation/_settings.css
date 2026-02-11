@@ -14,15 +14,17 @@
 .fame-settings-tab {
   flex: 1;
   text-align: center;
-  padding: 0.5rem;
+  padding: var(--fame-space-md);
   cursor: pointer;
   border-bottom: 2px solid transparent;
   font-weight: 500;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
+  line-height: var(--fame-line-height);
 }
 
 .fame-settings-tab:hover {
   color: var(--fame-color-gold);
+  background: var(--fame-color-surface-hover);
 }
 
 .fame-settings-tab.active {
@@ -31,14 +33,14 @@
 }
 
 .fame-settings-tab i {
-  margin-right: 0.25rem;
+  margin-right: var(--fame-space-xs);
 }
 
 .fame-settings-panel {
   display: none;
   flex: 1;
   overflow-y: auto;
-  padding: 0.75rem;
+  padding: var(--fame-space-lg);
 }
 
 .fame-settings-panel.active {
@@ -46,7 +48,7 @@
 }
 
 .fame-settings-footer {
-  padding: 0.5rem 0.75rem;
+  padding: var(--fame-space-md) var(--fame-space-lg);
   border-top: 1px solid var(--fame-color-border);
   flex-shrink: 0;
 }
@@ -58,23 +60,25 @@
 .fame-settings-content .fame-form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  margin-bottom: 0.75rem;
+  gap: var(--fame-space-xs);
+  margin-bottom: var(--fame-space-lg);
 }
 
 .fame-settings-content .fame-form-group label {
   font-weight: 600;
   color: var(--fame-color-text-emphatic);
+  line-height: var(--fame-line-height);
 }
 
 .fame-settings-content .fame-hint {
   color: var(--fame-color-text-secondary);
   margin: 0;
+  line-height: var(--fame-line-height);
 }
 
 .fame-settings-content .fame-form-group-row {
   display: flex;
-  gap: 0.75rem;
+  gap: var(--fame-space-lg);
 }
 
 .fame-settings-content .fame-form-group-row .fame-form-group {
@@ -84,9 +88,9 @@
 .fame-settings-content input[type="text"],
 .fame-settings-content input[type="number"],
 .fame-settings-content select {
-  padding: 0.375rem;
+  padding: var(--fame-space-sm);
   border: 1px solid var(--fame-color-border);
-  border-radius: 3px;
+  border-radius: var(--fame-radius-sm);
 }
 
 .fame-settings-content input[type="text"]:focus,
@@ -94,6 +98,7 @@
 .fame-settings-content select:focus {
   border-color: var(--fame-color-gold);
   outline: none;
+  box-shadow: var(--fame-shadow-glow-gold);
 }
 
 .fame-settings-content input[type="checkbox"] {
@@ -103,35 +108,36 @@
 }
 
 .fame-tiers-section {
-  margin-top: 0.5rem;
+  margin-top: var(--fame-space-md);
 }
 
 .fame-tiers-list {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: var(--fame-space-sm);
   max-height: 200px;
   overflow-y: auto;
-  padding: 0.25rem;
+  padding: var(--fame-space-xs);
   border: 1px solid var(--fame-color-border);
-  border-radius: 4px;
+  border-radius: var(--fame-radius-md);
 }
 
 .fame-tier-item {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.25rem;
-  border: 1px solid var(--fame-color-border);
-  border-radius: 4px;
+  gap: var(--fame-space-sm);
+  padding: var(--fame-space-xs);
+  border: 1px solid var(--fame-color-border-soft);
+  border-radius: var(--fame-radius-md);
+  background: var(--fame-color-surface);
 }
 
 .fame-tier-item .fame-tier-name {
   flex: 1;
   min-width: 80px;
   border: 1px solid var(--fame-color-border);
-  border-radius: 3px;
-  padding: 0.25rem;
+  border-radius: var(--fame-radius-sm);
+  padding: var(--fame-space-xs);
 }
 
 .fame-tier-item .fame-tier-name:focus {
@@ -143,8 +149,8 @@
   width: 60px;
   text-align: center;
   border: 1px solid var(--fame-color-border);
-  border-radius: 3px;
-  padding: 0.25rem;
+  border-radius: var(--fame-radius-sm);
+  padding: var(--fame-space-xs);
 }
 
 .fame-tier-item .fame-tier-min:focus {
@@ -157,43 +163,43 @@
   height: 24px;
   padding: 0;
   border: 1px solid var(--fame-color-border);
-  border-radius: 3px;
+  border-radius: var(--fame-radius-sm);
   cursor: pointer;
 }
 
 .fame-tier-add {
-  margin-top: 0.375rem;
+  margin-top: var(--fame-space-sm);
   width: 100%;
 }
 
 .fame-ranks-section {
   border: 1px solid var(--fame-color-border);
-  border-radius: 4px;
-  padding: 0.375rem;
-  margin-bottom: 0.5rem;
+  border-radius: var(--fame-radius-md);
+  padding: var(--fame-space-sm);
+  margin-bottom: var(--fame-space-md);
 }
 
 .fame-ranks-list {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  margin-bottom: 0.375rem;
+  gap: var(--fame-space-xs);
+  margin-bottom: var(--fame-space-sm);
 }
 
 .fame-rank-item {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.25rem;
-  border-radius: 3px;
+  gap: var(--fame-space-sm);
+  padding: var(--fame-space-xs);
+  border-radius: var(--fame-radius-sm);
 }
 
 .fame-rank-item .fame-rank-name {
   flex: 1;
   min-width: 80px;
-  padding: 0.25rem;
+  padding: var(--fame-space-xs);
   border: 1px solid var(--fame-color-border);
-  border-radius: 3px;
+  border-radius: var(--fame-radius-sm);
 }
 
 .fame-rank-item .fame-rank-name:focus {
@@ -204,9 +210,9 @@
 .fame-rank-item .fame-rank-min {
   width: 50px;
   text-align: center;
-  padding: 0.25rem;
+  padding: var(--fame-space-xs);
   border: 1px solid var(--fame-color-border);
-  border-radius: 3px;
+  border-radius: var(--fame-radius-sm);
 }
 
 .fame-rank-item .fame-rank-min:focus {
@@ -219,21 +225,8 @@
   height: 22px;
   padding: 0;
   border: 1px solid var(--fame-color-border);
-  border-radius: 3px;
+  border-radius: var(--fame-radius-sm);
   cursor: pointer;
-}
-
-.fame-rank-item .fame-rank-multiplier {
-  width: 45px;
-  text-align: center;
-  padding: 0.25rem;
-  border: 1px solid var(--fame-color-border);
-  border-radius: 3px;
-}
-
-.fame-rank-item .fame-rank-multiplier:focus {
-  border-color: var(--fame-color-gold);
-  outline: none;
 }
 
 .fame-rank-mult {
@@ -243,12 +236,12 @@
 
 .fame-rank-add-btn {
   width: 100%;
-  padding: 0.25rem;
+  padding: var(--fame-space-xs);
   border: 1px dashed var(--fame-color-border);
-  border-radius: 3px;
+  border-radius: var(--fame-radius-sm);
   color: var(--fame-color-text-secondary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .fame-rank-add-btn:hover {
@@ -257,17 +250,17 @@
 }
 
 .fame-viewer-content {
-  padding: 0.5rem;
+  padding: var(--fame-space-md);
 }
 
 .fame-viewer-content .fame-reset-btn {
   width: 100%;
-  margin-top: 0.5rem;
-  padding: 0.375rem;
+  margin-top: var(--fame-space-md);
+  padding: var(--fame-space-sm);
   border: 1px solid var(--fame-color-border);
-  border-radius: 4px;
+  border-radius: var(--fame-radius-md);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .fame-viewer-content .fame-reset-btn:hover {
@@ -276,27 +269,28 @@
 }
 
 .fame-hybrid-settings {
-  margin-top: 1rem;
-  padding-top: 1rem;
+  margin-top: var(--fame-space-xl);
+  padding-top: var(--fame-space-xl);
   border-top: 1px solid var(--fame-color-border);
 }
 
 .fame-hybrid-sliders {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  gap: var(--fame-space-md);
+  margin-top: var(--fame-space-md);
 }
 
 .fame-hybrid-slider-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--fame-space-md);
 }
 
 .fame-hybrid-label {
   min-width: 100px;
   color: var(--fame-color-text-secondary);
+  line-height: var(--fame-line-height);
 }
 
 .fame-hybrid-slider-row input[type="range"] {
@@ -314,25 +308,26 @@
 .fame-export-import-section {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 0.75rem;
+  gap: var(--fame-space-lg);
+  padding: var(--fame-space-lg);
   border: 1px solid var(--fame-color-border);
-  border-radius: 4px;
-  margin-bottom: 1rem;
+  border-radius: var(--fame-radius-md);
+  margin-bottom: var(--fame-space-xl);
+  background: var(--fame-color-surface);
 }
 
 .fame-export-import-row {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--fame-space-md);
 }
 
 .fame-export-import-row button {
   flex: 1;
-  padding: 0.5rem;
+  padding: var(--fame-space-md);
   border: 1px solid var(--fame-color-border);
-  border-radius: 4px;
+  border-radius: var(--fame-radius-md);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .fame-export-import-row button:hover {
@@ -343,16 +338,17 @@
 .fame-import-options {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--fame-color-border);
+  gap: var(--fame-space-sm);
+  padding-top: var(--fame-space-md);
+  border-top: 1px solid var(--fame-color-border-soft);
 }
 
 .fame-checkbox-label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--fame-space-md);
   cursor: pointer;
+  line-height: var(--fame-line-height);
 }
 
 .fame-checkbox-label input[type="checkbox"] {
@@ -362,8 +358,8 @@
 }
 
 .fame-danger-zone {
-  margin-top: 1rem;
-  padding-top: 1rem;
+  margin-top: var(--fame-space-xl);
+  padding-top: var(--fame-space-xl);
   border-top: 1px solid var(--fame-color-error);
 }
 
@@ -373,15 +369,45 @@
 
 .fame-reset-all-btn {
   width: 100%;
-  padding: 0.5rem;
+  padding: var(--fame-space-md);
   border: 1px solid var(--fame-color-error);
-  border-radius: 4px;
+  border-radius: var(--fame-radius-md);
   color: var(--fame-color-error);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .fame-reset-all-btn:hover {
   background: var(--fame-color-error);
   color: white;
+}
+
+.fame-rank-drag-handle {
+  color: var(--fame-color-text-subtle);
+  cursor: grab;
+  padding: 0 0.125rem;
+  flex-shrink: 0;
+  transition: color 0.1s ease;
+}
+
+.fame-rank-drag-handle:hover {
+  color: var(--fame-color-gold);
+}
+
+.fame-detail-rank-row[draggable="true"]:active .fame-rank-drag-handle {
+  cursor: grabbing;
+}
+
+.fame-rank-item .fame-rank-multiplier {
+  width: 28px;
+  height: 28px;
+  text-align: center;
+  padding: 0;
+  border: 1px solid var(--fame-color-border);
+  border-radius: var(--fame-radius-sm);
+}
+
+.fame-rank-item .fame-rank-multiplier:focus {
+  border-color: var(--fame-color-gold);
+  outline: none;
 }

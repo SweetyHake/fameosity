@@ -1,0 +1,121 @@
+<div class="fame-navigator">
+  <div class="fame-nav-search">
+    <div class="fame-nav-search-box">
+      <i class="fa-solid fa-search"></i>
+      <input type="text" class="fame-nav-search-input" placeholder="{{localize (concat moduleId '.picker.search')}}" value="{{navSearch}}">
+    </div>
+  </div>
+
+  {{#if ownerActor}}
+  <div class="fame-nav-owner" data-action="goToOwner">
+    <img class="fame-nav-item-img" src="{{ownerActor.img}}">
+    <span class="fame-nav-item-name">{{ownerActor.name}}</span>
+    {{#unless ownerActor.isTracked}}<i class="fa-solid fa-plus fame-nav-owner-arrow" title="{{localize (concat moduleId '.tooltips.add-to-tracking')}}"></i>
+    {{else}}<i class="fa-solid fa-arrow-right fame-nav-owner-arrow"></i>{{/unless}}
+  </div>
+  {{/if}}
+
+  <div class="fame-nav-tree">
+    <div class="fame-nav-group" data-group="locations">
+      <div class="fame-nav-group-header" data-action="toggleNavGroup" data-group="locations">
+        <i class="fa-solid fa-chevron-right"></i>
+        <i class="fa-solid fa-map-marker-alt fame-nav-group-icon"></i>
+        <span>{{localize (concat moduleId '.relations.tab-locations')}}</span>
+        <span class="fame-nav-group-count">{{allLocations.length}}</span>
+      </div>
+      <div class="fame-nav-group-items">
+        {{#each allLocations}}
+        <div class="fame-nav-item {{#if (and (eq @root.selectedType 'location') (eq @root.selectedId id))}}selected{{/if}} {{#if hidden}}is-hidden{{/if}}" data-action="selectEntity" data-entity-type="location" data-entity-id="{{id}}" style="{{indentStyle level}}">
+          {{#if hasChildren}}<span class="fame-nav-tree-toggle" data-action="toggleTreeExpand" data-id="{{id}}" data-type="location"><i class="fa-solid fa-chevron-{{#if childrenVisible}}down{{else}}right{{/if}}"></i></span>
+          {{else}}<span class="fame-nav-item-indent"></span>{{/if}}
+          <img class="fame-nav-item-img" src="{{image}}">
+          <span class="fame-nav-item-name">{{name}}</span>
+          <div class="fame-nav-item-badges">
+            {{#if hidden}}<i class="fa-solid fa-eye-slash fame-nav-badge hidden"></i>{{/if}}
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <div class="fame-nav-group" data-group="factions">
+      <div class="fame-nav-group-header" data-action="toggleNavGroup" data-group="factions">
+        <i class="fa-solid fa-chevron-right"></i>
+        <i class="fa-solid fa-flag fame-nav-group-icon"></i>
+        <span>{{localize (concat moduleId '.relations.tab-factions')}}</span>
+        <span class="fame-nav-group-count">{{allFactions.length}}</span>
+      </div>
+      <div class="fame-nav-group-items">
+        {{#each allFactions}}
+        <div class="fame-nav-item {{#if (and (eq @root.selectedType 'faction') (eq @root.selectedId id))}}selected{{/if}} {{#if hidden}}is-hidden{{/if}}" data-action="selectEntity" data-entity-type="faction" data-entity-id="{{id}}" style="{{indentStyle level}}">
+          {{#if hasChildren}}<span class="fame-nav-tree-toggle" data-action="toggleTreeExpand" data-id="{{id}}" data-type="faction"><i class="fa-solid fa-chevron-{{#if childrenVisible}}down{{else}}right{{/if}}"></i></span>
+          {{else}}<span class="fame-nav-item-indent"></span>{{/if}}
+          <img class="fame-nav-item-img" src="{{image}}">
+          <span class="fame-nav-item-name">{{name}}</span>
+          <div class="fame-nav-item-badges">
+            {{#if isPartyActive}}<i class="fa-solid fa-star fame-nav-item-star"></i>
+            {{else}}<span class="fame-nav-item-tier" style="background:{{tier.color}}"></span>{{/if}}
+            {{#if hidden}}<i class="fa-solid fa-eye-slash fame-nav-badge hidden"></i>{{/if}}
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    {{#if playerActors.length}}
+    <div class="fame-nav-group" data-group="pcs">
+      <div class="fame-nav-group-header" data-action="toggleNavGroup" data-group="pcs">
+        <i class="fa-solid fa-chevron-right"></i>
+        <i class="fa-solid fa-star fame-nav-group-icon"></i>
+        <span>{{#if activePartyName}}{{activePartyName}}{{else}}{{localize (concat moduleId '.ui.active-characters')}}{{/if}}</span>
+        <span class="fame-nav-group-count">{{playerActors.length}}</span>
+      </div>
+      <div class="fame-nav-group-items">
+        {{#each playerActors}}
+        <div class="fame-nav-item {{#if (and (eq @root.selectedType 'actor') (eq @root.selectedId id))}}selected{{/if}} {{#if hidden}}is-hidden{{/if}}" data-action="selectEntity" data-entity-type="actor" data-entity-id="{{id}}">
+          <span class="fame-nav-item-indent"></span>
+          <img class="fame-nav-item-img" src="{{img}}">
+          <span class="fame-nav-item-name">{{name}}</span>
+          <div class="fame-nav-item-badges">
+            <span class="fame-nav-item-tier" style="background:{{#if partyTier}}{{partyTier.color}}{{else}}{{tier.color}}{{/if}}"></span>
+            {{#if hidden}}<i class="fa-solid fa-eye-slash fame-nav-badge hidden"></i>{{/if}}
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{#if npcActors.length}}
+    <div class="fame-nav-group" data-group="npcs">
+      <div class="fame-nav-group-header" data-action="toggleNavGroup" data-group="npcs">
+        <i class="fa-solid fa-chevron-right"></i>
+        <i class="fa-solid fa-user-tie fame-nav-group-icon"></i>
+        <span>{{localize (concat moduleId '.ui.npcs')}}</span>
+        <span class="fame-nav-group-count">{{npcActors.length}}</span>
+      </div>
+      <div class="fame-nav-group-items">
+        {{#each npcActors}}
+        <div class="fame-nav-item {{#if (and (eq @root.selectedType 'actor') (eq @root.selectedId id))}}selected{{/if}} {{#if hidden}}is-hidden{{/if}}" data-action="selectEntity" data-entity-type="actor" data-entity-id="{{id}}">
+          <span class="fame-nav-item-indent"></span>
+          <img class="fame-nav-item-img" src="{{img}}">
+          <span class="fame-nav-item-name">{{name}}</span>
+          <div class="fame-nav-item-badges">
+            <span class="fame-nav-item-tier" style="background:{{#if partyTier}}{{partyTier.color}}{{else}}{{tier.color}}{{/if}}"></span>
+            {{#if hidden}}<i class="fa-solid fa-eye-slash fame-nav-badge hidden"></i>{{/if}}
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+  </div>
+
+  {{#if isGM}}
+  <div class="fame-nav-actions">
+    <button type="button" class="fame-nav-action-btn" data-action="openLocationCreator"><i class="fa-solid fa-map-marker-alt"></i></button>
+    <button type="button" class="fame-nav-action-btn" data-action="openFactionCreator"><i class="fa-solid fa-flag"></i></button>
+    <button type="button" class="fame-nav-action-btn" data-action="openActorCreator"><i class="fa-solid fa-user-plus"></i></button>
+  </div>
+  {{/if}}
+</div>

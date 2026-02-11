@@ -1,8 +1,10 @@
 import { MODULE_ID } from '../constants.js';
 import { escapeHtml, getTier } from '../data.js';
 import { getTracked, getDisplayName, getPCs } from '../core/actors.js';
-import { getFactions, getFactionRep, getFactionMode, calcAutoFactionRep } from '../core/factions.js';
+import { getFactions } from '../core/factions.js';
+import { getRep, getMode } from '../core/reputation.js';
 import { isHidden } from '../core/visibility.js';
+import { fitTierBadges } from './relations/RelationsListeners.js';
 
 export class PickerApp extends foundry.applications.api.ApplicationV2 {
   static DEFAULT_OPTIONS = {
@@ -78,43 +80,28 @@ export class PickerApp extends foundry.applications.api.ApplicationV2 {
 
   _prepareActors() {
     const tracked = getTracked();
-
     return tracked
       .map(id => {
         const actor = game.actors.get(id);
         if (!actor) return null;
-        return {
-          id: actor.id,
-          name: getDisplayName(id),
-          img: actor.img
-        };
+        return { id: actor.id, name: getDisplayName(id), img: actor.img };
       })
       .filter(Boolean);
   }
 
   _preparePCs() {
-    return getPCs().map(pc => ({
-      id: pc.id,
-      name: getDisplayName(pc.id),
-      img: pc.img
-    }));
+    return getPCs().map(pc => ({ id: pc.id, name: getDisplayName(pc.id), img: pc.img }));
   }
 
   _prepareFactions() {
     return getFactions()
       .filter(f => !isHidden('faction', f.id))
       .map(faction => {
-        const mode = getFactionMode(faction.id);
-        const rep = mode === 'auto' ? calcAutoFactionRep(faction.id) : getFactionRep(faction.id);
+        const rep = getRep(faction.id, 'faction');
         const tier = getTier(rep);
-
         return {
-          id: faction.id,
-          name: faction.name,
-          img: faction.image,
-          reputation: rep,
-          tier,
-          memberCount: (faction.members || []).length
+          id: faction.id, name: faction.name, img: faction.image,
+          reputation: rep, tier, memberCount: (faction.members || []).length
         };
       });
   }
@@ -129,8 +116,8 @@ export class PickerApp extends foundry.applications.api.ApplicationV2 {
 
     div.innerHTML = `
       <div class="fame-picker-search">
-        <input type="text" class="fame-picker-search-input" 
-               placeholder="${game.i18n.localize(`${MODULE_ID}.picker.search`)}" 
+        <input type="text" class="fame-picker-search-input"
+               placeholder="${game.i18n.localize(`${MODULE_ID}.picker.search`)}"
                value="${escapeHtml(this.searchQuery)}">
         <i class="fa-solid fa-search"></i>
       </div>
@@ -148,18 +135,13 @@ export class PickerApp extends foundry.applications.api.ApplicationV2 {
           <div class="fame-picker-info">
             <span class="fame-picker-name">${escapeHtml(item.name)}</span>
             <span class="fame-picker-meta">
-              <span class="fame-tier-badge small" style="background:${item.tier.color}">
-                ${escapeHtml(item.tier.name)}
-              </span>
-              <span class="fame-picker-stat">
-                <i class="fa-solid fa-users"></i> ${item.memberCount}
-              </span>
+              <span class="fame-tier-badge small" style="background:${item.tier.color}">${escapeHtml(item.tier.name)}</span>
+              <span class="fame-picker-stat"><i class="fa-solid fa-users"></i> ${item.memberCount}</span>
             </span>
           </div>
         </div>
       `;
     }
-
     return `
       <div class="fame-picker-item" data-id="${escapeHtml(item.id)}">
         <img class="fame-picker-img" src="${item.img || 'icons/svg/mystery-man.svg'}">
@@ -178,8 +160,22 @@ export class PickerApp extends foundry.applications.api.ApplicationV2 {
   }
 
   _replaceHTML(result, content) {
+    const oldInput = content.querySelector('.fame-picker-search-input');
+    const selStart = oldInput?.selectionStart;
+    const selEnd = oldInput?.selectionEnd;
+    const hadFocus = oldInput === document.activeElement;
+
     content.replaceChildren(result);
     this._attachListeners(content);
+    fitTierBadges(content);
+
+    if (hadFocus) {
+      const newInput = content.querySelector('.fame-picker-search-input');
+      if (newInput) {
+        newInput.focus();
+        if (selStart !== undefined) newInput.setSelectionRange(selStart, selEnd);
+      }
+    }
   }
 
   _attachListeners(html) {
@@ -187,13 +183,10 @@ export class PickerApp extends foundry.applications.api.ApplicationV2 {
       this.searchQuery = e.target.value;
       this.render();
     });
-
     html.querySelectorAll('.fame-picker-item').forEach(item => {
       item.addEventListener('click', async () => {
         const id = item.dataset.id;
-        if (this.callback) {
-          await this.callback(id);
-        }
+        if (this.callback) await this.callback(id);
         this.close();
       });
     });

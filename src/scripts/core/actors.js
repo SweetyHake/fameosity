@@ -1,15 +1,15 @@
 import { MODULE_ID } from '../constants.js';
-import { getData, setData, clamp, getLimits, getSettings } from '../data.js';
+import * as Data from '../data.js';
 import { ReputationEvents } from '../events.js';
 
 export function getTracked() {
-  return getData().trackedActors || [];
+  return Data.getData().trackedActors || [];
 }
 
 export async function setTracked(actors) {
-  const data = getData();
+  const data = Data.getData();
   data.trackedActors = actors;
-  await setData(data);
+  await Data.setData(data);
   ReputationEvents.emit(ReputationEvents.EVENTS.MEMBER_CHANGED, { trackedActors: actors });
 }
 
@@ -18,8 +18,9 @@ export async function addTracked(actorId) {
   if (!tracked.includes(actorId)) {
     tracked.push(actorId);
     await setTracked(tracked);
-    const settings = getSettings();
-    await setActorMode(actorId, settings.defaultActorMode || 'manual');
+    const settings = Data.getSettings();
+    const { setMode } = await import('./reputation.js');
+    await setMode(actorId, 'actor', settings.defaultActorMode || 'manual');
     return true;
   }
   return false;
@@ -37,30 +38,28 @@ export async function removeTracked(actorId) {
 }
 
 export function getActorRep(actorId) {
-  return getData().actors[actorId] ?? 0;
+  return Data.getData().actors[actorId] ?? 0;
 }
 
 export async function setActorRep(actorId, value) {
   const oldValue = getActorRep(actorId);
-  const data = getData();
-  data.actors[actorId] = clamp(value);
-  await setData(data);
+  const data = Data.getData();
+  data.actors[actorId] = Data.clamp(value);
+  await Data.setData(data);
   ReputationEvents.emit(ReputationEvents.EVENTS.ACTOR_REP_CHANGED, {
-    actorId,
-    oldValue,
-    newValue: data.actors[actorId]
+    actorId, oldValue, newValue: data.actors[actorId]
   });
 }
 
 export function getCustomName(actorId) {
-  return getData().actorNames?.[actorId] || "";
+  return Data.getData().actorNames?.[actorId] || "";
 }
 
 export async function setCustomName(actorId, name) {
-  const data = getData();
+  const data = Data.getData();
   data.actorNames ??= {};
   data.actorNames[actorId] = name;
-  await setData(data);
+  await Data.setData(data);
 }
 
 export function getDisplayName(actorId) {
@@ -70,10 +69,6 @@ export function getDisplayName(actorId) {
   return actor?.name || "Unknown";
 }
 
-export function getPCs() {
-  return game.actors.filter(actor => actor.hasPlayerOwner && actor.type === "character");
-}
-
 export async function ensureImportant(actor) {
   if (!actor) return;
   if (!actor.hasPlayerOwner && !actor.system?.traits?.important) {
@@ -81,92 +76,45 @@ export async function ensureImportant(actor) {
   }
 }
 
-export function getActorMode(actorId) {
-  const data = getData();
-  const autoFlags = data.autoFlags || {};
-  const hybridFlags = data.hybridFlags || {};
-  
-  if ((autoFlags.actors || []).includes(actorId)) return 'auto';
-  if ((hybridFlags.actors || []).includes(actorId)) return 'hybrid';
-  return 'manual';
-}
-
-export async function setActorMode(actorId, mode) {
-  const data = getData();
-  data.autoFlags ??= { factions: [], actors: [] };
-  data.hybridFlags ??= { factions: [], actors: [] };
-  
-  data.autoFlags.actors = (data.autoFlags.actors || []).filter(id => id !== actorId);
-  data.hybridFlags.actors = (data.hybridFlags.actors || []).filter(id => id !== actorId);
-  
-  if (mode === 'auto') {
-    data.autoFlags.actors.push(actorId);
-  } else if (mode === 'hybrid') {
-    data.hybridFlags.actors.push(actorId);
+export function isPlayerCharacter(actorId) {
+  const actor = game.actors.get(actorId);
+  if (!actor) return false;
+  const hasRealOwner = Object.entries(actor.ownership || {}).some(([userId, level]) => {
+    if (userId === 'default') return false;
+    const user = game.users.get(userId);
+    return user && !user.isGM && level === CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER;
+  });
+  if (hasRealOwner) return true;
+  const data = Data.getData();
+  const partyId = data.activePartyId;
+  if (partyId) {
+    const party = (data.factions || []).find(f => f.id === partyId);
+    if (party && (party.members || []).includes(actorId)) return true;
   }
-  
-  await setData(data);
-  ReputationEvents.emit(ReputationEvents.EVENTS.AUTO_CHANGED, { actorId, mode });
+  return false;
 }
 
-export function isActorAuto(actorId) {
-  return getActorMode(actorId) === 'auto';
-}
-
-export function isActorHybrid(actorId) {
-  return getActorMode(actorId) === 'hybrid';
-}
-
-export async function toggleActorAuto(actorId) {
-  const mode = getActorMode(actorId);
-  await setActorMode(actorId, mode === 'auto' ? 'manual' : 'auto');
-}
-
-export async function toggleActorHybrid(actorId) {
-  const mode = getActorMode(actorId);
-  await setActorMode(actorId, mode === 'hybrid' ? 'manual' : 'hybrid');
-}
-
-export function calcAutoActorRep(actorId) {
-  const data = getData();
-  const pcs = getPCs().filter(pc => pc.id !== actorId);
-  if (!pcs.length) return 0;
-
-  const individualRelations = data.individualRelations || {};
-  const actorRelations = individualRelations[actorId] || {};
-
-  const relations = pcs.map(pc => actorRelations[pc.id] ?? 0);
-  return Math.round(relations.reduce((a, b) => a + b, 0) / pcs.length);
-}
-
-export function calcHybridActorRep(actorId) {
-  const settings = getSettings();
-  const baseWeight = (settings.hybridBaseWeight ?? 50) / 100;
-  const autoWeight = (settings.hybridAutoWeight ?? 50) / 100;
-  
-  const baseRep = getActorRep(actorId);
-  const autoRep = calcAutoActorRep(actorId);
-  
-  const totalWeight = baseWeight + autoWeight;
-  if (totalWeight === 0) return 0;
-  
-  return clamp(Math.round((baseRep * baseWeight + autoRep * autoWeight) / totalWeight));
-}
-
-export function getEffectiveActorRep(actorId) {
-  const mode = getActorMode(actorId);
-  if (mode === 'auto') return calcAutoActorRep(actorId);
-  if (mode === 'hybrid') return calcHybridActorRep(actorId);
-  return getActorRep(actorId);
-}
-
-export function getAutoFlags() {
-  return getData().autoFlags || { factions: [], actors: [] };
-}
-
-export async function setAutoFlags(flags) {
-  const data = getData();
-  data.autoFlags = flags;
-  await setData(data);
-  ReputationEvents.emit(ReputationEvents.EVENTS.AUTO_CHANGED, { flags });
+export function getPCs() {
+  const natural = game.actors.filter(actor => {
+    return Object.entries(actor.ownership || {}).some(([userId, level]) => {
+      if (userId === 'default') return false;
+      const user = game.users.get(userId);
+      return user && !user.isGM && level === CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER;
+    });
+  });
+  const data = Data.getData();
+  const partyId = data.activePartyId;
+  const result = [...natural];
+  if (partyId) {
+    const party = (data.factions || []).find(f => f.id === partyId);
+    if (party) {
+      for (const id of (party.members || [])) {
+        if (!result.some(a => a.id === id)) {
+          const actor = game.actors.get(id);
+          if (actor) result.push(actor);
+        }
+      }
+    }
+  }
+  return result;
 }

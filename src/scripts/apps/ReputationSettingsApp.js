@@ -1,5 +1,5 @@
 import { MODULE_ID } from '../constants.js';
-import { getSettings, setSettings, getTiers, setTiers, getData, setData, escapeHtml } from '../data.js';
+import { escapeHtml, getSettings, setSettings, getTiers, setTiers, getDefaultTiers, getData, setData } from '../data.js';
 
 export class ReputationSettingsApp extends foundry.applications.api.ApplicationV2 {
   static DEFAULT_OPTIONS = {
@@ -43,7 +43,7 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
       </div>
     `).join('');
 
-    const modeOptions = ['manual', 'auto', 'hybrid'].map(mode => 
+    const modeOptions = ['manual', 'auto', 'hybrid'].map(mode =>
       `<option value="${mode}">${game.i18n.localize(`${MODULE_ID}.mode.${mode}`)}</option>`
     ).join('');
 
@@ -72,12 +72,8 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
         <div class="fame-form-group">
           <label>${game.i18n.localize(`${MODULE_ID}.settings.displayMode.name`)}</label>
           <select name="displayMode">
-            <option value="show" ${context.settings.displayMode === 'show' ? 'selected' : ''}>
-              ${game.i18n.localize(`${MODULE_ID}.settings.displayMode.show`)}
-            </option>
-            <option value="hide" ${context.settings.displayMode === 'hide' ? 'selected' : ''}>
-              ${game.i18n.localize(`${MODULE_ID}.settings.displayMode.hide`)}
-            </option>
+            <option value="show" ${context.settings.displayMode === 'show' ? 'selected' : ''}>${game.i18n.localize(`${MODULE_ID}.settings.displayMode.show`)}</option>
+            <option value="hide" ${context.settings.displayMode === 'hide' ? 'selected' : ''}>${game.i18n.localize(`${MODULE_ID}.settings.displayMode.hide`)}</option>
           </select>
           <p class="fame-hint">${game.i18n.localize(`${MODULE_ID}.settings.displayMode.hint`)}</p>
         </div>
@@ -108,22 +104,6 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
           </select>
           <p class="fame-hint">${game.i18n.localize(`${MODULE_ID}.settings.defaultFactionMode.hint`)}</p>
         </div>
-        <div class="fame-form-group fame-hybrid-settings">
-          <label>${game.i18n.localize(`${MODULE_ID}.settings.hybridBalance.name`)}</label>
-          <p class="fame-hint">${game.i18n.localize(`${MODULE_ID}.settings.hybridBalance.hint`)}</p>
-          <div class="fame-hybrid-sliders">
-            <div class="fame-hybrid-slider-row">
-              <span class="fame-hybrid-label">${game.i18n.localize(`${MODULE_ID}.settings.hybridBase.name`)}</span>
-              <input type="range" name="hybridBaseWeight" min="0" max="100" value="${context.settings.hybridBaseWeight ?? 50}">
-              <span class="fame-hybrid-value" data-for="hybridBaseWeight">${context.settings.hybridBaseWeight ?? 50}%</span>
-            </div>
-            <div class="fame-hybrid-slider-row">
-              <span class="fame-hybrid-label">${game.i18n.localize(`${MODULE_ID}.settings.hybridAuto.name`)}</span>
-              <input type="range" name="hybridAutoWeight" min="0" max="100" value="${context.settings.hybridAutoWeight ?? 50}">
-              <span class="fame-hybrid-value" data-for="hybridAutoWeight">${context.settings.hybridAutoWeight ?? 50}%</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       <div class="fame-settings-panel ${context.currentTab === 'tiers' ? 'active' : ''}" data-tab="tiers">
@@ -143,41 +123,24 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
         </div>
         <div class="fame-export-import-section">
           <div class="fame-export-import-row">
-            <button type="button" class="fame-export-btn">
-              <i class="fa-solid fa-download"></i> ${game.i18n.localize(`${MODULE_ID}.settings.export`)}
-            </button>
-            <button type="button" class="fame-import-btn">
-              <i class="fa-solid fa-upload"></i> ${game.i18n.localize(`${MODULE_ID}.settings.import`)}
-            </button>
+            <button type="button" class="fame-export-btn"><i class="fa-solid fa-download"></i> ${game.i18n.localize(`${MODULE_ID}.settings.export`)}</button>
+            <button type="button" class="fame-import-btn"><i class="fa-solid fa-upload"></i> ${game.i18n.localize(`${MODULE_ID}.settings.import`)}</button>
           </div>
           <input type="file" class="fame-import-file" accept=".json" style="display:none">
           <div class="fame-form-group fame-import-options">
-            <label class="fame-checkbox-label">
-              <input type="checkbox" name="importSettings" checked>
-              ${game.i18n.localize(`${MODULE_ID}.settings.importSettings`)}
-            </label>
-            <label class="fame-checkbox-label">
-              <input type="checkbox" name="importTiers" checked>
-              ${game.i18n.localize(`${MODULE_ID}.settings.importTiers`)}
-            </label>
-            <label class="fame-checkbox-label">
-              <input type="checkbox" name="importData" checked>
-              ${game.i18n.localize(`${MODULE_ID}.settings.importData`)}
-            </label>
+            <label class="fame-checkbox-label"><input type="checkbox" name="importSettings" checked> ${game.i18n.localize(`${MODULE_ID}.settings.importSettings`)}</label>
+            <label class="fame-checkbox-label"><input type="checkbox" name="importTiers" checked> ${game.i18n.localize(`${MODULE_ID}.settings.importTiers`)}</label>
+            <label class="fame-checkbox-label"><input type="checkbox" name="importData" checked> ${game.i18n.localize(`${MODULE_ID}.settings.importData`)}</label>
           </div>
         </div>
         <div class="fame-form-group fame-danger-zone">
           <label>${game.i18n.localize(`${MODULE_ID}.settings.dangerZone`)}</label>
-          <button type="button" class="fame-reset-all-btn">
-            <i class="fa-solid fa-trash"></i> ${game.i18n.localize(`${MODULE_ID}.settings.resetAll`)}
-          </button>
+          <button type="button" class="fame-reset-all-btn"><i class="fa-solid fa-trash"></i> ${game.i18n.localize(`${MODULE_ID}.settings.resetAll`)}</button>
         </div>
       </div>
 
       <div class="fame-settings-footer">
-        <button type="button" class="fame-save-btn">
-          <i class="fa-solid fa-save"></i> ${game.i18n.localize("Save")}
-        </button>
+        <button type="button" class="fame-save-btn"><i class="fa-solid fa-save"></i> ${game.i18n.localize("Save")}</button>
       </div>
     `;
 
@@ -200,13 +163,6 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
       });
     });
 
-    html.querySelectorAll('input[type="range"]').forEach(slider => {
-      slider.addEventListener('input', e => {
-        const valueSpan = html.querySelector(`.fame-hybrid-value[data-for="${e.target.name}"]`);
-        if (valueSpan) valueSpan.textContent = `${e.target.value}%`;
-      });
-    });
-
     html.querySelector('.fame-tier-add')?.addEventListener('click', () => {
       const tierItem = document.createElement('div');
       tierItem.className = 'fame-tier-item';
@@ -214,27 +170,18 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
         <input type="text" class="fame-tier-name" value="${game.i18n.localize(`${MODULE_ID}.relations.newTier`)}">
         <input type="number" class="fame-tier-min" value="0">
         <input type="color" class="fame-tier-color" value="#8a8a8a">
-        <button type="button" class="fame-tier-del fame-icon-btn">
-          <i class="fa-solid fa-trash"></i>
-        </button>
+        <button type="button" class="fame-tier-del fame-icon-btn"><i class="fa-solid fa-trash"></i></button>
       `;
       tiersList.appendChild(tierItem);
-      
-      tierItem.querySelector('.fame-tier-del').addEventListener('click', () => {
-        tierItem.remove();
-      });
+      tierItem.querySelector('.fame-tier-del').addEventListener('click', () => tierItem.remove());
     });
 
     html.querySelectorAll('.fame-tier-del').forEach(btn => {
-      btn.addEventListener('click', () => {
-        btn.closest('.fame-tier-item').remove();
-      });
+      btn.addEventListener('click', () => btn.closest('.fame-tier-item').remove());
     });
 
     html.querySelector('.fame-export-btn')?.addEventListener('click', () => this._exportData());
-    html.querySelector('.fame-import-btn')?.addEventListener('click', () => {
-      html.querySelector('.fame-import-file').click();
-    });
+    html.querySelector('.fame-import-btn')?.addEventListener('click', () => html.querySelector('.fame-import-file').click());
     html.querySelector('.fame-import-file')?.addEventListener('change', e => this._importData(e, html));
     html.querySelector('.fame-reset-all-btn')?.addEventListener('click', () => this._resetAllData());
 
@@ -247,18 +194,13 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
         }))
         .sort((a, b) => a.minValue - b.minValue);
 
-      const defaultActorSelect = html.querySelector('[name="defaultActorMode"]');
-      const defaultFactionSelect = html.querySelector('[name="defaultFactionMode"]');
-
       await setSettings({
         enabled: html.querySelector('[name="enabled"]').checked,
         displayMode: html.querySelector('[name="displayMode"]').value,
         min: parseInt(html.querySelector('[name="min"]').value),
         max: parseInt(html.querySelector('[name="max"]').value),
-        defaultActorMode: defaultActorSelect.value,
-        defaultFactionMode: defaultFactionSelect.value,
-        hybridBaseWeight: parseInt(html.querySelector('[name="hybridBaseWeight"]').value),
-        hybridAutoWeight: parseInt(html.querySelector('[name="hybridAutoWeight"]').value)
+        defaultActorMode: html.querySelector('[name="defaultActorMode"]').value,
+        defaultFactionMode: html.querySelector('[name="defaultFactionMode"]').value
       });
 
       await setTiers(tiers);
@@ -268,13 +210,12 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
 
   _exportData() {
     const exportObj = {
-      version: 1,
+      version: 2,
       timestamp: Date.now(),
       settings: getSettings(),
       tiers: getTiers(),
       data: getData()
     };
-
     const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -284,44 +225,31 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-
     ui.notifications.info(game.i18n.localize(`${MODULE_ID}.settings.exportSuccess`));
   }
 
   async _importData(event, html) {
     const file = event.target.files[0];
     if (!file) return;
-
     try {
       const text = await file.text();
       const importObj = JSON.parse(text);
-
       if (!importObj.version) {
         ui.notifications.error(game.i18n.localize(`${MODULE_ID}.settings.importInvalid`));
         return;
       }
-
       const importSettings = html.querySelector('[name="importSettings"]').checked;
       const importTiers = html.querySelector('[name="importTiers"]').checked;
       const importData = html.querySelector('[name="importData"]').checked;
-
-      if (importSettings && importObj.settings) {
-        await setSettings(importObj.settings);
-      }
-      if (importTiers && importObj.tiers) {
-        await setTiers(importObj.tiers);
-      }
-      if (importData && importObj.data) {
-        await setData(importObj.data);
-      }
-
+      if (importSettings && importObj.settings) await setSettings(importObj.settings);
+      if (importTiers && importObj.tiers) await setTiers(importObj.tiers);
+      if (importData && importObj.data) await setData(importObj.data);
       ui.notifications.info(game.i18n.localize(`${MODULE_ID}.settings.importSuccess`));
       this.render();
     } catch (e) {
       console.error(`${MODULE_ID} | Import error:`, e);
       ui.notifications.error(game.i18n.localize(`${MODULE_ID}.settings.importError`));
     }
-
     event.target.value = '';
   }
 
@@ -332,16 +260,11 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
       yes: { default: false },
       no: { default: true }
     });
-
     if (!confirmed) return;
-
     const { DEFAULT_DATA, DEFAULT_SETTINGS } = await import('../constants.js');
-    const { getDefaultTiers } = await import('../data.js');
-
     await setSettings({ ...DEFAULT_SETTINGS });
     await setTiers(getDefaultTiers());
     await setData({ ...DEFAULT_DATA });
-
     ui.notifications.info(game.i18n.localize(`${MODULE_ID}.settings.resetSuccess`));
     this.render();
   }

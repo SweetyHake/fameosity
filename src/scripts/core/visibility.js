@@ -1,4 +1,4 @@
-import { getData, setData } from '../data.js';
+import * as Data from '../data.js';
 import { ReputationEvents } from '../events.js';
 
 function getHiddenKey(type) {
@@ -14,7 +14,7 @@ function getHiddenKey(type) {
 }
 
 export function getHiddenItems() {
-  const data = getData();
+  const data = Data.getData();
   const hidden = data.hiddenItems || {};
   return {
     factions: Array.isArray(hidden.factions) ? [...hidden.factions] : [],
@@ -24,13 +24,13 @@ export function getHiddenItems() {
 }
 
 export async function setHiddenItems(hidden) {
-  const data = getData();
+  const data = Data.getData();
   data.hiddenItems = {
     factions: Array.isArray(hidden.factions) ? [...hidden.factions] : [],
     actors: Array.isArray(hidden.actors) ? [...hidden.actors] : [],
     locations: Array.isArray(hidden.locations) ? [...hidden.locations] : []
   };
-  await setData(data);
+  await Data.setData(data);
   ReputationEvents.emit(ReputationEvents.EVENTS.HIDDEN_CHANGED, { hidden: data.hiddenItems });
 }
 
@@ -44,20 +44,20 @@ export function isHidden(type, id) {
 
 export async function toggleHidden(type, id) {
   if (!type || !id) return;
-  const data = getData();
+  const data = Data.getData();
   const key = getHiddenKey(type);
   data.hiddenItems ??= { factions: [], actors: [], locations: [] };
   if (!Array.isArray(data.hiddenItems[key])) data.hiddenItems[key] = [];
   const arr = data.hiddenItems[key];
   const index = arr.indexOf(id);
   index > -1 ? arr.splice(index, 1) : arr.push(id);
-  await setData(data);
+  await Data.setData(data);
   ReputationEvents.emit(ReputationEvents.EVENTS.HIDDEN_CHANGED, { hidden: data.hiddenItems });
 }
 
 export async function setHidden(type, id, hide) {
   if (!type || !id) return;
-  const data = getData();
+  const data = Data.getData();
   const key = getHiddenKey(type);
   data.hiddenItems ??= { factions: [], actors: [], locations: [] };
   if (!Array.isArray(data.hiddenItems[key])) data.hiddenItems[key] = [];
@@ -65,11 +65,11 @@ export async function setHidden(type, id, hide) {
   const index = arr.indexOf(id);
   if (hide && index === -1) {
     arr.push(id);
-    await setData(data);
+    await Data.setData(data);
     ReputationEvents.emit(ReputationEvents.EVENTS.HIDDEN_CHANGED, { hidden: data.hiddenItems });
   } else if (!hide && index > -1) {
     arr.splice(index, 1);
-    await setData(data);
+    await Data.setData(data);
     ReputationEvents.emit(ReputationEvents.EVENTS.HIDDEN_CHANGED, { hidden: data.hiddenItems });
   }
 }
@@ -80,7 +80,7 @@ export function filterVisible(items, type) {
 }
 
 export function isRelationHidden(type, entityId, targetId) {
-  const data = getData();
+  const data = Data.getData();
   const hiddenRels = data.hiddenRelations || {};
   if (type === 'individual') {
     return hiddenRels.individual?.[entityId]?.[targetId] === true;
@@ -88,14 +88,16 @@ export function isRelationHidden(type, entityId, targetId) {
     return hiddenRels.faction?.[entityId]?.[targetId] === true;
   } else if (type === 'actorFaction') {
     return hiddenRels.actorFaction?.[entityId]?.[targetId] === true;
+  } else if (type === 'factionToFaction') {
+    return hiddenRels.factionToFaction?.[entityId]?.[targetId] === true;
   }
   return false;
 }
 
 export async function toggleRelationHidden(type, entityId, targetId) {
-  const data = getData();
-  data.hiddenRelations ??= { individual: {}, faction: {}, actorFaction: {} };
-  const typeKey = type === 'individual' ? 'individual' : type === 'faction' ? 'faction' : 'actorFaction';
+  const data = Data.getData();
+  data.hiddenRelations ??= { individual: {}, faction: {}, actorFaction: {}, factionToFaction: {} };
+  const typeKey = type === 'individual' ? 'individual' : type === 'faction' ? 'faction' : type === 'factionToFaction' ? 'factionToFaction' : 'actorFaction';
   data.hiddenRelations[typeKey] ??= {};
   data.hiddenRelations[typeKey][entityId] ??= {};
   data.hiddenRelations[typeKey][entityId][targetId] = !data.hiddenRelations[typeKey][entityId][targetId];
@@ -105,37 +107,37 @@ export async function toggleRelationHidden(type, entityId, targetId) {
       delete data.hiddenRelations[typeKey][entityId];
     }
   }
-  await setData(data);
+  await Data.setData(data);
   ReputationEvents.emit(ReputationEvents.EVENTS.HIDDEN_CHANGED, { type: 'relation', entityId, targetId });
 }
 
 export function isMemberHidden(factionId, actorId) {
-  const data = getData();
+  const data = Data.getData();
   const hiddenMembers = data.hiddenMembers || {};
   return Array.isArray(hiddenMembers[factionId]) && hiddenMembers[factionId].includes(actorId);
 }
 
 export async function toggleMemberHidden(factionId, actorId) {
-  const data = getData();
+  const data = Data.getData();
   data.hiddenMembers ??= {};
   data.hiddenMembers[factionId] ??= [];
   const arr = data.hiddenMembers[factionId];
   const index = arr.indexOf(actorId);
   index > -1 ? arr.splice(index, 1) : arr.push(actorId);
   if (arr.length === 0) delete data.hiddenMembers[factionId];
-  await setData(data);
+  await Data.setData(data);
   ReputationEvents.emit(ReputationEvents.EVENTS.HIDDEN_CHANGED, { type: 'member', factionId, actorId });
 }
 
 export function isLocationItemHidden(locationId, type, itemId) {
-  const data = getData();
+  const data = Data.getData();
   const hidden = data.hiddenLocationItems || {};
   const key = type === 'faction' ? 'factions' : 'actors';
   return Array.isArray(hidden[key]?.[locationId]) && hidden[key][locationId].includes(itemId);
 }
 
 export async function toggleLocationItemHidden(locationId, type, itemId) {
-  const data = getData();
+  const data = Data.getData();
   data.hiddenLocationItems ??= { factions: {}, actors: {} };
   const key = type === 'faction' ? 'factions' : 'actors';
   data.hiddenLocationItems[key] ??= {};
@@ -144,40 +146,8 @@ export async function toggleLocationItemHidden(locationId, type, itemId) {
   const index = arr.indexOf(itemId);
   index > -1 ? arr.splice(index, 1) : arr.push(itemId);
   if (arr.length === 0) delete data.hiddenLocationItems[key][locationId];
-  await setData(data);
+  await Data.setData(data);
   ReputationEvents.emit(ReputationEvents.EVENTS.HIDDEN_CHANGED, { type: 'locationItem', locationId, itemType: type, itemId });
-}
-
-export function isWantedHidden(entityType, entityId, pcId) {
-  if (entityType === 'location') {
-    const data = getData();
-    const location = (data.locations || []).find(l => l.id === entityId);
-    return location?.wanted?.[pcId]?.hidden === true;
-  } else if (entityType === 'faction') {
-    const data = getData();
-    const faction = (data.factions || []).find(f => f.id === entityId);
-    return faction?.wanted?.[pcId]?.hidden === true;
-  }
-  return false;
-}
-
-export async function toggleWantedHidden(entityType, entityId, pcId) {
-  const data = getData();
-  if (entityType === 'location') {
-    const location = (data.locations || []).find(l => l.id === entityId);
-    if (location?.wanted?.[pcId]) {
-      location.wanted[pcId].hidden = !location.wanted[pcId].hidden;
-      await setData(data);
-      ReputationEvents.emit(ReputationEvents.EVENTS.HIDDEN_CHANGED, { type: 'wanted', entityType, entityId, pcId });
-    }
-  } else if (entityType === 'faction') {
-    const faction = (data.factions || []).find(f => f.id === entityId);
-    if (faction?.wanted?.[pcId]) {
-      faction.wanted[pcId].hidden = !faction.wanted[pcId].hidden;
-      await setData(data);
-      ReputationEvents.emit(ReputationEvents.EVENTS.HIDDEN_CHANGED, { type: 'wanted', entityType, entityId, pcId });
-    }
-  }
 }
 
 export function shouldShowNotification(type, entityId, targetId = null) {
