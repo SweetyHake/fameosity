@@ -164,13 +164,48 @@ export function attachNavItemDrag(html) {
     
     item.addEventListener('dragstart', e => {
       e.stopPropagation();
-      const data = {
-        fameEntityType: item.dataset.entityType,
-        fameEntityId: item.dataset.entityId
+      
+      const entityType = item.dataset.entityType;
+      const entityId = item.dataset.entityId;
+      
+      const internalData = {
+        fameEntityType: entityType,
+        fameEntityId: entityId
       };
-      e.dataTransfer.setData('text/plain', JSON.stringify(data));
-      e.dataTransfer.effectAllowed = 'copy';
+      
+      if (entityType === 'actor') {
+        const actor = game.actors.get(entityId);
+        if (actor) {
+          const dragData = {
+            type: 'Actor',
+            uuid: actor.uuid
+          };
+          e.dataTransfer.setData('text/plain', JSON.stringify(dragData));
+          e.dataTransfer.setData('application/json', JSON.stringify(internalData));
+        } else {
+          e.dataTransfer.setData('text/plain', JSON.stringify(internalData));
+        }
+      } else {
+        e.dataTransfer.setData('text/plain', JSON.stringify(internalData));
+        e.dataTransfer.setData('application/json', JSON.stringify(internalData));
+      }
+      
+      e.dataTransfer.effectAllowed = 'copyMove';
       item.classList.add('dragging');
+      
+      if (entityType === 'actor') {
+        const img = item.querySelector('.fame-nav-item-img');
+        if (img) {
+          const dragImage = img.cloneNode(true);
+          dragImage.style.width = '48px';
+          dragImage.style.height = '48px';
+          dragImage.style.position = 'absolute';
+          dragImage.style.top = '-1000px';
+          document.body.appendChild(dragImage);
+          e.dataTransfer.setDragImage(dragImage, 24, 24);
+          setTimeout(() => dragImage.remove(), 0);
+        }
+      }
     });
     
     item.addEventListener('dragend', () => {
