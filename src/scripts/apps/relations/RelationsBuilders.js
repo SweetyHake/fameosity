@@ -73,6 +73,8 @@ export function buildActorData(id, min, max, pcs, rawFactions) {
   const pcRelations = [];
   const npcRelations = [];
   const allTracked = Core.getTracked();
+  const data = Data.getData();
+  const indRels = data.individualRelations || {};
 
   for (const targetId of allTracked) {
     if (targetId === id) continue;
@@ -80,43 +82,66 @@ export function buildActorData(id, min, max, pcs, rawFactions) {
     const targetActor = game.actors.get(targetId);
     if (!targetActor) continue;
 
-    const value = Core.getIndRel(id, targetId);
     const targetIsPC = Core.isPlayerCharacter(targetId);
     const isTargetPartyMember = activePartyMembers ? activePartyMembers.has(targetId) : targetIsPC;
 
-    const targetOwnerOnline = _isActorOwnerOnline(targetActor);
-
-    const rel = {
-      pcId: targetId,
-      pcName: Core.getDisplayName(targetId),
-      pcImg: targetActor.img,
-      value,
-      tier: Data.getTier(value),
-      hidden: Core.isRelationHidden('individual', id, targetId),
-      isPC: targetIsPC,
-      online: targetOwnerOnline
-    };
-    if (isTargetPartyMember && targetId !== id) {
-      pcRelations.push(rel);
+    const value = Core.getIndRel(id, targetId);
+    const relationExists = indRels[id]?.[targetId] !== undefined;
+    
+    if (isTargetPartyMember) {
+      const targetOwnerOnline = _isActorOwnerOnline(targetActor);
+      pcRelations.push({
+        pcId: targetId,
+        pcName: Core.getDisplayName(targetId),
+        pcImg: targetActor.img,
+        value,
+        tier: Data.getTier(value),
+        hidden: Core.isRelationHidden('individual', id, targetId),
+        isPC: targetIsPC,
+        online: targetOwnerOnline
+      });
     } else {
-      npcRelations.push(rel);
+      const relHidden = Core.isRelationHidden('individual', id, targetId);
+      if (!relationExists && !relHidden) continue;
+      
+      const targetOwnerOnline = _isActorOwnerOnline(targetActor);
+      npcRelations.push({
+        pcId: targetId,
+        pcName: Core.getDisplayName(targetId),
+        pcImg: targetActor.img,
+        value,
+        tier: Data.getTier(value),
+        hidden: relHidden,
+        isPC: targetIsPC,
+        online: targetOwnerOnline
+      });
     }
   }
 
   pcRelations.sort((a, b) => a.pcName.localeCompare(b.pcName));
+  npcRelations.sort((a, b) => a.pcName.localeCompare(b.pcName));
+
+  const actorFacRels = data.actorFactionRelations || {};
 
   const factionRelations = rawFactions.map(faction => {
     const value = Core.getActorFactionRel(id, faction.id);
     const isMember = (faction.members || []).includes(id);
+    const relHidden = Core.isRelationHidden('actorFaction', id, faction.id);
+    const relationExists = actorFacRels[id]?.[faction.id] !== undefined;
+    
+    if (!relationExists && !isMember && !relHidden) return null;
+    
     return {
       factionId: faction.id, factionName: faction.name, factionImg: faction.image,
       value, tier: Data.getTier(value), isMember,
       memberHidden: Core.isMemberHidden(faction.id, id),
       rank: isMember ? Core.getFactionRank(faction.id, id) : null,
-      hidden: Core.isRelationHidden('actorFaction', id, faction.id),
+      hidden: relHidden,
       factionHidden: Core.isHidden('faction', faction.id)
     };
-  });
+  }).filter(Boolean);
+
+  factionRelations.sort((a, b) => a.factionName.localeCompare(b.factionName));
 
   return {
     id, name: Core.getDisplayName(id), originalName: actor.name,
@@ -165,6 +190,8 @@ export function buildFactionData(faction, pcs, min, max, isGM) {
   const pcRels = [];
   const npcRels = [];
   const allTracked = Core.getTracked();
+  const data = Data.getData();
+  const facRels = data.factionRelations || {};
 
   for (const targetId of allTracked) {
     if (memberSet.has(targetId)) continue;
@@ -175,46 +202,69 @@ export function buildFactionData(faction, pcs, min, max, isGM) {
     const value = Core.getFactionRel(faction.id, targetId);
     const targetIsPC = Core.isPlayerCharacter(targetId);
     const isActiveMember = activePartyMembers ? activePartyMembers.has(targetId) : targetIsPC;
-    const rel = {
-      pcId: targetId, pcName: Core.getDisplayName(targetId), pcImg: targetActor.img,
-      value, tier: Data.getTier(value),
-      hidden: Core.isRelationHidden('faction', faction.id, targetId),
-      isPC: targetIsPC
-    };
+    const relationExists = facRels[faction.id]?.[targetId] !== undefined;
+    
     if (isActiveMember) {
-      pcRels.push(rel);
+      pcRels.push({
+        pcId: targetId, pcName: Core.getDisplayName(targetId), pcImg: targetActor.img,
+        value, tier: Data.getTier(value),
+        hidden: Core.isRelationHidden('faction', faction.id, targetId),
+        isPC: targetIsPC
+      });
     } else {
-      npcRels.push(rel);
+      const relHidden = Core.isRelationHidden('faction', faction.id, targetId);
+      if (!relationExists && !relHidden) continue;
+      
+      npcRels.push({
+        pcId: targetId, pcName: Core.getDisplayName(targetId), pcImg: targetActor.img,
+        value, tier: Data.getTier(value),
+        hidden: relHidden,
+        isPC: targetIsPC
+      });
     }
   }
 
   pcRels.sort((a, b) => a.pcName.localeCompare(b.pcName));
+  npcRels.sort((a, b) => a.pcName.localeCompare(b.pcName));
 
   const allFactions = Core.getFactions();
+  const facToFacRels = data.factionToFactionRelations || {};
+  
   const factionToFactionRels = allFactions
     .filter(f => f.id !== faction.id)
     .map(f => {
       const value = Core.getFactionToFactionRel(faction.id, f.id);
+      const relHidden = Core.isRelationHidden('factionToFaction', faction.id, f.id);
+      const relationExists = facToFacRels[faction.id]?.[f.id] !== undefined;
+      
+      if (!relationExists && !relHidden) return null;
+      
       return {
         targetFactionId: f.id, targetFactionName: f.name,
         targetFactionImg: f.image || 'icons/svg/mystery-man.svg',
         value, tier: Data.getTier(value),
-        hidden: Core.isRelationHidden('factionToFaction', faction.id, f.id),
+        hidden: relHidden,
         targetHidden: Core.isHidden('faction', f.id)
       };
-    });
+    }).filter(Boolean);
+
+  factionToFactionRels.sort((a, b) => a.targetFactionName.localeCompare(b.targetFactionName));
+
+  const partyId = Core.getActivePartyId();
 
   const members = (faction.members || []).map(id => {
     if (Core.isHidden('actor', id)) return null;
     const actor = game.actors.get(id);
     if (!actor) return null;
+    const memberRep = partyId ? Core.getActorFactionRel(id, partyId) : 0;
     return {
       id, name: Core.getDisplayName(id), img: actor.img,
       rank: Core.getFactionRank(faction.id, id),
       manualRankId: faction.memberRanks?.[id] || null,
       hidden: Core.isMemberHidden(faction.id, id),
       actorHidden: false,
-      sourceName: null, sourceFactionId: faction.id
+      sourceName: null, sourceFactionId: faction.id,
+      tier: Data.getTier(memberRep)
     };
   }).filter(Boolean);
 
@@ -228,17 +278,21 @@ export function buildFactionData(faction, pcs, min, max, isGM) {
         const actor = game.actors.get(childMemberId);
         if (!actor) continue;
         existingMemberIds.add(childMemberId);
+        const memberRep = partyId ? Core.getActorFactionRel(childMemberId, partyId) : 0;
         members.push({
           id: childMemberId, name: Core.getDisplayName(childMemberId), img: actor.img,
           rank: Core.getFactionRank(childFac.id, childMemberId),
           manualRankId: childFac.memberRanks?.[childMemberId] || null,
           hidden: Core.isMemberHidden(childFac.id, childMemberId),
           actorHidden: false,
-          sourceName: childFac.name, sourceFactionId: childFac.id
+          sourceName: childFac.name, sourceFactionId: childFac.id,
+          tier: Data.getTier(memberRep)
         });
       }
     }
   }
+
+  members.sort((a, b) => a.name.localeCompare(b.name));
 
   return {
     ...faction, reputation, mode, tier, members, hidden, typeInfo, description,
@@ -286,12 +340,15 @@ export function buildLocationData(loc, allFactions, allActors, isGM) {
     const locItemHidden = Core.isLocationItemHidden(loc.id, 'actor', aId);
     if (tracked) return { ...tracked, isTracked: true, locItemHidden, sourceName: null, sourceLocationId: loc.id };
     const actor = game.actors.get(aId);
-    return actor ? {
+    if (!actor) return null;
+    const rep = Core.getActorFactionRel(aId, Core.getActivePartyId());
+    return {
       id: aId, name: Core.getDisplayName(aId), img: actor.img,
       isTracked: false, locItemHidden, hidden: Core.isHidden('actor', aId),
       sourceName: null, sourceLocationId: loc.id,
-      isPC: Core.isPlayerCharacter(aId)
-    } : null;
+      isPC: Core.isPlayerCharacter(aId),
+      tier: Data.getTier(rep)
+    };
   }).filter(Boolean);
 
   const allLocs = Core.getLocations();
@@ -306,6 +363,9 @@ export function buildLocationData(loc, allFactions, allActors, isGM) {
       factionsList.push({ ...faction, locItemHidden: Core.isLocationItemHidden(parentLoc.id, 'faction', fId), sourceName: parentName, sourceLocationId: parentLoc.id });
     }
   }
+
+  factionsList.sort((a, b) => a.name.localeCompare(b.name));
+  actorsList.sort((a, b) => a.name.localeCompare(b.name));
 
   return {
     ...loc, factionsList, actorsList,

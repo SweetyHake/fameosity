@@ -39,6 +39,7 @@ export class EntityCreatorApp extends foundry.applications.api.ApplicationV2 {
     this.parentType = options.parentType || null;
     this.pendingActors = [];
     this.selectedSubType = null;
+    this._isSubmitting = false;
   }
 
   get title() {
@@ -308,6 +309,11 @@ export class EntityCreatorApp extends foundry.applications.api.ApplicationV2 {
   }
 
   async _handleSubmit(html) {
+    if (this._isSubmitting) return;
+    this._isSubmitting = true;
+    
+    this.close();
+    
     if (this.entityType === EntityCreatorApp.TYPES.ACTOR) {
       await this._submitActors();
     } else {
@@ -325,7 +331,6 @@ export class EntityCreatorApp extends foundry.applications.api.ApplicationV2 {
         await addTracked(actorData.id);
       }
     }
-    this.close();
   }
 
   async _submitEntity(html) {
@@ -349,8 +354,6 @@ export class EntityCreatorApp extends foundry.applications.api.ApplicationV2 {
         parentId: this.parentId
       });
     }
-
-    this.close();
   }
 
   static openLocationCreator(parentId = null, parentType = null) {

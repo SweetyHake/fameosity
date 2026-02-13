@@ -226,3 +226,13 @@
   scrollbar-color: var(--fame-color-gold) transparent;
   scrollbar-width: thin;
 }
+
+.fame-relations-content select {
+  background: transparent;
+  color: var(--fame-color-text-emphatic);
+}
+
+.fame-relations-content select option {
+  background: var(--fame-bg-context-menu, #1a1a1a);
+  color: var(--fame-color-text-emphatic);
+}

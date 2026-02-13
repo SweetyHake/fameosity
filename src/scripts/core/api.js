@@ -299,6 +299,20 @@ function _isActivePartyRelation(source, target) {
   return false;
 }
 
+function shouldNotifyFactionToParty(sourceType, sourceId, targetType, targetId) {
+  if (sourceType !== 'faction' || targetType !== 'faction') return false;
+  
+  const data = Data.getData();
+  const partyId = data.activePartyId;
+  if (!partyId) return false;
+  
+  if (targetId !== partyId) return false;
+  if (Visibility.isHidden('faction', sourceId)) return false;
+  if (Visibility.isRelationHidden('factionToFaction', sourceId, targetId)) return false;
+  
+  return true;
+}
+
 function notifyAllPlayers(sourceName, targetName, delta, sourceActorId) {
   const locKey = delta > 0 ? `${MODULE_ID}.remember.relation-improved` : `${MODULE_ID}.remember.relation-worsened`;
   const message = game.i18n.format(locKey, { source: sourceName, target: targetName });

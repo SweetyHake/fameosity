@@ -114,11 +114,13 @@
       "no-actors": "Sin actores rastreados",
       "no-members": "Sin miembros",
       "no-players": "Sin personajes jugadores",
+      "no-relations": "Sin relaciones",
       "tiers": "Niveles de Relación",
       "addTier": "Añadir Nivel",
       "newTier": "Nuevo Nivel",
       "their-attitude": "Su actitud",
       "your-attitude": "Tu actitud",
+      "relations-to-actors": "Relaciones con otros personajes",
       "to-players": "Actitud hacia los Jugadores",
       "to-factions": "Actitud hacia Facciones",
       "to-other-factions": "Actitud hacia Facciones",
@@ -213,9 +215,16 @@
     "context": {
       "select": "Seleccionar",
       "open-sheet": "Abrir Hoja",
-      "duplicate": "Duplicar",
+      "duplicate": "Crear copia",
       "copy-suffix": "Copia",
-      "activate-party": "Establecer como Grupo Activo"
+      "activate-party": "Establecer como Grupo Activo",
+      "hide-all": "Ocultar Todo",
+      "show-all": "Mostrar Todo",
+      "hide-all-nested": "Ocultar Todos los Anidados",
+      "show-all-nested": "Mostrar Todos los Anidados",
+      "add-to-relations": "Añadir a relaciones del grupo",
+      "add-child-location": "Añadir ubicación hija",
+      "add-child-faction": "Añadir facción hija"
     },
     "party": {
       "default-name": "Grupo de Aventureros"
@@ -232,7 +241,8 @@
       "no-active-party-gm": "No hay grupo activo asignado. Crea un grupo y establécelo como activo.",
       "no-active-party-player": "No eres parte de un grupo activo.",
       "personal-reputation": "Reputación Personal",
-      "custom-type-name-placeholder": "Nombre de tipo personalizado..."
+      "custom-type-name-placeholder": "Nombre de tipo personalizado...",
+      "current-active-party": "Grupo Activo"
     },
     "creator": {
       "title-location": "Crear Ubicación",

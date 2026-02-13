@@ -223,51 +223,24 @@ export function attachResizeHandle(html, app) {
 
 export function attachImagePopout(html) {
   html.querySelectorAll('.fame-detail-img').forEach(img => {
-    const actorId = img.dataset.actorId;
-
     if (img.classList.contains('editable') && game.user.isGM) return;
 
-    if (actorId) {
-      const actor = game.actors.get(actorId);
-      if (actor) {
-        img.setAttribute('draggable', 'true');
-        img.addEventListener('dragstart', e => {
-          e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'Actor', uuid: actor.uuid }));
-          e.dataTransfer.effectAllowed = 'copyMove';
-        });
-      }
-    }
+    img.setAttribute('draggable', 'false');
 
     img.style.cursor = 'pointer';
     img.addEventListener('click', e => {
       e.stopPropagation();
       new ImagePopout(img.src, { title: '' }).render(true);
     });
+
+    img.addEventListener('dragstart', e => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
   });
 }
 
 export function attachActorRowDrag(html) {
-  const makeRowDraggable = (row, actorId) => {
-    const actor = game.actors.get(actorId);
-    if (!actor) return;
-
-    row.setAttribute('draggable', 'true');
-    row.addEventListener('dragstart', e => {
-      e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'Actor', uuid: actor.uuid }));
-      e.dataTransfer.setData('application/fame-nav', JSON.stringify({ type: 'actor', id: actorId }));
-      e.dataTransfer.effectAllowed = 'copyMove';
-    });
-  };
-
-  html.querySelectorAll('.fame-detail-member-row').forEach(row => {
-    const nameEl = row.querySelector('.fame-detail-member-name[data-entity-id]');
-    if (nameEl) makeRowDraggable(row, nameEl.dataset.entityId);
-  });
-
-  html.querySelectorAll('.fame-detail-rel-row').forEach(row => {
-    const nameEl = row.querySelector('.fame-detail-rel-name[data-entity-type="actor"]');
-    if (nameEl) makeRowDraggable(row, nameEl.dataset.entityId);
-  });
 }
 
 export function attachRankDragDrop(html) {

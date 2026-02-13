@@ -114,7 +114,9 @@
       "no-actors": "No tracked actors",
       "no-members": "No members",
       "no-players": "No player characters",
+      "no-relations": "No relations",
       "tiers": "Relationship Tiers",
+      "relations-to-actors": "Relations to characters",
       "addTier": "Add Tier",
       "newTier": "New Tier",
       "their-attitude": "Their Attitude",
@@ -213,9 +215,16 @@
     "context": {
       "select": "Select",
       "open-sheet": "Open Sheet",
-      "duplicate": "Duplicate",
+      "duplicate": "Create Copy",
       "copy-suffix": "Copy",
-      "activate-party": "Set as Active Party"
+      "activate-party": "Set as Active Party",
+      "hide-all": "Hide All",
+      "show-all": "Show All",
+      "hide-all-nested": "Hide All Nested",
+      "show-all-nested": "Show All Nested",
+      "add-to-relations": "Add to Party Relations",
+      "add-child-location": "Add Child Location",
+      "add-child-faction": "Add Child Faction"
     },
     "party": {
       "default-name": "Adventuring Party"
@@ -232,7 +241,8 @@
       "no-active-party-gm": "No active party assigned. Create a group and set it as active using RMB in nav tree.",
       "no-active-party-player": "You are not part of an active party.",
       "personal-reputation": "Personal Reputation",
-      "custom-type-name-placeholder": "Custom type name..."
+      "custom-type-name-placeholder": "Custom type name...",
+      "current-active-party": "Active Party"
     },
     "creator": {
       "title-location": "Create Location",

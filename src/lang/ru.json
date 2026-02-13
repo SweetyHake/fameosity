@@ -114,12 +114,14 @@
       "no-actors": "Нет отслеживаемых персонажей",
       "no-members": "Нет членов",
       "no-players": "Нет игровых персонажей",
+      "no-relations": "Нет отношений",
       "tiers": "Уровни отношений",
       "addTier": "Добавить уровень",
       "newTier": "Новый уровень",
       "their-attitude": "Их отношение",
       "your-attitude": "Ваше отношение",
       "to-players": "Отношения к игрокам",
+      "relations-to-actors": "Отношения к персонажам",
       "to-factions": "Отношение к фракциям",
       "to-other-factions": "Отношения к фракциям",
       "faction-attitude": "Отношение фракции",
@@ -212,10 +214,17 @@
     },
     "context": {
       "select": "Выбрать",
-      "open-sheet": "Открыть лист",
-      "duplicate": "Дублировать",
+      "open-sheet": "Открыть бланк",
+      "duplicate": "Создать копию",
       "copy-suffix": "Копия",
-      "activate-party": "Активная группа"
+      "activate-party": "Активная группа",
+      "hide-all": "Скрыть все",
+      "show-all": "Показать все",
+      "hide-all-nested": "Скрыть все вложенные",
+      "show-all-nested": "Показать все вложенные",
+      "add-to-relations": "Добавить в отношения группы",
+      "add-child-location": "Добавить дочернюю локацию",
+      "add-child-faction": "Добавить дочернюю фракцию"
     },
     "party": {
       "default-name": "Группа приключенцев"
@@ -232,7 +241,8 @@
       "no-active-party-gm": "Активная группа не назначена. Создайте группу и назначьте её активной, используя ПКМ в списке.",
       "no-active-party-player": "Вы не состоите в активной группе.",
       "personal-reputation": "Личная репутация",
-      "custom-type-name-placeholder": "Своё название типа..."
+      "custom-type-name-placeholder": "Своё название типа...",
+      "current-active-party": "Активная группа"
     },
     "creator": {
       "title-location": "Создать локацию",

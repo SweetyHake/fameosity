@@ -37,8 +37,8 @@
   </div>
   <div class="fame-detail-actions">
     {{#if @root.isGM}}
-      {{#if detail.canAddChild}}<button type="button" class="fame-icon-btn fame-add-child-btn" data-action="addChildLocation" data-parent="{{detail.id}}" title="{{localize (concat @root.moduleId '.tooltips.add-child')}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
-      {{#if (gt detail.level 0)}}<button type="button" class="fame-icon-btn fame-unnest-btn" data-action="unnest" data-id="{{detail.id}}" data-type="location" title="{{localize (concat @root.moduleId '.tooltips.unnest')}}"><i class="fa-solid fa-arrow-up"></i></button>{{/if}}
+      {{#if detail.canAddChild}}<button type="button" class="fame-icon-btn fame-add-child-btn" data-action="addChildLocation" data-parent="{{detail.id}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
+      {{#if (gt detail.level 0)}}<button type="button" class="fame-icon-btn fame-unnest-btn" data-action="unnest" data-id="{{detail.id}}" data-type="location"><i class="fa-solid fa-arrow-up"></i></button>{{/if}}
       <button type="button" class="fame-icon-btn fame-hide-btn {{#if detail.hidden}}active{{/if}}" data-action="toggleHidden" data-type="location" data-id="{{detail.id}}">
         <i class="fa-solid fa-{{#if detail.hidden}}eye{{else}}eye-slash{{/if}}"></i>
       </button>
@@ -53,7 +53,6 @@
     {{#if detail.description}}<div class="fame-detail-description-display">{{detail.description}}</div>{{/if}}
   {{/if}}
 
-  {{#if detail.factionsList.length}}
   <div class="fame-detail-section" data-section-id="loc-factions-{{detail.id}}">
     <div class="fame-detail-section-header" data-action="toggleDetailSection" data-section="loc-factions-{{detail.id}}">
       <i class="fa-solid fa-chevron-right fame-section-chevron"></i>
@@ -63,42 +62,29 @@
       {{#if @root.isGM}}<button type="button" class="fame-detail-section-add" data-action="addFactionToLoc" data-location="{{detail.id}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
     </div>
     <div class="fame-detail-section-body">
-      {{#each detail.factionsList}}
-        <div class="fame-detail-rel-row {{#if locItemHidden}}is-hidden{{/if}}">
-          <div class="fame-detail-rel-left">
-            <img class="fame-detail-rel-img" src="{{image}}">
-            <span class="fame-detail-rel-name clickable" data-action="selectEntity" data-entity-type="faction" data-entity-id="{{id}}">{{name}}</span>
-            {{#if sourceName}}<span class="fame-detail-source-badge clickable" data-action="selectEntity" data-entity-type="location" data-entity-id="{{sourceLocationId}}"><i class="fa-solid fa-link"></i> {{sourceName}}</span>{{/if}}
+      {{#if detail.factionsList.length}}
+        {{#each detail.factionsList}}
+          <div class="fame-detail-rel-row {{#if locItemHidden}}is-hidden{{/if}}">
+            <div class="fame-detail-rel-left">
+              <img class="fame-detail-rel-img" src="{{image}}">
+              <span class="fame-detail-rel-name clickable" data-action="selectEntity" data-entity-type="faction" data-entity-id="{{id}}">{{name}}</span>
+            </div>
+            <div class="fame-detail-rel-center">
+              {{{tierBadge tier true}}}
+              {{#if sourceName}}<span class="fame-detail-source-badge clickable" data-action="selectEntity" data-entity-type="location" data-entity-id="{{sourceLocationId}}"><i class="fa-solid fa-link"></i> {{sourceName}}</span>{{/if}}
+              {{#if @root.isGM}}
+                {{#unless sourceName}}<button type="button" class="fame-icon-btn fame-hide-btn {{#if locItemHidden}}active{{/if}}" data-action="toggleLocationItemHidden" data-location="{{../detail.id}}" data-item-type="faction" data-item-id="{{id}}"><i class="fa-solid fa-{{#if locItemHidden}}eye{{else}}eye-slash{{/if}}"></i></button>{{/unless}}
+                {{#unless sourceName}}<button type="button" class="fame-icon-btn" data-action="removeFactionFromLoc" data-location="{{../detail.id}}" data-faction="{{id}}"><i class="fa-solid fa-times"></i></button>{{/unless}}
+              {{/if}}
+            </div>
           </div>
-          <div class="fame-detail-rel-center">
-            {{{tierBadge tier true}}}
-            {{#if @root.isGM}}
-              {{#unless sourceName}}<button type="button" class="fame-icon-btn fame-hide-btn {{#if locItemHidden}}active{{/if}}" data-action="toggleLocationItemHidden" data-location="{{../detail.id}}" data-item-type="faction" data-item-id="{{id}}"><i class="fa-solid fa-{{#if locItemHidden}}eye{{else}}eye-slash{{/if}}"></i></button>{{/unless}}
-              {{#unless sourceName}}<button type="button" class="fame-icon-btn" data-action="removeFactionFromLoc" data-location="{{../detail.id}}" data-faction="{{id}}"><i class="fa-solid fa-trash"></i></button>{{/unless}}
-            {{/if}}
-          </div>
-        </div>
-      {{/each}}
+        {{/each}}
+      {{else}}
+        <div class="fame-no-items">{{localize (concat @root.moduleId '.relations.no-factions')}}</div>
+      {{/if}}
     </div>
   </div>
-  {{else}}
-    {{#if @root.isGM}}
-    <div class="fame-detail-section" data-section-id="loc-factions-{{detail.id}}">
-      <div class="fame-detail-section-header" data-action="toggleDetailSection" data-section="loc-factions-{{detail.id}}">
-        <i class="fa-solid fa-chevron-right fame-section-chevron"></i>
-        <i class="fa-solid fa-flag fame-section-icon"></i>
-        <span>{{localize (concat @root.moduleId '.locations.factions-here')}}</span>
-        <span class="fame-detail-section-count">0</span>
-        <button type="button" class="fame-detail-section-add" data-action="addFactionToLoc" data-location="{{detail.id}}"><i class="fa-solid fa-plus"></i></button>
-      </div>
-      <div class="fame-detail-section-body">
-        <div class="fame-no-items">{{localize (concat @root.moduleId '.relations.no-factions')}}</div>
-      </div>
-    </div>
-    {{/if}}
-  {{/if}}
 
-  {{#if detail.actorsList.length}}
   <div class="fame-detail-section" data-section-id="loc-actors-{{detail.id}}">
     <div class="fame-detail-section-header" data-action="toggleDetailSection" data-section="loc-actors-{{detail.id}}">
       <i class="fa-solid fa-chevron-right fame-section-chevron"></i>
@@ -108,37 +94,26 @@
       {{#if @root.isGM}}<button type="button" class="fame-detail-section-add" data-action="addActorToLoc" data-location="{{detail.id}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
     </div>
     <div class="fame-detail-section-body">
-      {{#each detail.actorsList}}
-        <div class="fame-detail-rel-row {{#if locItemHidden}}is-hidden{{/if}}">
-          <div class="fame-detail-rel-left">
-            <img class="fame-detail-rel-img" src="{{img}}">
-            <span class="fame-detail-rel-name clickable" data-action="selectEntity" data-entity-type="actor" data-entity-id="{{id}}">{{name}}</span>
-            {{#if sourceName}}<span class="fame-detail-source-badge clickable" data-action="selectEntity" data-entity-type="location" data-entity-id="{{sourceLocationId}}"><i class="fa-solid fa-link"></i> {{sourceName}}</span>{{/if}}
+      {{#if detail.actorsList.length}}
+        {{#each detail.actorsList}}
+          <div class="fame-detail-rel-row {{#if locItemHidden}}is-hidden{{/if}}">
+            <div class="fame-detail-rel-left">
+              <img class="fame-detail-rel-img" src="{{img}}">
+              <span class="fame-detail-rel-name clickable" data-action="selectEntity" data-entity-type="actor" data-entity-id="{{id}}">{{name}}</span>
+            </div>
+            <div class="fame-detail-rel-center">
+              {{{tierBadge tier true}}}
+              {{#if sourceName}}<span class="fame-detail-source-badge clickable" data-action="selectEntity" data-entity-type="location" data-entity-id="{{sourceLocationId}}"><i class="fa-solid fa-link"></i> {{sourceName}}</span>{{/if}}
+              {{#if @root.isGM}}
+                {{#unless sourceName}}<button type="button" class="fame-icon-btn fame-hide-btn {{#if locItemHidden}}active{{/if}}" data-action="toggleLocationItemHidden" data-location="{{../detail.id}}" data-item-type="actor" data-item-id="{{id}}"><i class="fa-solid fa-{{#if locItemHidden}}eye{{else}}eye-slash{{/if}}"></i></button>{{/unless}}
+                {{#unless sourceName}}<button type="button" class="fame-icon-btn" data-action="removeActorFromLoc" data-location="{{../detail.id}}" data-actor="{{id}}"><i class="fa-solid fa-times"></i></button>{{/unless}}
+              {{/if}}
+            </div>
           </div>
-          <div class="fame-detail-rel-center">
-            {{#if @root.isGM}}
-              {{#unless sourceName}}<button type="button" class="fame-icon-btn fame-hide-btn {{#if locItemHidden}}active{{/if}}" data-action="toggleLocationItemHidden" data-location="{{../detail.id}}" data-item-type="actor" data-item-id="{{id}}"><i class="fa-solid fa-{{#if locItemHidden}}eye{{else}}eye-slash{{/if}}"></i></button>{{/unless}}
-              {{#unless sourceName}}<button type="button" class="fame-icon-btn" data-action="removeActorFromLoc" data-location="{{../detail.id}}" data-actor="{{id}}"><i class="fa-solid fa-trash"></i></button>{{/unless}}
-            {{/if}}
-          </div>
-        </div>
-      {{/each}}
+        {{/each}}
+      {{else}}
+        <div class="fame-no-items">{{localize (concat @root.moduleId '.relations.no-actors')}}</div>
+      {{/if}}
     </div>
   </div>
-  {{else}}
-    {{#if @root.isGM}}
-    <div class="fame-detail-section" data-section-id="loc-actors-{{detail.id}}">
-      <div class="fame-detail-section-header" data-action="toggleDetailSection" data-section="loc-actors-{{detail.id}}">
-        <i class="fa-solid fa-chevron-right fame-section-chevron"></i>
-        <i class="fa-solid fa-user fame-section-icon"></i>
-        <span>{{localize (concat @root.moduleId '.locations.actors-here')}}</span>
-        <span class="fame-detail-section-count">0</span>
-        <button type="button" class="fame-detail-section-add" data-action="addActorToLoc" data-location="{{detail.id}}"><i class="fa-solid fa-plus"></i></button>
-      </div>
-      <div class="fame-detail-section-body">
-        <div class="fame-no-items">{{localize (concat @root.moduleId '.relations.no-actors')}}</div>
-      </div>
-    </div>
-    {{/if}}
-  {{/if}}
 </div>

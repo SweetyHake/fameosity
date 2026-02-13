@@ -276,6 +276,8 @@
   padding: 0.125rem var(--fame-space-xs);
   border: 1px solid var(--fame-color-border);
   border-radius: var(--fame-radius-sm);
+  background: transparent;
+  color: var(--fame-color-text-emphatic);
   cursor: pointer;
   margin-top: var(--fame-space-xs);
   width: fit-content;
@@ -538,17 +540,16 @@
   line-height: var(--fame-line-height);
 }
 
-.fame-entity-type-select {
-  flex: 1;
-  padding: var(--fame-space-xs) var(--fame-space-md);
+.fame-detail-type-select {
+  padding: 0.2rem var(--fame-space-sm);
   border: 1px solid var(--fame-color-border);
   border-radius: var(--fame-radius-sm);
+  font-size: 0.8rem;
   background: transparent;
   color: var(--fame-color-text-emphatic);
-  cursor: pointer;
 }
 
-.fame-entity-type-select:focus {
+.fame-detail-type-select:focus {
   border-color: var(--fame-color-gold);
   outline: none;
 }
@@ -814,4 +815,27 @@
 .fame-detail-source-badge.clickable:hover {
   color: var(--fame-color-gold);
   border-color: var(--fame-color-gold);
+}
+
+.fame-entity-name {
+  font-weight: 700;
+  color: var(--fame-color-text-emphatic);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  line-height: var(--fame-line-height);
+  min-width: 0;
+  max-width: 45%;
+}
+
+.fame-creator-actor-name {
+  flex: 1;
+  font-weight: 500;
+  color: var(--fame-color-text-emphatic);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: var(--fame-line-height);
+  min-width: 0;
 }

@@ -1,5 +1,7 @@
 import * as Core from '../../core/index.js';
 import * as Data from '../../data.js';
+import { MODULE_ID } from '../../constants.js';
+
 
 function _extractDragData(event) {
   let data = null;
@@ -157,100 +159,134 @@ export function attachNestingDragDrop(html, app) {
 }
 
 export function attachNavItemDrag(html) {
-  html.querySelectorAll('.fame-nav-item[data-entity-type="actor"]').forEach(item => {
+  html.querySelectorAll('.fame-nav-item[data-entity-type]').forEach(item => {
     item.setAttribute('draggable', 'true');
+    
     item.addEventListener('dragstart', e => {
       e.stopPropagation();
-      const actorId = item.dataset.entityId;
-      const actor = game.actors.get(actorId);
-      const fameData = JSON.stringify({ type: 'actor', id: actorId });
-      e.dataTransfer.setData('application/fame-nav', fameData);
-      if (actor) {
-        const foundryData = JSON.stringify({ type: 'Actor', uuid: actor.uuid });
-        e.dataTransfer.setData('text/plain', foundryData);
-      }
-      e.dataTransfer.effectAllowed = 'copyMove';
+      const data = {
+        fameEntityType: item.dataset.entityType,
+        fameEntityId: item.dataset.entityId
+      };
+      e.dataTransfer.setData('text/plain', JSON.stringify(data));
+      e.dataTransfer.effectAllowed = 'copy';
       item.classList.add('dragging');
     });
+    
     item.addEventListener('dragend', () => {
       item.classList.remove('dragging');
-      html.querySelectorAll('.fame-drop-highlight').forEach(el => el.classList.remove('fame-drop-highlight'));
-    });
-  });
-
-  html.querySelectorAll('.fame-nav-item[data-entity-type="faction"]').forEach(item => {
-    if (!item.getAttribute('draggable')) item.setAttribute('draggable', 'true');
-    item.addEventListener('dragstart', e => {
-      e.stopPropagation();
-      e.dataTransfer.setData('application/fame-nav', JSON.stringify({ type: 'faction', id: item.dataset.entityId }));
-      e.dataTransfer.setData('application/json', JSON.stringify({ type: item.dataset.entityType, id: item.dataset.entityId }));
-      e.dataTransfer.effectAllowed = 'copyMove';
-      item.classList.add('dragging');
     });
   });
 }
 
 export function attachDetailSectionDrop(html) {
-  attachSectionDropByPrefix(html, 'fac-members-', async (sectionEl, factionId, data) => {
-    if (data?.type === 'actor') await Core.addFactionMember(factionId, data.id);
-  }, true);
+  html.querySelectorAll('.fame-relation-drop-zone').forEach(zone => {
+    zone.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+      zone.classList.add('fame-drop-highlight');
+    });
 
-  attachSectionDropByPrefix(html, 'loc-actors-', async (sectionEl, locationId, data) => {
-    if (data?.type === 'actor') await Core.addActorToLocation(locationId, data.id);
-  }, true);
+    zone.addEventListener('dragleave', e => {
+      if (!zone.contains(e.relatedTarget)) {
+        zone.classList.remove('fame-drop-highlight');
+      }
+    });
 
-  attachSectionDropByPrefix(html, 'loc-factions-', async (sectionEl, locationId, data) => {
-    if (data?.type === 'faction') await Core.addFactionToLocation(locationId, data.id);
-  }, false);
-}
+    zone.addEventListener('drop', async e => {
+      e.preventDefault();
+      e.stopPropagation();
+      zone.classList.remove('fame-drop-highlight');
 
-function attachSectionDropByPrefix(html, prefix, handler, acceptActorSidebar) {
-  html.querySelectorAll(`.fame-detail-section[data-section-id^="${prefix}"]`).forEach(section => {
-    const entityId = section.dataset.sectionId?.replace(prefix, '');
-    if (!entityId) return;
+      const entityId = zone.dataset.entityId;
+      const relType = zone.dataset.relType;
 
-    const setupDropTarget = (target) => {
-      target.addEventListener('dragover', e => {
-        e.preventDefault();
-        e.stopPropagation();
-        section.classList.add('fame-drop-highlight');
-        e.dataTransfer.dropEffect = 'copy';
-      });
-      target.addEventListener('dragleave', e => {
-        if (!section.contains(e.relatedTarget)) section.classList.remove('fame-drop-highlight');
-      });
-      target.addEventListener('drop', async e => {
-        e.preventDefault();
-        e.stopPropagation();
-        section.classList.remove('fame-drop-highlight');
+      let data;
+      try {
+        data = JSON.parse(e.dataTransfer.getData('text/plain'));
+      } catch {
+        return;
+      }
 
-        let data;
-        try { data = JSON.parse(e.dataTransfer.getData('application/fame-nav')); } catch {}
+      if (data.type === 'Actor') {
+        const actor = await fromUuid(data.uuid);
+        if (!actor || actor.id === entityId) return;
 
-        if (!data && acceptActorSidebar) {
-          const raw = _extractDragData(e);
-          if (raw?.type === 'Actor') {
-            let actor;
-            if (raw.uuid) actor = await fromUuid(raw.uuid);
-            else if (raw.id) actor = game.actors.get(raw.id);
-            if (actor) {
-              if (!actor.hasPlayerOwner) await Core.ensureImportant(actor);
-              await Core.addTracked(actor.id);
-              data = { type: 'actor', id: actor.id };
-            }
-          }
+        if (relType === 'individual') {
+          await Core.setIndRel(entityId, actor.id, 0);
+        } else if (relType === 'faction') {
+          await Core.setFactionRel(entityId, actor.id, 0);
         }
+      } else if (data.fameEntityType === 'actor') {
+        const targetId = data.fameEntityId;
+        if (targetId === entityId) return;
 
-        if (data) await handler(section, entityId, data);
-      });
-    };
+        if (relType === 'individual') {
+          await Core.setIndRel(entityId, targetId, 0);
+        } else if (relType === 'faction') {
+          await Core.setFactionRel(entityId, targetId, 0);
+        }
+      } else if (data.fameEntityType === 'faction') {
+        const targetId = data.fameEntityId;
+        if (targetId === entityId) return;
 
-    const header = section.querySelector('.fame-detail-section-header');
-    const body = section.querySelector('.fame-detail-section-body');
-    if (header) setupDropTarget(header);
-    if (body) setupDropTarget(body);
+        if (relType === 'actorFaction') {
+          await Core.setActorFactionRel(entityId, targetId, 0);
+        } else if (relType === 'factionToFaction') {
+          await Core.setFactionToFactionRel(entityId, targetId, 0);
+        }
+      }
+    });
+  });
+
+  html.querySelectorAll('.fame-member-drop-zone').forEach(zone => {
+    zone.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+      zone.classList.add('fame-drop-highlight');
+    });
+
+    zone.addEventListener('dragleave', e => {
+      if (!zone.contains(e.relatedTarget)) {
+        zone.classList.remove('fame-drop-highlight');
+      }
+    });
+
+    zone.addEventListener('drop', async e => {
+      e.preventDefault();
+      e.stopPropagation();
+      zone.classList.remove('fame-drop-highlight');
+
+      const factionId = zone.dataset.factionId;
+
+      let data;
+      try {
+        data = JSON.parse(e.dataTransfer.getData('text/plain'));
+      } catch {
+        return;
+      }
+
+      let actorId = null;
+
+      if (data.type === 'Actor') {
+        const actor = await fromUuid(data.uuid);
+        if (!actor) return;
+        actorId = actor.id;
+      } else if (data.fameEntityType === 'actor') {
+        actorId = data.fameEntityId;
+      }
+
+      if (!actorId) return;
+
+      const actor = game.actors.get(actorId);
+      if (actor && !actor.hasPlayerOwner) {
+        await Core.ensureImportant(actor);
+      }
+      await Core.addFactionMember(factionId, actorId);
+    });
   });
 }
+
 
 export function attachNavTreeSidebarDrop(html, app) {
   const handleSidebarDrop = async (e) => {

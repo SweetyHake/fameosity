@@ -136,6 +136,7 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   text-align: center;
   width: 86px;
+  min-width: 86px;
   height: 18px;
   line-height: 18px;
   overflow: hidden;
@@ -144,13 +145,13 @@
 }
 
 .fame-tier-badge.small {
-  width: 64px;
+  width: 72px;
+  min-width: 72px;
   height: 16px;
   line-height: 16px;
   padding: 0.0625rem 0.1875rem;
   font-size: 0.6rem;
 }
-
 .fame-faction-wanted-rep-reward,
 .fame-location-wanted-reward,
 .fame-faction-wanted-reward {
@@ -178,4 +179,25 @@
 
 .fame-detail-wanted-row.dragging {
   opacity: 0.4;
+}
+
+.fame-member-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: var(--fame-line-height);
+  min-width: 0;
+  max-width: 140px;
+}
+
+.fame-rel-name {
+  flex: 1;
+  word-break: break-word;
+  line-height: var(--fame-line-height);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  max-width: 120px;
 }

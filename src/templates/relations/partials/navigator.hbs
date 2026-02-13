@@ -15,6 +15,15 @@
   </div>
   {{/if}}
 
+  {{#if activePartyId}}
+  <div class="fame-nav-active-party" data-action="selectEntity" data-entity-type="faction" data-entity-id="{{activePartyId}}">
+    <i class="fa-solid fa-star fame-nav-party-icon"></i>
+    <span class="fame-nav-party-name">{{#if activePartyName}}{{activePartyName}}{{else}}{{localize (concat moduleId '.ui.active-characters')}}{{/if}}</span>
+    <span class="fame-nav-party-label">{{localize (concat moduleId '.ui.current-active-party')}}</span>
+    <i class="fa-solid fa-arrow-right fame-nav-owner-arrow"></i>
+  </div>
+  {{/if}}
+
   <div class="fame-nav-tree">
     <div class="fame-nav-group" data-group="locations">
       <div class="fame-nav-group-header" data-action="toggleNavGroup" data-group="locations">
@@ -25,8 +34,8 @@
       </div>
       <div class="fame-nav-group-items">
         {{#each allLocations}}
-        <div class="fame-nav-item {{#if (and (eq @root.selectedType 'location') (eq @root.selectedId id))}}selected{{/if}} {{#if hidden}}is-hidden{{/if}}" data-action="selectEntity" data-entity-type="location" data-entity-id="{{id}}" style="{{indentStyle level}}">
-          {{#if hasChildren}}<span class="fame-nav-tree-toggle" data-action="toggleTreeExpand" data-id="{{id}}" data-type="location"><i class="fa-solid fa-chevron-{{#if childrenVisible}}down{{else}}right{{/if}}"></i></span>
+        <div class="fame-nav-item {{#if (and (eq @root.selectedType 'location') (eq @root.selectedId id))}}selected{{/if}} {{#if hidden}}is-hidden{{/if}}" style="{{indentStyle level}}" data-action="selectEntity" data-entity-type="location" data-entity-id="{{id}}">
+          {{#if hasChildren}}<span class="fame-nav-tree-toggle" data-action="toggleTreeExpand" data-id="{{id}}" data-type="location"><i class="fa-solid fa-{{#if childrenVisible}}minus{{else}}plus{{/if}}-square"></i></span>
           {{else}}<span class="fame-nav-item-indent"></span>{{/if}}
           <img class="fame-nav-item-img" src="{{image}}">
           <span class="fame-nav-item-name">{{name}}</span>
@@ -47,8 +56,8 @@
       </div>
       <div class="fame-nav-group-items">
         {{#each allFactions}}
-        <div class="fame-nav-item {{#if (and (eq @root.selectedType 'faction') (eq @root.selectedId id))}}selected{{/if}} {{#if hidden}}is-hidden{{/if}}" data-action="selectEntity" data-entity-type="faction" data-entity-id="{{id}}" style="{{indentStyle level}}">
-          {{#if hasChildren}}<span class="fame-nav-tree-toggle" data-action="toggleTreeExpand" data-id="{{id}}" data-type="faction"><i class="fa-solid fa-chevron-{{#if childrenVisible}}down{{else}}right{{/if}}"></i></span>
+        <div class="fame-nav-item {{#if (and (eq @root.selectedType 'faction') (eq @root.selectedId id))}}selected{{/if}} {{#if hidden}}is-hidden{{/if}}" style="{{indentStyle level}}" data-action="selectEntity" data-entity-type="faction" data-entity-id="{{id}}">
+          {{#if hasChildren}}<span class="fame-nav-tree-toggle" data-action="toggleTreeExpand" data-id="{{id}}" data-type="faction"><i class="fa-solid fa-{{#if childrenVisible}}minus{{else}}plus{{/if}}-square"></i></span>
           {{else}}<span class="fame-nav-item-indent"></span>{{/if}}
           <img class="fame-nav-item-img" src="{{image}}">
           <span class="fame-nav-item-name">{{name}}</span>

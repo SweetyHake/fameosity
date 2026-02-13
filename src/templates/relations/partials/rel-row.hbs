@@ -1,20 +1,21 @@
 {{!--
-  @param relId            - id for navigation (pcId, factionId, targetFactionId)
-  @param relName          - display name
-  @param relImg           - image url
-  @param relValue         - numeric value
-  @param relTier          - tier object {color, name}
-  @param relHidden        - boolean
-  @param relType          - bar data-type (individual, faction-rel, faction-to-faction, actor-faction)
-  @param barId            - composite id for bar (entityId:targetId)
-  @param entityType       - type for selectEntity (actor, faction)
-  @param entityId         - id for selectEntity
-  @param canEdit          - boolean
-  @param relTypeKey       - for toggleRelationHidden (individual, faction, factionToFaction, actorFaction)
-  @param sourceEntityId   - entity id for hidden toggle
-  @param targetEntityId   - target id for hidden toggle
-  @param showMemberStar   - boolean
-  @param memberRank       - rank object {name, color} or null
+  @param relId         - id for navigation (pcId, factionId, targetFactionId)
+  @param relName       - display name
+  @param relImg        - image url
+  @param relValue      - numeric value
+  @param relTier       - tier object {color, name}
+  @param relHidden     - boolean
+  @param relType       - bar data-type (individual, faction-rel, faction-to-faction, actor-faction)
+  @param barId         - composite id for bar (entityId:targetId)
+  @param entityType    - type for selectEntity (actor, faction)
+  @param entityId      - id for selectEntity
+  @param canEdit       - boolean
+  @param relTypeKey    - for toggleRelationHidden (individual, faction, factionToFaction, actorFaction)
+  @param sourceEntityId - entity id for hidden toggle
+  @param targetEntityId - target id for hidden toggle
+  @param showMemberStar - boolean
+  @param memberRank    - rank object {name, color} or null
+  @param showRemoveBtn - boolean
 --}}
 <div class="fame-detail-rel-row {{#if relHidden}}is-hidden{{/if}}">
   <div class="fame-detail-rel-left">
@@ -31,13 +32,34 @@
           <span class="fame-member-rank-badge" style="background:{{memberRank.color}}">{{memberRank.name}}</span>
         {{/if}}
       </div>
-      {{#if @root.isGM}}<button type="button" class="fame-icon-btn fame-hide-btn {{#if relHidden}}active{{/if}}" data-action="toggleRelationHidden" data-rel-type="{{relTypeKey}}" data-entity-id="{{sourceEntityId}}" data-target-id="{{targetEntityId}}"><i class="fa-solid fa-{{#if relHidden}}eye{{else}}eye-slash{{/if}}"></i></button>{{/if}}
+      {{{tierBadge relTier true}}}
+      {{#if @root.isGM}}
+        <button type="button" class="fame-icon-btn fame-hide-btn {{#if relHidden}}active{{/if}}" data-action="toggleRelationHidden" data-rel-type="{{relTypeKey}}" data-entity-id="{{sourceEntityId}}" data-target-id="{{targetEntityId}}">
+          <i class="fa-solid fa-{{#if relHidden}}eye{{else}}eye-slash{{/if}}"></i>
+        </button>
+        {{#if showRemoveBtn}}
+          <button type="button" class="fame-icon-btn" data-action="removeRelation" data-rel-type="{{relTypeKey}}" data-entity-id="{{sourceEntityId}}" data-target-id="{{targetEntityId}}">
+            <i class="fa-solid fa-times"></i>
+          </button>
+        {{/if}}
+      {{/if}}
     {{else}}
       {{#if canEdit}}
+        {{{tierBadge relTier true}}}
         {{> "relations/partials/rep-bar" barId=barId barType=relType barMode="manual" value=relValue tierColor=relTier.color canEdit=true compact=true}}
-        {{#if @root.isGM}}<button type="button" class="fame-icon-btn fame-hide-btn {{#if relHidden}}active{{/if}}" data-action="toggleRelationHidden" data-rel-type="{{relTypeKey}}" data-entity-id="{{sourceEntityId}}" data-target-id="{{targetEntityId}}"><i class="fa-solid fa-{{#if relHidden}}eye{{else}}eye-slash{{/if}}"></i></button>{{/if}}
+        {{#if @root.isGM}}
+          <button type="button" class="fame-icon-btn fame-hide-btn {{#if relHidden}}active{{/if}}" data-action="toggleRelationHidden" data-rel-type="{{relTypeKey}}" data-entity-id="{{sourceEntityId}}" data-target-id="{{targetEntityId}}">
+            <i class="fa-solid fa-{{#if relHidden}}eye{{else}}eye-slash{{/if}}"></i>
+          </button>
+          {{#if showRemoveBtn}}
+            <button type="button" class="fame-icon-btn" data-action="removeRelation" data-rel-type="{{relTypeKey}}" data-entity-id="{{sourceEntityId}}" data-target-id="{{targetEntityId}}">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          {{/if}}
+        {{/if}}
       {{else}}
-        <span class="fame-rel-value-display" style="color:{{relTier.color}}">{{#if (gt relValue 0)}}+{{/if}}{{relValue}}</span>
+        {{{tierBadge relTier true}}}
+        <span class="fame-rel-value-display small" style="color:{{relTier.color}}">{{#if (gt relValue 0)}}+{{/if}}{{relValue}}</span>
       {{/if}}
     {{/if}}
   </div>

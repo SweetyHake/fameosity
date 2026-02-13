@@ -11,7 +11,7 @@
     {{#if detail.isActivePartyMember}}
       <div class="fame-member-status">
         <i class="fa-solid fa-star fame-member-status-icon"></i>
-        <span class="fame-member-status-text">{{#if detail.activePartyName}}{{detail.activePartyName}}{{else}}{{localize (concat @root.moduleId '.context.activate-party')}}{{/if}}</span>
+        <span class="fame-member-status-text">{{#if detail.activePartyName}}{{detail.activePartyName}}{{else}}{{localize (concat @root.moduleId '.ui.active-characters')}}{{/if}}</span>
       </div>
     {{else}}
       {{#if detail.hasActiveParty}}
@@ -64,7 +64,6 @@
     {{#if detail.description}}<div class="fame-detail-description-display">{{detail.description}}</div>{{/if}}
   {{/if}}
 
-  {{#if detail.playerRelations.length}}
   <div class="fame-detail-section" data-section-id="act-pc-rels-{{detail.id}}">
     <div class="fame-detail-section-header" data-action="toggleDetailSection" data-section="act-pc-rels-{{detail.id}}">
       <i class="fa-solid fa-chevron-right fame-section-chevron"></i>
@@ -80,21 +79,23 @@
           entityType="actor" entityId=pcId
           canEdit=(or @root.isGM ../detail.canEdit)
           relTypeKey="individual" sourceEntityId=../detail.id targetEntityId=pcId
+          showRemoveBtn=false
         }}
+      {{else}}
+        <div class="fame-no-items">{{localize (concat @root.moduleId '.relations.no-members')}}</div>
       {{/each}}
     </div>
   </div>
-  {{/if}}
 
-  {{#if detail.npcRelations.length}}
   <div class="fame-detail-section" data-section-id="act-npc-rels-{{detail.id}}">
     <div class="fame-detail-section-header" data-action="toggleDetailSection" data-section="act-npc-rels-{{detail.id}}">
       <i class="fa-solid fa-chevron-right fame-section-chevron"></i>
       <i class="fa-solid fa-user-tie fame-section-icon"></i>
-      <span>{{localize (concat @root.moduleId '.ui.npcs')}}</span>
+      <span>{{localize (concat @root.moduleId '.relations.relations-to-actors')}}</span>
       <span class="fame-detail-section-count">{{detail.npcRelations.length}}</span>
+      {{#if @root.isGM}}<button type="button" class="fame-detail-section-add" data-action="addActorRelation" data-entity-id="{{detail.id}}" data-rel-type="individual"><i class="fa-solid fa-plus"></i></button>{{/if}}
     </div>
-    <div class="fame-detail-section-body">
+    <div class="fame-detail-section-body fame-relation-drop-zone" data-entity-id="{{detail.id}}" data-rel-type="individual" data-target-group="npc">
       {{#each detail.npcRelations}}
         {{> "relations/partials/rel-row"
           relId=pcId relName=pcName relImg=pcImg relValue=value relTier=tier relHidden=hidden
@@ -102,11 +103,13 @@
           entityType="actor" entityId=pcId
           canEdit=(or @root.isGM ../detail.canEdit)
           relTypeKey="individual" sourceEntityId=../detail.id targetEntityId=pcId
+          showRemoveBtn=@root.isGM
         }}
+      {{else}}
+        <div class="fame-no-items">{{localize (concat @root.moduleId '.relations.no-relations')}}</div>
       {{/each}}
     </div>
   </div>
-  {{/if}}
 
   <div class="fame-detail-section" data-section-id="act-facs-{{detail.id}}">
     <div class="fame-detail-section-header" data-action="toggleDetailSection" data-section="act-facs-{{detail.id}}">
@@ -114,8 +117,9 @@
       <i class="fa-solid fa-flag fame-section-icon"></i>
       <span>{{localize (concat @root.moduleId '.relations.to-factions')}}</span>
       <span class="fame-detail-section-count">{{detail.factionRelations.length}}</span>
+      {{#if @root.isGM}}<button type="button" class="fame-detail-section-add" data-action="addFactionRelation" data-entity-id="{{detail.id}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
     </div>
-    <div class="fame-detail-section-body">
+    <div class="fame-detail-section-body fame-relation-drop-zone" data-entity-id="{{detail.id}}" data-rel-type="actorFaction">
       {{#each detail.factionRelations}}
         {{> "relations/partials/rel-row"
           relId=factionId relName=factionName relImg=factionImg relValue=value relTier=tier relHidden=(or hidden factionHidden)
@@ -125,8 +129,11 @@
           relTypeKey="actorFaction" sourceEntityId=../detail.id targetEntityId=factionId
           showMemberStar=(and isMember (not memberHidden))
           memberRank=rank
+          showRemoveBtn=@root.isGM
         }}
-      {{else}}<div class="fame-no-items">{{localize (concat @root.moduleId '.relations.no-factions')}}</div>{{/each}}
+      {{else}}
+        <div class="fame-no-items">{{localize (concat @root.moduleId '.relations.no-relations')}}</div>
+      {{/each}}
     </div>
   </div>
 </div>

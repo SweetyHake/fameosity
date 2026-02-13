@@ -6,7 +6,7 @@ import { getMode, setMode } from '../core/reputation.js';
 import { PickerApp } from './PickerApp.js';
 import { LOCATION_TYPES, FACTION_TYPES, buildActorData, buildFactionData, buildLocationData, buildDetail } from './relations/RelationsBuilders.js';
 import { loadState, saveState, resolveOwnerActor, ensureTreeExpanded, restoreNavGroups, restoreSections, restoreScroll, restoreNavWidth } from './relations/RelationsState.js';
-import { attachInputListeners, attachBarListeners, attachNavSearchListener, attachResizeHandle, attachImagePopout, attachRankDragDrop, updateBarVisual, fitTierBadges, attachActorRowDrag } from './relations/RelationsListeners.js';
+import { attachInputListeners, attachBarListeners, attachNavSearchListener, attachResizeHandle, attachImagePopout, attachRankDragDrop, updateBarVisual, fitTierBadges } from './relations/RelationsListeners.js';
 import { attachDropListeners, attachNestingDragDrop, attachNavItemDrag, attachDetailSectionDrop, attachNavTreeSidebarDrop } from './relations/RelationsDragDrop.js';
 import { attachContextMenu } from './relations/RelationsContext.js';
 
@@ -51,6 +51,10 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
       togglePartyActive: RelationsViewerApp.#onTogglePartyActive,
       setLocationControl: RelationsViewerApp.#onSetLocationControl,
       clearLocationControl: RelationsViewerApp.#onClearLocationControl,
+      addActorRelation: RelationsViewerApp.#onAddActorRelation,
+      addFactionRelation: RelationsViewerApp.#onAddFactionRelation,
+      addFactionToFactionRelation: RelationsViewerApp.#onAddFactionToFactionRelation,
+      removeRelation: RelationsViewerApp.#onRemoveRelation,
     }
   };
 
@@ -134,6 +138,9 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
       }));
     }
 
+    allLocationsFlat.sort((a, b) => a.name.localeCompare(b.name));
+    allFactionsFlat.sort((a, b) => a.name.localeCompare(b.name));
+
     let allLocations = Core.buildTree(allLocationsFlat, this.treeExpandedLocations);
     let allFactions = Core.buildTree(allFactionsFlat, this.treeExpandedFactions);
 
@@ -157,6 +164,7 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     }
 
     playerActors.sort((a, b) => a.name.localeCompare(b.name));
+    npcActors.sort((a, b) => a.name.localeCompare(b.name));
 
     let detail = null;
     if (this.selectedType && this.selectedId) {
@@ -199,7 +207,6 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
       attachResizeHandle(html, this);
       attachContextMenu(html, this);
       attachImagePopout(html);
-      attachActorRowDrag(html);
       if (game.user.isGM) {
         attachDropListeners(html);
         attachNestingDragDrop(html, this);
@@ -487,6 +494,66 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
         }
       }
     }).render(true);
+  }
+
+  static async #onAddActorRelation(event, target) {
+    event.stopPropagation();
+    if (!game.user.isGM) return;
+    const entityId = target.dataset.entityId;
+    const relType = target.dataset.relType;
+    
+    PickerApp.openActorPicker({
+      filter: a => a.id !== entityId,
+      callback: async targetId => {
+        if (relType === 'individual') {
+          await Core.setIndRel(entityId, targetId, 0);
+        } else if (relType === 'faction') {
+          await Core.setFactionRel(entityId, targetId, 0);
+        }
+      }
+    });
+  }
+
+  static async #onAddFactionRelation(event, target) {
+    event.stopPropagation();
+    if (!game.user.isGM) return;
+    const entityId = target.dataset.entityId;
+    
+    PickerApp.openFactionPicker({
+      callback: async factionId => {
+        await Core.setActorFactionRel(entityId, factionId, 0);
+      }
+    });
+  }
+
+  static async #onAddFactionToFactionRelation(event, target) {
+    event.stopPropagation();
+    if (!game.user.isGM) return;
+    const entityId = target.dataset.entityId;
+    
+    PickerApp.openFactionPicker({
+      filter: f => f.id !== entityId,
+      callback: async targetFactionId => {
+        await Core.setFactionToFactionRel(entityId, targetFactionId, 0);
+      }
+    });
+  }
+
+  static async #onRemoveRelation(event, target) {
+    event.stopPropagation();
+    if (!game.user.isGM) return;
+    
+    const { relType, entityId, targetId } = target.dataset;
+    
+    if (relType === 'individual') {
+      await Core.removeIndRel(entityId, targetId);
+    } else if (relType === 'faction') {
+      await Core.removeFactionRel(entityId, targetId);
+    } else if (relType === 'actorFaction') {
+      await Core.removeActorFactionRel(entityId, targetId);
+    } else if (relType === 'factionToFaction') {
+      await Core.removeFactionToFactionRel(entityId, targetId);
+    }
   }
 
   static async #onAdjustRep(event, target) {
