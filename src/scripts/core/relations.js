@@ -103,6 +103,15 @@ export async function setFactionToFactionRel(factionId1, factionId2, value) {
   const oldValue = getFactionToFactionRel(factionId1, factionId2);
   const clampedValue = Data.clamp(value);
 
+  if (!game.user.isGM) {
+    await Data.requestOperation(SOCKET_TYPES.SET_FACTION_TO_FACTION_REL, { factionId1, factionId2, value: clampedValue });
+    const data = Data.getData();
+    data.factionToFactionRelations ??= {};
+    data.factionToFactionRelations[factionId1] ??= {};
+    data.factionToFactionRelations[factionId1][factionId2] = clampedValue;
+    return;
+  }
+
   const data = Data.getData();
   data.factionToFactionRelations ??= {};
   data.factionToFactionRelations[factionId1] ??= {};

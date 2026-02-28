@@ -168,6 +168,9 @@ export function registerHooks() {
       const midPercentage = ((0 - min) / (max - min)) * 100;
       return Math.abs(percentage - midPercentage);
     });
+    Handlebars.registerHelper('zeroPosition', (min, max) => {
+      return ((0 - min) / (max - min)) * 100;
+    });
     Handlebars.registerHelper('tierBadge', (tier, small) => {
       if (!tier) return '';
       const cls = small === true ? 'fame-tier-badge small' : 'fame-tier-badge';
@@ -191,6 +194,10 @@ export function registerHooks() {
     }
     game.socket.on(`module.${MODULE_ID}`, data => handleSocketMessage(data));
     await migrateData();
+
+    window.addEventListener('beforeunload', () => {
+      import('./data.js').then(m => m.flushData());
+    });
   });
 
   Hooks.on('updateSetting', setting => {

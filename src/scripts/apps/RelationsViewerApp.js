@@ -89,6 +89,9 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
   }
 
   _subscribeToEvents() {
+    this._unsubscribers.forEach(unsub => typeof unsub === 'function' && unsub());
+    this._unsubscribers = [];
+
     const scheduleRender = foundry.utils.debounce(() => {
       if (this._busy || !this.rendered) return;
       this.render();

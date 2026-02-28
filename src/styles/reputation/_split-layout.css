@@ -1310,7 +1310,9 @@
   gap: var(--fame-space-sm);
   flex: 1;
   min-width: 0;
+  justify-content: flex-end;
 }
+
 
 .fame-nav-active-party {
   display: flex;
@@ -1355,4 +1357,187 @@
   margin-left: auto;
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+.fame-detail-panel {
+  flex: 1;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, var(--fame-color-surface) 0%, transparent 120px);
+}
+
+.fame-detail-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.fame-detail-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fame-detail-panel::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: var(--fame-radius-sm);
+  transition: background 0.2s ease;
+}
+
+.fame-detail-panel:hover::-webkit-scrollbar-thumb {
+  background: var(--fame-color-gold);
+}
+
+.fame-detail-panel::-webkit-scrollbar-thumb:hover {
+  background: var(--fame-color-text-emphatic);
+}
+
+.fame-nav-tree {
+  flex: 1;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding: var(--fame-space-xs) 0;
+}
+
+.fame-nav-tree::-webkit-scrollbar {
+  width: 4px;
+}
+
+.fame-nav-tree::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fame-nav-tree::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 2px;
+  transition: background 0.2s ease;
+}
+
+.fame-nav-tree:hover::-webkit-scrollbar-thumb {
+  background: var(--fame-color-gold);
+}
+
+.fame-nav-tree::-webkit-scrollbar-thumb:hover {
+  background: var(--fame-color-text-emphatic);
+}
+
+.fame-detail-name-input {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--fame-color-text-emphatic);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--fame-radius-sm);
+  padding: 0.125rem var(--fame-space-xs);
+  flex: 1;
+  min-width: 80px;
+  max-width: 200px;
+  line-height: var(--fame-line-height);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fame-detail-name-display {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--fame-color-text-emphatic);
+  line-height: var(--fame-line-height);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.fame-detail-rel-name {
+  width: 160px;
+  min-width: 160px;
+  max-width: 160px;
+  font-size: 0.8rem;
+  color: var(--fame-color-text-emphatic);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+  line-height: var(--fame-line-height);
+}
+
+.fame-detail-member-name {
+  width: 160px;
+  min-width: 160px;
+  max-width: 160px;
+  font-size: 0.8rem;
+  color: var(--fame-color-text-emphatic);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  line-height: var(--fame-line-height);
+  transition: color 0.1s ease;
+  flex-shrink: 0;
+}
+
+.fame-nav-item-name {
+  flex: 1;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--fame-color-text-emphatic);
+  line-height: var(--fame-line-height);
+  transition: color 0.1s ease;
+  min-width: 0;
+}
+
+.fame-detail-rel-row {
+  display: flex;
+  align-items: center;
+  gap: var(--fame-space-sm);
+  padding: var(--fame-space-xs);
+  border-radius: var(--fame-radius-sm);
+  margin-bottom: var(--fame-space-xs);
+  transition: background 0.1s ease;
+}
+
+.fame-detail-member-row {
+  display: flex;
+  align-items: center;
+  gap: var(--fame-space-sm);
+  padding: var(--fame-space-xs);
+  border-radius: var(--fame-radius-sm);
+  margin-bottom: var(--fame-space-xs);
+  transition: background 0.1s ease;
+  min-width: 0;
+}
+
+.fame-detail-source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.0625rem 0.3rem;
+  border-radius: var(--fame-radius-sm);
+  background: var(--fame-color-surface);
+  border: 1px solid var(--fame-color-border-soft);
+  color: var(--fame-color-text-secondary);
+  font-size: 0.65rem;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+  max-width: 100px;
+}
+
+.fame-controlled-faction {
+  display: flex;
+  align-items: center;
+  gap: var(--fame-space-xs);
+  color: var(--fame-color-text-emphatic);
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.1s ease;
+  min-width: 0;
+  max-width: 150px;
+}
+
+.fame-rel-center-end {
+  justify-content: flex-end;
 }

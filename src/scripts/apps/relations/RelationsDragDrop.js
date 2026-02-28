@@ -69,14 +69,49 @@ export function attachDropListeners(html) {
 }
 
 export function attachNestingDragDrop(html, app) {
-  html.querySelectorAll('.fame-nav-item[data-entity-type="location"], .fame-nav-item[data-entity-type="faction"]').forEach(item => {
+  html.querySelectorAll('.fame-nav-item[data-entity-type]').forEach(item => {
     item.setAttribute('draggable', 'true');
 
     item.addEventListener('dragstart', e => {
       e.stopPropagation();
-      e.dataTransfer.setData('application/json', JSON.stringify({ type: item.dataset.entityType, id: item.dataset.entityId }));
-      e.dataTransfer.effectAllowed = 'move';
+
+      const entityType = item.dataset.entityType;
+      const entityId = item.dataset.entityId;
+
+      const internalData = {
+        type: entityType,
+        id: entityId,
+        fameEntityType: entityType,
+        fameEntityId: entityId
+      };
+
+      e.dataTransfer.setData('application/json', JSON.stringify(internalData));
+
+      if (entityType === 'actor') {
+        const actor = game.actors.get(entityId);
+        if (actor) {
+          e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'Actor', uuid: actor.uuid }));
+        } else {
+          e.dataTransfer.setData('text/plain', JSON.stringify(internalData));
+        }
+      } else {
+        e.dataTransfer.setData('text/plain', JSON.stringify(internalData));
+      }
+
+      e.dataTransfer.effectAllowed = 'copyMove';
       item.classList.add('dragging');
+
+      const img = item.querySelector('.fame-nav-item-img');
+      if (img) {
+        const dragImage = img.cloneNode(true);
+        dragImage.style.width = '48px';
+        dragImage.style.height = '48px';
+        dragImage.style.position = 'absolute';
+        dragImage.style.top = '-1000px';
+        document.body.appendChild(dragImage);
+        e.dataTransfer.setDragImage(dragImage, 24, 24);
+        setTimeout(() => dragImage.remove(), 0);
+      }
     });
 
     item.addEventListener('dragend', () => {
@@ -84,51 +119,60 @@ export function attachNestingDragDrop(html, app) {
       html.querySelectorAll('.fame-drop-highlight').forEach(el => el.classList.remove('fame-drop-highlight'));
     });
 
-    item.addEventListener('dragover', e => {
-      e.preventDefault();
-      e.stopPropagation();
-      const dragging = html.querySelector('.fame-nav-item.dragging');
-      if (!dragging || dragging === item || dragging.dataset.entityType !== item.dataset.entityType) return;
-      item.classList.add('fame-drop-highlight');
-      e.dataTransfer.dropEffect = 'move';
-    });
+    if (item.dataset.entityType === 'location' || item.dataset.entityType === 'faction') {
+      item.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        const dragging = html.querySelector('.fame-nav-item.dragging');
+        if (!dragging || dragging === item) return;
+        if (dragging.dataset.entityType !== item.dataset.entityType) return;
+        item.classList.add('fame-drop-highlight');
+        e.dataTransfer.dropEffect = 'move';
+      });
 
-    item.addEventListener('dragleave', e => {
-      if (!item.contains(e.relatedTarget)) item.classList.remove('fame-drop-highlight');
-    });
+      item.addEventListener('dragleave', e => {
+        if (!item.contains(e.relatedTarget)) item.classList.remove('fame-drop-highlight');
+      });
 
-    item.addEventListener('drop', async e => {
-      e.preventDefault();
-      e.stopPropagation();
-      item.classList.remove('fame-drop-highlight');
-      let data;
-      try { data = JSON.parse(e.dataTransfer.getData('application/json')); } catch { return; }
-      if (!data?.type || !data?.id || data.id === item.dataset.entityId || data.type !== item.dataset.entityType) return;
-      const targetId = item.dataset.entityId;
-      if (data.type === 'location') {
-        const allLocs = Core.getLocations();
-        const child = allLocs.find(l => l.id === data.id);
-        const parent = allLocs.find(l => l.id === targetId);
-        if (!child || !parent || Core.isDescendant(allLocs, data.id, targetId)) return;
-        if (!Core.canNestLocation(parent.locationType, child.locationType)) {
-          ui.notifications.warn(game.i18n.localize(`fameosity.errors.cannotNest`));
-          return;
+      item.addEventListener('drop', async e => {
+        e.preventDefault();
+        e.stopPropagation();
+        item.classList.remove('fame-drop-highlight');
+
+        let data;
+        try { data = JSON.parse(e.dataTransfer.getData('application/json')); } catch { return; }
+        if (!data?.id || data.id === item.dataset.entityId) return;
+        if (data.type !== item.dataset.entityType) return;
+
+        const targetId = item.dataset.entityId;
+
+        if (data.type === 'location') {
+          const allLocs = Core.getLocations();
+          const child = allLocs.find(l => l.id === data.id);
+          const parent = allLocs.find(l => l.id === targetId);
+          if (!child || !parent) return;
+          if (Core.isDescendant(allLocs, data.id, targetId)) return;
+          if (!Core.canNestLocation(parent.locationType, child.locationType)) {
+            ui.notifications.warn(game.i18n.localize(`${MODULE_ID}.errors.cannotNest`));
+            return;
+          }
+          await Core.setLocationParent(data.id, targetId);
+          app.treeExpandedLocations.add(targetId);
+        } else if (data.type === 'faction') {
+          const allFacs = Core.getFactions();
+          const child = allFacs.find(f => f.id === data.id);
+          const parent = allFacs.find(f => f.id === targetId);
+          if (!child || !parent) return;
+          if (Core.isDescendant(allFacs, data.id, targetId)) return;
+          if (!Core.canNestFaction(parent.factionType, child.factionType)) {
+            ui.notifications.warn(game.i18n.localize(`${MODULE_ID}.errors.cannotNest`));
+            return;
+          }
+          await Core.setFactionParent(data.id, targetId);
+          app.treeExpandedFactions.add(targetId);
         }
-        await Core.setLocationParent(data.id, targetId);
-        app.treeExpandedLocations.add(targetId);
-      } else if (data.type === 'faction') {
-        const allFacs = Core.getFactions();
-        const child = allFacs.find(f => f.id === data.id);
-        const parent = allFacs.find(f => f.id === targetId);
-        if (!child || !parent || Core.isDescendant(allFacs, data.id, targetId)) return;
-        if (!Core.canNestFaction(parent.factionType, child.factionType)) {
-          ui.notifications.warn(game.i18n.localize(`fameosity.errors.cannotNest`));
-          return;
-        }
-        await Core.setFactionParent(data.id, targetId);
-        app.treeExpandedFactions.add(targetId);
-      }
-    });
+      });
+    }
   });
 
   html.querySelectorAll('.fame-nav-group-header[data-group="locations"], .fame-nav-group-header[data-group="factions"]').forEach(header => {
@@ -159,59 +203,7 @@ export function attachNestingDragDrop(html, app) {
 }
 
 export function attachNavItemDrag(html) {
-  html.querySelectorAll('.fame-nav-item[data-entity-type]').forEach(item => {
-    item.setAttribute('draggable', 'true');
-    
-    item.addEventListener('dragstart', e => {
-      e.stopPropagation();
-      
-      const entityType = item.dataset.entityType;
-      const entityId = item.dataset.entityId;
-      
-      const internalData = {
-        fameEntityType: entityType,
-        fameEntityId: entityId
-      };
-      
-      if (entityType === 'actor') {
-        const actor = game.actors.get(entityId);
-        if (actor) {
-          const dragData = {
-            type: 'Actor',
-            uuid: actor.uuid
-          };
-          e.dataTransfer.setData('text/plain', JSON.stringify(dragData));
-          e.dataTransfer.setData('application/json', JSON.stringify(internalData));
-        } else {
-          e.dataTransfer.setData('text/plain', JSON.stringify(internalData));
-        }
-      } else {
-        e.dataTransfer.setData('text/plain', JSON.stringify(internalData));
-        e.dataTransfer.setData('application/json', JSON.stringify(internalData));
-      }
-      
-      e.dataTransfer.effectAllowed = 'copyMove';
-      item.classList.add('dragging');
-      
-      if (entityType === 'actor') {
-        const img = item.querySelector('.fame-nav-item-img');
-        if (img) {
-          const dragImage = img.cloneNode(true);
-          dragImage.style.width = '48px';
-          dragImage.style.height = '48px';
-          dragImage.style.position = 'absolute';
-          dragImage.style.top = '-1000px';
-          document.body.appendChild(dragImage);
-          e.dataTransfer.setDragImage(dragImage, 24, 24);
-          setTimeout(() => dragImage.remove(), 0);
-        }
-      }
-    });
-    
-    item.addEventListener('dragend', () => {
-      item.classList.remove('dragging');
-    });
-  });
+
 }
 
 export function attachDetailSectionDrop(html) {

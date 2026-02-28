@@ -50,7 +50,7 @@
         <i class="fa-solid fa-{{#if (eq detail.mode 'auto')}}robot{{else if (eq detail.mode 'hybrid')}}shuffle{{else}}hand{{/if}}"></i>
       </button>
       <button type="button" class="fame-icon-btn fame-hide-btn {{#if detail.hidden}}active{{/if}}" data-action="toggleHidden" data-type="actor" data-id="{{detail.id}}" title="{{#if detail.hidden}}{{localize (concat @root.moduleId '.tooltips.show')}}{{else}}{{localize (concat @root.moduleId '.tooltips.hide')}}{{/if}}">
-        <i class="fa-solid fa-{{#if detail.hidden}}eye{{else}}eye-slash{{/if}}"></i>
+        <i class="fa-solid fa-eye-slash"></i>
       </button>
       <button type="button" class="fame-icon-btn" data-action="delete" data-type="actor" data-id="{{detail.id}}"><i class="fa-solid fa-trash"></i></button>
     {{/if}}

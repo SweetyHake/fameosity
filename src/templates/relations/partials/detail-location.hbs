@@ -40,7 +40,7 @@
       {{#if detail.canAddChild}}<button type="button" class="fame-icon-btn fame-add-child-btn" data-action="addChildLocation" data-parent="{{detail.id}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
       {{#if (gt detail.level 0)}}<button type="button" class="fame-icon-btn fame-unnest-btn" data-action="unnest" data-id="{{detail.id}}" data-type="location"><i class="fa-solid fa-arrow-up"></i></button>{{/if}}
       <button type="button" class="fame-icon-btn fame-hide-btn {{#if detail.hidden}}active{{/if}}" data-action="toggleHidden" data-type="location" data-id="{{detail.id}}">
-        <i class="fa-solid fa-{{#if detail.hidden}}eye{{else}}eye-slash{{/if}}"></i>
+        <i class="fa-solid fa-eye-slash"></i>
       </button>
       <button type="button" class="fame-icon-btn" data-action="delete" data-type="location" data-id="{{detail.id}}"><i class="fa-solid fa-trash"></i></button>
     {{/if}}
@@ -73,7 +73,7 @@
               {{{tierBadge tier true}}}
               {{#if sourceName}}<span class="fame-detail-source-badge clickable" data-action="selectEntity" data-entity-type="location" data-entity-id="{{sourceLocationId}}"><i class="fa-solid fa-link"></i> {{sourceName}}</span>{{/if}}
               {{#if @root.isGM}}
-                {{#unless sourceName}}<button type="button" class="fame-icon-btn fame-hide-btn {{#if locItemHidden}}active{{/if}}" data-action="toggleLocationItemHidden" data-location="{{../detail.id}}" data-item-type="faction" data-item-id="{{id}}"><i class="fa-solid fa-{{#if locItemHidden}}eye{{else}}eye-slash{{/if}}"></i></button>{{/unless}}
+                {{#unless sourceName}}<button type="button" class="fame-icon-btn fame-hide-btn {{#if locItemHidden}}active{{/if}}" data-action="toggleLocationItemHidden" data-location="{{../detail.id}}" data-item-type="faction" data-item-id="{{id}}"><i class="fa-solid fa-eye-slash"></i></button>{{/unless}}
                 {{#unless sourceName}}<button type="button" class="fame-icon-btn" data-action="removeFactionFromLoc" data-location="{{../detail.id}}" data-faction="{{id}}"><i class="fa-solid fa-times"></i></button>{{/unless}}
               {{/if}}
             </div>
@@ -105,7 +105,7 @@
               {{{tierBadge tier true}}}
               {{#if sourceName}}<span class="fame-detail-source-badge clickable" data-action="selectEntity" data-entity-type="location" data-entity-id="{{sourceLocationId}}"><i class="fa-solid fa-link"></i> {{sourceName}}</span>{{/if}}
               {{#if @root.isGM}}
-                {{#unless sourceName}}<button type="button" class="fame-icon-btn fame-hide-btn {{#if locItemHidden}}active{{/if}}" data-action="toggleLocationItemHidden" data-location="{{../detail.id}}" data-item-type="actor" data-item-id="{{id}}"><i class="fa-solid fa-{{#if locItemHidden}}eye{{else}}eye-slash{{/if}}"></i></button>{{/unless}}
+                {{#unless sourceName}}<button type="button" class="fame-icon-btn fame-hide-btn {{#if locItemHidden}}active{{/if}}" data-action="toggleLocationItemHidden" data-location="{{../detail.id}}" data-item-type="actor" data-item-id="{{id}}"><i class="fa-solid fa-eye-slash"></i></button>{{/unless}}
                 {{#unless sourceName}}<button type="button" class="fame-icon-btn" data-action="removeActorFromLoc" data-location="{{../detail.id}}" data-actor="{{id}}"><i class="fa-solid fa-times"></i></button>{{/unless}}
               {{/if}}
             </div>

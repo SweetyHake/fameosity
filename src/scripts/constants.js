@@ -77,5 +77,6 @@ export const SOCKET_TYPES = {
   SET_IND_REL: "setIndRel",
   SET_FACTION_REL: "setFactionRel",
   SET_ACTOR_FACTION_REL: "setActorFactionRel",
-  SET_CUSTOM_NAME: "setCustomName"
+  SET_CUSTOM_NAME: "setCustomName",
+  SET_FACTION_TO_FACTION_REL: "setFactionToFactionRel"
 };

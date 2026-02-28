@@ -201,3 +201,9 @@
   min-width: 0;
   max-width: 120px;
 }
+
+.fame-member-star {
+  color: var(--fame-color-gold);
+  font-size: 0.5rem;
+  flex-shrink: 0;
+}

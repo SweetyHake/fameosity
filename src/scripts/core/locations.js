@@ -50,6 +50,7 @@ export async function deleteLocation(locationId) {
   const index = locations.findIndex(l => l.id === locationId);
   if (index > -1) {
     locations.splice(index, 1);
+    Data.cleanupEntityData('location', locationId);
     await setLocations(locations);
     return true;
   }

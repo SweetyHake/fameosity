@@ -1,43 +1,43 @@
-<form class="info-popup-content" autocomplete="off">
-  <div class="info-sections">
+<form class="fame-info-content" autocomplete="off">
+  <div class="fame-info-sections">
     {{#if isGM}}
-      <div class="info-section">
-        <label class="info-label">
-          <i class="fa-solid fa-globe"></i>
-          {{publicLabel}}
-        </label>
-        {{editor info.public target="public" button=true editable=true engine="prosemirror"}}
-      </div>
-      
-      <div class="info-section">
-        <label class="info-label">
-          <i class="fa-solid fa-lock"></i>
-          {{gmLabel}}
-        </label>
-        {{editor info.gm target="gm" button=true editable=true engine="prosemirror"}}
-      </div>
+    <div class="fame-info-section">
+      <label class="fame-info-label">
+        <i class="fa-solid fa-globe"></i>
+        {{publicLabel}}
+      </label>
+      {{editor info.public target="public" button=true editable=true engine="prosemirror"}}
+    </div>
+
+    <div class="fame-info-section">
+      <label class="fame-info-label">
+        <i class="fa-solid fa-lock"></i>
+        {{gmLabel}}
+      </label>
+      {{editor info.gm target="gm" button=true editable=true engine="prosemirror"}}
+    </div>
     {{else}}
-      <div class="info-section">
-        <label class="info-label">
-          <i class="fa-solid fa-globe"></i>
-          {{publicLabel}}
-        </label>
-        <div class="info-display">
-          {{#if enrichedPublic}}
-            {{{enrichedPublic}}}
-          {{else}}
-            <em>{{noInfo}}</em>
-          {{/if}}
-        </div>
+    <div class="fame-info-section">
+      <label class="fame-info-label">
+        <i class="fa-solid fa-globe"></i>
+        {{publicLabel}}
+      </label>
+      <div class="fame-info-display">
+        {{#if enrichedPublic}}
+          {{{enrichedPublic}}}
+        {{else}}
+          <em>{{noInfo}}</em>
+        {{/if}}
       </div>
+    </div>
     {{/if}}
   </div>
-  
+
   {{#if isGM}}
-    <div class="info-footer">
-      <button type="submit" class="save-btn">
-        <i class="fa-solid fa-save"></i> {{localize "Save"}}
-      </button>
-    </div>
+  <div class="fame-info-footer">
+    <button type="submit" class="fame-save-btn">
+      <i class="fa-solid fa-save"></i> {{localize "Save"}}
+    </button>
+  </div>
   {{/if}}
 </form>

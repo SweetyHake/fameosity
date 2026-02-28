@@ -31,6 +31,7 @@ export async function removeTracked(actorId) {
   const index = tracked.indexOf(actorId);
   if (index > -1) {
     tracked.splice(index, 1);
+    Data.cleanupEntityData('actor', actorId);
     await setTracked(tracked);
     return true;
   }

@@ -55,6 +55,7 @@ export async function deleteFaction(factionId) {
   const index = factions.findIndex(f => f.id === factionId);
   if (index > -1) {
     factions.splice(index, 1);
+    Data.cleanupEntityData('faction', factionId);
     await setFactions(factions);
     return true;
   }
@@ -100,8 +101,10 @@ export async function removeFactionMember(factionId, actorId) {
 }
 
 export function getFactionRep(factionId) {
-  const { getRep } = _getRepModule();
-  return getRep(factionId, 'faction');
+  const data = Data.getData();
+  const partyId = data.activePartyId;
+  if (!partyId) return 0;
+  return data.factionToFactionRelations?.[factionId]?.[partyId] ?? 0;
 }
 
 let _repModule = null;

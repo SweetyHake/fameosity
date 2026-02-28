@@ -43,8 +43,12 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
       </div>
     `).join('');
 
-    const modeOptions = ['manual', 'auto', 'hybrid'].map(mode =>
-      `<option value="${mode}">${game.i18n.localize(`${MODULE_ID}.mode.${mode}`)}</option>`
+    const modes = ['manual', 'auto', 'hybrid'];
+    const actorModeOptions = modes.map(mode =>
+      `<option value="${mode}" ${(context.settings.defaultActorMode || 'manual') === mode ? 'selected' : ''}>${game.i18n.localize(`${MODULE_ID}.mode.${mode}`)}</option>`
+    ).join('');
+    const factionModeOptions = modes.map(mode =>
+      `<option value="${mode}" ${(context.settings.defaultFactionMode || 'manual') === mode ? 'selected' : ''}>${game.i18n.localize(`${MODULE_ID}.mode.${mode}`)}</option>`
     ).join('');
 
     div.innerHTML = `
@@ -92,16 +96,12 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
       <div class="fame-settings-panel ${context.currentTab === 'modes' ? 'active' : ''}" data-tab="modes">
         <div class="fame-form-group">
           <label>${game.i18n.localize(`${MODULE_ID}.settings.defaultActorMode.name`)}</label>
-          <select name="defaultActorMode">
-            ${modeOptions.replace(`value="${context.settings.defaultActorMode || 'manual'}"`, `value="${context.settings.defaultActorMode || 'manual'}" selected`)}
-          </select>
+          <select name="defaultActorMode">${actorModeOptions}</select>
           <p class="fame-hint">${game.i18n.localize(`${MODULE_ID}.settings.defaultActorMode.hint`)}</p>
         </div>
         <div class="fame-form-group">
           <label>${game.i18n.localize(`${MODULE_ID}.settings.defaultFactionMode.name`)}</label>
-          <select name="defaultFactionMode">
-            ${modeOptions.replace(`value="${context.settings.defaultFactionMode || 'manual'}"`, `value="${context.settings.defaultFactionMode || 'manual'}" selected`)}
-          </select>
+          <select name="defaultFactionMode">${factionModeOptions}</select>
           <p class="fame-hint">${game.i18n.localize(`${MODULE_ID}.settings.defaultFactionMode.hint`)}</p>
         </div>
       </div>
