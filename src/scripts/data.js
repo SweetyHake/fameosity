@@ -23,6 +23,11 @@ export function getData() {
 }
 
 export async function setData(data) {
+  if (!data || Object.keys(data).length === 0) {
+    console.warn(`${MODULE_ID} | Attempted to set empty/invalid data, aborting`, data);
+    return;
+  }
+  
   _dataCache = data;
   
   if (!game.user.isGM) {

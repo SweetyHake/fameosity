@@ -1,5 +1,5 @@
 import { MODULE_ID, DEFAULT_SETTINGS, DEFAULT_DATA } from './constants.js';
-import { getSettings, handleSocketMessage, getData, setData } from './data.js';
+import { getSettings, handleSocketMessage, getData, setData, invalidateCache } from './data.js';
 import { ReputationEvents } from './events.js';
 import { ReputationSettingsApp } from './apps/ReputationSettingsApp.js';
 import { RelationsViewerApp } from './apps/RelationsViewerApp.js';
@@ -11,6 +11,13 @@ import { getTracked, addTracked, removeTracked, getDisplayName, getPCs, isPlayer
 import { getFactions, getFaction, addFaction, deleteFaction, addFactionMember, removeFactionMember } from './core/factions.js';
 import { getLocations, getLocation, addLocation, deleteLocation } from './core/locations.js';
 import { getTiers, getTier } from './data.js';
+
+// Settings that are managed by this module's internal save mechanism and don't require cache invalidation
+const CACHE_MANAGED_SETTINGS = new Set([
+  'reputationData',
+  'reputationSettings',
+  'relationTiers'
+]);
 
 export function openRelationsViewer() {
   new RelationsViewerApp().render(true);
@@ -201,7 +208,13 @@ export function registerHooks() {
   });
 
   Hooks.on('updateSetting', setting => {
-    if (setting.key?.startsWith(`${MODULE_ID}.`)) import('./data.js').then(m => m.invalidateCache());
+    const key = setting.key || '';
+    if (key.startsWith(`${MODULE_ID}.`)) {
+      const settingName = key.slice(MODULE_ID.length + 1);
+      if (settingName && !CACHE_MANAGED_SETTINGS.has(settingName)) {
+        invalidateCache();
+      }
+    }
   });
 
   Hooks.on('getSceneControlButtons', controls => {
