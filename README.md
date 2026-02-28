@@ -32,13 +32,6 @@ A system agnostic reputation and relations management module for Foundry VTT tha
 - Create locations to represent cities, regions, or territories
 - Associate factions and actors with locations
 ![Location Management](https://raw.githubusercontent.com/SweetyHake/fameosity/refs/heads/main/screenshots/locations.webp)
-### Wanted System
-  - Track bounties and warrants for player characters
-  - 6-star wanted level system
-  - Bounty rewards
-  - Warrant reasons
-  - Hide/show warrants from players
-![Bounties](https://raw.githubusercontent.com/SweetyHake/fameosity/refs/heads/main/screenshots/bounties.webp)
 
 ### Individual Relations
 - Track personal relationships between NPCs and PCs
