@@ -1,10 +1,10 @@
 {
   "id": "fameosity",
   "title": "Fameosity",
-  "version": "13.3.2",
+  "version": "14.1.0",
   "compatibility": {
     "minimum": "13",
-    "verified": "13"
+    "verified": "14"
   },
   "description": "<p>A comprehensive reputation, factions, and relations management module for Foundry VTT v13+.</p>",
   "authors": [
@@ -45,7 +45,7 @@
     }
   ],
   "manifest": "https://raw.githubusercontent.com/SweetyHake/fameosity/refs/heads/main/module.json",
-  "download": "https://github.com/SweetyHake/fameosity/releases/download/13.3.2/module.zip",
+  "download": "https://github.com/SweetyHake/fameosity/releases/download/14.1.0/module.zip",
   "relationships": {
     "requires": [
       {
