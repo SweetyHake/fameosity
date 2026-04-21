@@ -231,7 +231,7 @@
     },
     "ui": {
       "type": "Тип",
-      "description-placeholder": "Описание...",
+      "description-placeholder": "Введите описание... Поддерживается @UUID и @Embed",
       "player-characters": "Персонажи игроков",
       "active-characters": "Участники группы",
       "npcs": "Персонажи",
@@ -242,7 +242,9 @@
       "no-active-party-player": "Вы не состоите в активной группе.",
       "personal-reputation": "Личная репутация",
       "custom-type-name-placeholder": "Своё название типа...",
-      "current-active-party": "Активная группа"
+      "current-active-party": "Активная группа",
+      "edit-description": "Редактировать описание",
+      "no-description": "Описание отсутствует"
     },
     "creator": {
       "title-location": "Создать локацию",

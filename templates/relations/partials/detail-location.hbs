@@ -37,8 +37,8 @@
   </div>
   <div class="fame-detail-actions">
     {{#if @root.isGM}}
-      {{#if detail.canAddChild}}<button type="button" class="fame-icon-btn fame-add-child-btn" data-action="addChildLocation" data-parent="{{detail.id}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
-      {{#if (gt detail.level 0)}}<button type="button" class="fame-icon-btn fame-unnest-btn" data-action="unnest" data-id="{{detail.id}}" data-type="location"><i class="fa-solid fa-arrow-up"></i></button>{{/if}}
+      {{#if detail.canAddChild}}<button type="button" class="fame-icon-btn fame-add-child-btn" data-action="addChildLocation" data-parent="{{detail.id}}"><i class="fa-solid fa-sitemap"></i></button>{{/if}}
+      {{#if (gt detail.level 0)}}<button type="button" class="fame-icon-btn fame-unnest-btn" data-action="unnest" data-id="{{detail.id}}" data-type="location"><i class="fa-solid fa-level-up-alt"></i></button>{{/if}}
       <button type="button" class="fame-icon-btn fame-hide-btn {{#if detail.hidden}}active{{/if}}" data-action="toggleHidden" data-type="location" data-id="{{detail.id}}">
         <i class="fa-solid fa-eye-slash"></i>
       </button>
@@ -47,11 +47,42 @@
   </div>
 </div>
 <div class="fame-detail-body">
-  {{#if @root.isGM}}
-    <textarea class="fame-detail-description" data-id="{{detail.id}}" data-entity-type="locations" placeholder="{{localize (concat @root.moduleId '.ui.description-placeholder')}}">{{detail.description}}</textarea>
-  {{else}}
-    {{#if detail.description}}<div class="fame-detail-description-display">{{detail.description}}</div>{{/if}}
-  {{/if}}
+  <div class="fame-description-block">
+    {{#if @root.isGM}}
+      {{#if detail.isEditingDescription}}
+        <prose-mirror class="fame-detail-description" data-id="{{detail.id}}" data-entity-type="locations" value="{{detail.descriptionRaw}}" placeholder="{{localize (concat @root.moduleId '.ui.description-placeholder')}}"></prose-mirror>
+      {{else}}
+        {{#if detail.descriptionRaw}}
+          <div class="fame-detail-description-display">
+            <button type="button"
+              class="fame-icon-btn fame-description-edit-btn"
+              data-action="toggleDescriptionEdit"
+              data-entity-type="location"
+              data-entity-id="{{detail.id}}"
+              title="{{localize (concat @root.moduleId '.ui.edit-description')}}">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            {{{detail.description}}}
+          </div>
+        {{else}}
+          <div class="fame-detail-description-empty">
+            <button type="button"
+              class="fame-icon-btn fame-description-edit-btn"
+              data-action="toggleDescriptionEdit"
+              data-entity-type="location"
+              data-entity-id="{{detail.id}}"
+              title="{{localize (concat @root.moduleId '.ui.edit-description')}}">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+          </div>
+        {{/if}}
+      {{/if}}
+    {{else}}
+      {{#if detail.description}}
+        <div class="fame-detail-description-display">{{{detail.description}}}</div>
+      {{/if}}
+    {{/if}}
+  </div>
 
   <div class="fame-detail-section" data-section-id="loc-factions-{{detail.id}}">
     <div class="fame-detail-section-header" data-action="toggleDetailSection" data-section="loc-factions-{{detail.id}}">
@@ -71,7 +102,7 @@
             </div>
             <div class="fame-detail-rel-center">
               {{{tierBadge tier true}}}
-              {{#if sourceName}}<span class="fame-detail-source-badge clickable" data-action="selectEntity" data-entity-type="location" data-entity-id="{{sourceLocationId}}"><i class="fa-solid fa-link"></i> {{sourceName}}</span>{{/if}}
+              {{#if sourceName}}<span class="fame-detail-source-badge clickable" data-action="selectEntity" data-entity-type="location" data-entity-id="{{sourceLocationId}}">{{sourceName}}</span>{{/if}}
               {{#if @root.isGM}}
                 {{#unless sourceName}}<button type="button" class="fame-icon-btn fame-hide-btn {{#if locItemHidden}}active{{/if}}" data-action="toggleLocationItemHidden" data-location="{{../detail.id}}" data-item-type="faction" data-item-id="{{id}}"><i class="fa-solid fa-eye-slash"></i></button>{{/unless}}
                 {{#unless sourceName}}<button type="button" class="fame-icon-btn" data-action="removeFactionFromLoc" data-location="{{../detail.id}}" data-faction="{{id}}"><i class="fa-solid fa-times"></i></button>{{/unless}}
@@ -103,7 +134,7 @@
             </div>
             <div class="fame-detail-rel-center">
               {{{tierBadge tier true}}}
-              {{#if sourceName}}<span class="fame-detail-source-badge clickable" data-action="selectEntity" data-entity-type="location" data-entity-id="{{sourceLocationId}}"><i class="fa-solid fa-link"></i> {{sourceName}}</span>{{/if}}
+              {{#if sourceName}}<span class="fame-detail-source-badge clickable" data-action="selectEntity" data-entity-type="location" data-entity-id="{{sourceLocationId}}">{{sourceName}}</span>{{/if}}
               {{#if @root.isGM}}
                 {{#unless sourceName}}<button type="button" class="fame-icon-btn fame-hide-btn {{#if locItemHidden}}active{{/if}}" data-action="toggleLocationItemHidden" data-location="{{../detail.id}}" data-item-type="actor" data-item-id="{{id}}"><i class="fa-solid fa-eye-slash"></i></button>{{/unless}}
                 {{#unless sourceName}}<button type="button" class="fame-icon-btn" data-action="removeActorFromLoc" data-location="{{../detail.id}}" data-actor="{{id}}"><i class="fa-solid fa-times"></i></button>{{/unless}}

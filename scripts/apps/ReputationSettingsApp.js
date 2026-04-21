@@ -181,7 +181,9 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
     });
 
     html.querySelector('.fame-export-btn')?.addEventListener('click', () => this._exportData());
-    html.querySelector('.fame-import-btn')?.addEventListener('click', () => html.querySelector('.fame-import-file').click());
+    html.querySelector('.fame-import-btn')?.addEventListener('click', () => {
+      html.querySelector('.fame-import-file')?.click();
+    });
     html.querySelector('.fame-import-file')?.addEventListener('change', e => this._importData(e, html));
     html.querySelector('.fame-reset-all-btn')?.addEventListener('click', () => this._resetAllData());
 
@@ -216,20 +218,27 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
       tiers: getTiers(),
       data: getData()
     };
-    const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `fameosity-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    ui.notifications.info(game.i18n.localize(`${MODULE_ID}.settings.exportSuccess`));
+    const jsonStr = JSON.stringify(exportObj, null, 2);
+    const filename = `fameosity-backup-${new Date().toISOString().slice(0, 10)}.json`;
+
+    try {
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      saveAs(blob, filename);
+      ui.notifications.info(game.i18n.localize(`${MODULE_ID}.settings.exportSuccess`));
+    } catch (err) {
+      console.error(MODULE_ID, 'Export failed:', err);
+      ui.notifications.error(game.i18n.localize(`${MODULE_ID}.settings.exportError`));
+    }
   }
 
-  async _importData(event, html) {
-    const file = event.target.files[0];
+  async _importData(source, html) {
+    let file;
+    if (source instanceof Event) {
+      file = source.target.files?.[0];
+    } else if (source instanceof File) {
+      file = source;
+    }
+
     if (!file) return;
     try {
       const text = await file.text();
@@ -238,9 +247,9 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
         ui.notifications.error(game.i18n.localize(`${MODULE_ID}.settings.importInvalid`));
         return;
       }
-      const importSettings = html.querySelector('[name="importSettings"]').checked;
-      const importTiers = html.querySelector('[name="importTiers"]').checked;
-      const importData = html.querySelector('[name="importData"]').checked;
+      const importSettings = html.querySelector('[name="importSettings"]')?.checked ?? true;
+      const importTiers = html.querySelector('[name="importTiers"]')?.checked ?? true;
+      const importData = html.querySelector('[name="importData"]')?.checked ?? true;
       if (importSettings && importObj.settings) await setSettings(importObj.settings);
       if (importTiers && importObj.tiers) await setTiers(importObj.tiers);
       if (importData && importObj.data) await setData(importObj.data);
@@ -250,7 +259,9 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
       console.error(`${MODULE_ID} | Import error:`, e);
       ui.notifications.error(game.i18n.localize(`${MODULE_ID}.settings.importError`));
     }
-    event.target.value = '';
+
+    const fileInput = html.querySelector('.fame-import-file');
+    if (fileInput) fileInput.value = '';
   }
 
   async _resetAllData() {

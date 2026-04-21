@@ -231,7 +231,7 @@
     },
     "ui": {
       "type": "Tipo",
-      "description-placeholder": "Descripción...",
+      "description-placeholder": "Introduzca descripción... @UUID y @Embed compatibles",
       "player-characters": "Personajes Jugadores",
       "active-characters": "Miembros del Grupo",
       "npcs": "Personajes",
@@ -242,7 +242,9 @@
       "no-active-party-player": "No eres parte de un grupo activo.",
       "personal-reputation": "Reputación Personal",
       "custom-type-name-placeholder": "Nombre de tipo personalizado...",
-      "current-active-party": "Grupo Activo"
+      "current-active-party": "Grupo Activo",
+      "edit-description": "Editar descripción",
+      "no-description": "Sin descripción"
     },
     "creator": {
       "title-location": "Crear Ubicación",

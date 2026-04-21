@@ -11,7 +11,7 @@
     {{#if detail.isActivePartyMember}}
       <div class="fame-member-status">
         <i class="fa-solid fa-star fame-member-status-icon"></i>
-        <span class="fame-member-status-text">{{#if detail.activePartyName}}{{detail.activePartyName}}{{else}}{{localize (concat @root.moduleId '.ui.active-characters')}}{{/if}}</span>
+        <span class="fame-member-status-text">{{#if detail.activePartyName}}{{detail.activePartyName}}{{else}}{{localize (concat @root.moduleId '.ui.active-party')}}{{/if}}</span>
       </div>
     {{else}}
       {{#if detail.hasActiveParty}}
@@ -46,23 +46,53 @@
   <div class="fame-detail-actions">
     {{#if detail.canOpenSheet}}<button type="button" class="fame-icon-btn" data-action="openActorSheet" data-actor-id="{{detail.id}}" title="{{localize (concat @root.moduleId '.context.open-sheet')}}"><i class="fa-solid fa-id-card"></i></button>{{/if}}
     {{#if @root.isGM}}
-      <button type="button" class="fame-mode-btn fame-icon-btn {{#unless (eq detail.mode 'manual')}}active{{/unless}} {{#if (eq detail.mode 'hybrid')}}hybrid{{/if}}" data-action="cycleActorMode" data-id="{{detail.id}}" title="{{localize (concat @root.moduleId '.mode.' detail.mode '-hint')}}">
+      <button type="button" class="fame-mode-btn fame-icon-btn {{#unless (eq detail.mode 'manual')}}active{{/unless}} {{#if (eq detail.mode 'auto')}}mode-auto{{else if (eq detail.mode 'hybrid')}}mode-hybrid{{/if}}" data-action="cycleActorMode" data-id="{{detail.id}}">
         <i class="fa-solid fa-{{#if (eq detail.mode 'auto')}}robot{{else if (eq detail.mode 'hybrid')}}shuffle{{else}}hand{{/if}}"></i>
       </button>
-      <button type="button" class="fame-icon-btn fame-hide-btn {{#if detail.hidden}}active{{/if}}" data-action="toggleHidden" data-type="actor" data-id="{{detail.id}}" title="{{#if detail.hidden}}{{localize (concat @root.moduleId '.tooltips.show')}}{{else}}{{localize (concat @root.moduleId '.tooltips.hide')}}{{/if}}">
+      <button type="button" class="fame-icon-btn fame-hide-btn {{#if detail.hidden}}active{{/if}}" data-action="toggleHidden" data-type="actor" data-id="{{detail.id}}">
         <i class="fa-solid fa-eye-slash"></i>
       </button>
       <button type="button" class="fame-icon-btn" data-action="delete" data-type="actor" data-id="{{detail.id}}"><i class="fa-solid fa-trash"></i></button>
     {{/if}}
   </div>
 </div>
-
 <div class="fame-detail-body">
-  {{#if @root.isGM}}
-    <textarea class="fame-detail-description" data-id="{{detail.id}}" data-entity-type="actors" placeholder="{{localize (concat @root.moduleId '.ui.description-placeholder')}}">{{detail.description}}</textarea>
-  {{else}}
-    {{#if detail.description}}<div class="fame-detail-description-display">{{detail.description}}</div>{{/if}}
-  {{/if}}
+  <div class="fame-description-block">
+    {{#if @root.isGM}}
+      {{#if detail.isEditingDescription}}
+        <prose-mirror class="fame-detail-description" data-id="{{detail.id}}" data-entity-type="actors" value="{{detail.descriptionRaw}}" placeholder="{{localize (concat @root.moduleId '.ui.description-placeholder')}}"></prose-mirror>
+      {{else}}
+        {{#if detail.descriptionRaw}}
+          <div class="fame-detail-description-display">
+            <button type="button"
+              class="fame-icon-btn fame-description-edit-btn"
+              data-action="toggleDescriptionEdit"
+              data-entity-type="actor"
+              data-entity-id="{{detail.id}}"
+              title="{{localize (concat @root.moduleId '.ui.edit-description')}}">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            {{{detail.description}}}
+          </div>
+        {{else}}
+          <div class="fame-detail-description-empty">
+            <button type="button"
+              class="fame-icon-btn fame-description-edit-btn"
+              data-action="toggleDescriptionEdit"
+              data-entity-type="actor"
+              data-entity-id="{{detail.id}}"
+              title="{{localize (concat @root.moduleId '.ui.edit-description')}}">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+          </div>
+        {{/if}}
+      {{/if}}
+    {{else}}
+      {{#if detail.description}}
+        <div class="fame-detail-description-display">{{{detail.description}}}</div>
+      {{/if}}
+    {{/if}}
+  </div>
 
   <div class="fame-detail-section" data-section-id="act-pc-rels-{{detail.id}}">
     <div class="fame-detail-section-header" data-action="toggleDetailSection" data-section="act-pc-rels-{{detail.id}}">
@@ -95,7 +125,7 @@
       <span class="fame-detail-section-count">{{detail.npcRelations.length}}</span>
       {{#if @root.isGM}}<button type="button" class="fame-detail-section-add" data-action="addActorRelation" data-entity-id="{{detail.id}}" data-rel-type="individual"><i class="fa-solid fa-plus"></i></button>{{/if}}
     </div>
-    <div class="fame-detail-section-body fame-relation-drop-zone" data-entity-id="{{detail.id}}" data-rel-type="individual" data-target-group="npc">
+    <div class="fame-detail-section-body fame-relation-drop-zone" data-entity-id="{{detail.id}}" data-rel-type="individual">
       {{#each detail.npcRelations}}
         {{> "relations/partials/rel-row"
           relId=pcId relName=pcName relImg=pcImg relValue=value relTier=tier relHidden=hidden

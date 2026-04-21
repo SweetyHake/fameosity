@@ -32,37 +32,26 @@ export function attachInputListeners(html, app) {
         loc.locationType = newType;
         if (loc.parentId) {
           const parent = locations.find(x => x.id === loc.parentId);
-          if (parent && !Core.canNestLocation(parent.locationType, newType)) {
-            loc.parentId = null;
-          }
+          if (parent && !Core.canNestLocation(parent.locationType, newType)) loc.parentId = null;
         }
         const children = locations.filter(x => x.parentId === id);
         for (const child of children) {
-          if (!Core.canNestLocation(newType, child.locationType)) {
-            child.parentId = null;
-          }
+          if (!Core.canNestLocation(newType, child.locationType)) child.parentId = null;
         }
         await Core.setLocations(locations);
       } else if (entityType === 'faction') {
-        if (Core.isActiveParty(id)) {
-          e.target.value = 'group';
-          return;
-        }
+        if (Core.isActiveParty(id)) { e.target.value = 'group'; return; }
         const factions = Core.getFactions();
         const fac = factions.find(x => x.id === id);
         if (!fac) return;
         fac.factionType = newType;
         if (fac.parentId) {
           const parent = factions.find(x => x.id === fac.parentId);
-          if (parent && !Core.canNestFaction(parent.factionType, newType)) {
-            fac.parentId = null;
-          }
+          if (parent && !Core.canNestFaction(parent.factionType, newType)) fac.parentId = null;
         }
         const children = factions.filter(x => x.parentId === id);
         for (const child of children) {
-          if (!Core.canNestFaction(newType, child.factionType)) {
-            child.parentId = null;
-          }
+          if (!Core.canNestFaction(newType, child.factionType)) child.parentId = null;
         }
         await Core.setFactions(factions);
       }
@@ -84,9 +73,23 @@ export function attachInputListeners(html, app) {
     });
   });
 
-  html.querySelectorAll('.fame-detail-description').forEach(input => {
-    input.addEventListener('change', async e => {
-      await Data.setDescription(e.target.dataset.entityType, e.target.dataset.id, e.target.value);
+  html.querySelectorAll('.fame-detail-description').forEach(editor => {
+    editor.addEventListener('change', async e => {
+      const { entityType, id } = e.target.dataset;
+      const value = e.target.value ?? '';
+      await Data.setDescription(entityType, id, value);
+    });
+    editor.addEventListener('save', e => {
+      const { entityType, id } = e.target.dataset;
+      const value = e.target.value ?? '';
+      const data = Data.getData();
+      data.descriptions ??= { actors: {}, factions: {}, locations: {} };
+      data.descriptions[entityType] ??= {};
+      data.descriptions[entityType][id] = value;
+      Data.setData(data);
+      const key = `${entityType === 'actors' ? 'actor' : entityType === 'factions' ? 'faction' : 'location'}:${id}`;
+      app._editingDescriptions?.delete(key);
+      requestAnimationFrame(() => app.render());
     });
   });
 
@@ -98,19 +101,27 @@ export function attachInputListeners(html, app) {
   });
 
   html.querySelectorAll('.fame-rank-name').forEach(input => {
-    input.addEventListener('change', async e => { await Core.updateFactionRank(e.target.dataset.faction, e.target.dataset.rank, { name: e.target.value }); });
+    input.addEventListener('change', async e => {
+      await Core.updateFactionRank(e.target.dataset.faction, e.target.dataset.rank, { name: e.target.value });
+    });
   });
 
   html.querySelectorAll('.fame-rank-multiplier').forEach(input => {
-    input.addEventListener('change', async e => { await Core.updateFactionRank(e.target.dataset.faction, e.target.dataset.rank, { multiplier: parseFloat(e.target.value) || 1 }); });
+    input.addEventListener('change', async e => {
+      await Core.updateFactionRank(e.target.dataset.faction, e.target.dataset.rank, { multiplier: parseFloat(e.target.value) });
+    });
   });
 
   html.querySelectorAll('.fame-rank-color').forEach(input => {
-    input.addEventListener('change', async e => { await Core.updateFactionRank(e.target.dataset.faction, e.target.dataset.rank, { color: e.target.value }); });
+    input.addEventListener('change', async e => {
+      await Core.updateFactionRank(e.target.dataset.faction, e.target.dataset.rank, { color: e.target.value });
+    });
   });
 
   html.querySelectorAll('.fame-member-rank-select').forEach(sel => {
-    sel.addEventListener('change', async e => { await Core.setMemberRank(e.target.dataset.faction, e.target.dataset.actor, e.target.value || null); });
+    sel.addEventListener('change', async e => {
+      await Core.setMemberRank(e.target.dataset.faction, e.target.dataset.actor, e.target.value || null);
+    });
   });
 }
 

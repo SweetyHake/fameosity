@@ -231,7 +231,7 @@
     },
     "ui": {
       "type": "Type",
-      "description-placeholder": "Description...",
+      "description-placeholder": "Enter description... @UUID and @Embed supported",
       "player-characters": "Player Characters",
       "active-characters": "Party Members",
       "npcs": "Characters",
@@ -242,7 +242,9 @@
       "no-active-party-player": "You are not part of an active party.",
       "personal-reputation": "Personal Reputation",
       "custom-type-name-placeholder": "Custom type name...",
-      "current-active-party": "Active Party"
+      "current-active-party": "Active Party",
+      "edit-description": "Edit description",
+      "no-description": "No description"
     },
     "creator": {
       "title-location": "Create Location",

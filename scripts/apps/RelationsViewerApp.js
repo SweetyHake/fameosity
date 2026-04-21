@@ -68,6 +68,7 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     this.scrollPos = 0;
     this._unsubscribers = [];
     this._busy = false;
+    this._editingDescriptions = new Set();
     this.ownerActorId = resolveOwnerActor();
     if (!this.selectedType && this.ownerActorId) {
       this.selectedType = 'actor';
@@ -114,9 +115,17 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     const pcs = Core.getPCs();
     const rawFactions = Core.getFactions();
 
-    let allActorsFlat = Core.getTracked().map(id => buildActorData(id, min, max, pcs, rawFactions)).filter(Boolean);
-    let allFactionsFlat = rawFactions.map(f => buildFactionData(f, pcs, min, max, isGM));
-    let allLocationsFlat = Core.getLocations().map(l => buildLocationData(l, allFactionsFlat, allActorsFlat, isGM));
+    let allActorsFlat = (await Promise.all(
+      Core.getTracked().map(id => buildActorData(id, min, max, pcs, rawFactions))
+    )).filter(Boolean);
+
+    let allFactionsFlat = await Promise.all(
+      rawFactions.map(f => buildFactionData(f, pcs, min, max, isGM))
+    );
+
+    let allLocationsFlat = await Promise.all(
+      Core.getLocations().map(l => buildLocationData(l, allFactionsFlat, allActorsFlat, isGM))
+    );
 
     if (!isGM) {
       allActorsFlat = allActorsFlat.filter(a => !a.hidden).map(a => ({
@@ -156,7 +165,6 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
 
     const activeParty = Core.getActiveParty();
     const activePartyMembers = activeParty ? new Set(activeParty.members || []) : null;
-
     const { pcs: playerActorsRaw, npcs: npcActors } = Core.separatePlayerAndNPC(allActorsFlat);
 
     let playerActors;
@@ -172,6 +180,9 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     let detail = null;
     if (this.selectedType && this.selectedId) {
       detail = buildDetail(this, this.selectedType, this.selectedId, allLocations, allFactions, allActorsFlat);
+      if (detail && isGM) {
+        detail.isEditingDescription = this._editingDescriptions.has(`${this.selectedType}:${this.selectedId}`);
+      }
     }
 
     let ownerActor = null;
@@ -186,6 +197,7 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
         };
       }
     }
+
     return {
       min, max, isGM, pcs, allLocations, allFactions, playerActors, npcActors,
       selectedType: this.selectedType, selectedId: this.selectedId,
@@ -198,35 +210,35 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
   }
 
   _onRender(context, options) {
-      const html = this.element;
-      const content = html.querySelector('.fame-relations-content');
-      if (content) {
-        content.classList.add('no-transitions');
-        requestAnimationFrame(() => requestAnimationFrame(() => content.classList.remove('no-transitions')));
-      }
-      attachInputListeners(html, this);
-      attachBarListeners(html, this);
-      attachNavSearchListener(html, this);
-      attachResizeHandle(html, this);
-      attachContextMenu(html, this);
-      attachImagePopout(html);
-      if (game.user.isGM) {
-        attachDropListeners(html);
-        attachNestingDragDrop(html, this);
-        attachRankDragDrop(html);
-        attachNavItemDrag(html);
-        attachDetailSectionDrop(html);
-        attachNavTreeSidebarDrop(html, this);
-      }
-      restoreNavGroups(html, this);
-      restoreSections(html, this);
-      restoreScroll(html, this);
-      restoreNavWidth(html, this);
-      fitTierBadges(html);
-      const panel = html.querySelector('.fame-detail-panel');
-      if (panel) panel.addEventListener('scroll', () => { this.scrollPos = panel.scrollTop; }, { passive: true });
-      const navTree = html.querySelector('.fame-nav-tree');
-      if (navTree) navTree.addEventListener('scroll', () => { this.navScrollPos = navTree.scrollTop; }, { passive: true });
+    const html = this.element;
+    const content = html.querySelector('.fame-relations-content');
+    if (content) {
+      content.classList.add('no-transitions');
+      requestAnimationFrame(() => requestAnimationFrame(() => content.classList.remove('no-transitions')));
+    }
+    attachInputListeners(html, this);
+    attachBarListeners(html, this);
+    attachNavSearchListener(html, this);
+    attachResizeHandle(html, this);
+    attachContextMenu(html, this);
+    attachImagePopout(html);
+    if (game.user.isGM) {
+      attachDropListeners(html);
+      attachNestingDragDrop(html, this);
+      attachRankDragDrop(html);
+      attachNavItemDrag(html);
+      attachDetailSectionDrop(html);
+      attachNavTreeSidebarDrop(html, this);
+    }
+    restoreNavGroups(html, this);
+    restoreSections(html, this);
+    restoreScroll(html, this);
+    restoreNavWidth(html, this);
+    fitTierBadges(html);
+    const panel = html.querySelector('.fame-detail-panel');
+    if (panel) panel.addEventListener('scroll', () => { this.scrollPos = panel.scrollTop; }, { passive: true });
+    const navTree = html.querySelector('.fame-nav-tree');
+    if (navTree) navTree.addEventListener('scroll', () => { this.navScrollPos = navTree.scrollTop; }, { passive: true });
   }
 
   static #onSelectEntity(event, target) {
@@ -616,4 +628,62 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
       await Core.addRep(entityId, pcId, delta);
     }
   }
+
+  static #onToggleDescriptionEdit(event, target) {
+    event.stopPropagation();
+    if (!game.user.isGM) return;
+    const key = `${target.dataset.entityType}:${target.dataset.entityId}`;
+    if (this._editingDescriptions.has(key)) {
+      this._editingDescriptions.delete(key);
+    } else {
+      this._editingDescriptions.add(key);
+    }
+    this.render();
+  }
+
+  static DEFAULT_OPTIONS = {
+    id: "fame-relations-viewer",
+    classes: ["fame-relations-viewer", "standard-form"],
+    position: { width: 1024, height: 768 },
+    window: { icon: "fa-solid fa-users", resizable: true },
+    actions: {
+      selectEntity: RelationsViewerApp.#onSelectEntity,
+      toggleNavGroup: RelationsViewerApp.#onToggleNavGroup,
+      toggleTreeExpand: RelationsViewerApp.#onToggleTreeExpand,
+      toggleDetailSection: RelationsViewerApp.#onToggleDetailSection,
+      cycleActorMode: RelationsViewerApp.#onCycleActorMode,
+      cycleFactionMode: RelationsViewerApp.#onCycleFactionMode,
+      delete: RelationsViewerApp.#onDelete,
+      addMember: RelationsViewerApp.#onAddMember,
+      removeMember: RelationsViewerApp.#onRemoveMember,
+      addRank: RelationsViewerApp.#onAddRank,
+      deleteRank: RelationsViewerApp.#onDeleteRank,
+      addFactionToLoc: RelationsViewerApp.#onAddFactionToLoc,
+      removeFactionFromLoc: RelationsViewerApp.#onRemoveFactionFromLoc,
+      addActorToLoc: RelationsViewerApp.#onAddActorToLoc,
+      removeActorFromLoc: RelationsViewerApp.#onRemoveActorFromLoc,
+      changeImage: RelationsViewerApp.#onChangeImage,
+      adjustRep: RelationsViewerApp.#onAdjustRep,
+      toggleHidden: RelationsViewerApp.#onToggleHidden,
+      toggleRelationHidden: RelationsViewerApp.#onToggleRelationHidden,
+      toggleMemberHidden: RelationsViewerApp.#onToggleMemberHidden,
+      toggleLocationItemHidden: RelationsViewerApp.#onToggleLocationItemHidden,
+      openLocationCreator: RelationsViewerApp.#onOpenLocationCreator,
+      openFactionCreator: RelationsViewerApp.#onOpenFactionCreator,
+      openActorCreator: RelationsViewerApp.#onOpenActorCreator,
+      unnest: RelationsViewerApp.#onUnnest,
+      addChildLocation: RelationsViewerApp.#onAddChildLocation,
+      addChildFaction: RelationsViewerApp.#onAddChildFaction,
+      goToOwner: RelationsViewerApp.#onGoToOwner,
+      openActorSheet: RelationsViewerApp.#onOpenActorSheet,
+      togglePartyActive: RelationsViewerApp.#onTogglePartyActive,
+      setLocationControl: RelationsViewerApp.#onSetLocationControl,
+      clearLocationControl: RelationsViewerApp.#onClearLocationControl,
+      addActorRelation: RelationsViewerApp.#onAddActorRelation,
+      addFactionRelation: RelationsViewerApp.#onAddFactionRelation,
+      addFactionToFactionRelation: RelationsViewerApp.#onAddFactionToFactionRelation,
+      removeRelation: RelationsViewerApp.#onRemoveRelation,
+      toggleDescriptionEdit: RelationsViewerApp.#onToggleDescriptionEdit,
+    }
+  };
 }
