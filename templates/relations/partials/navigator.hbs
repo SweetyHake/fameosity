@@ -122,9 +122,9 @@
 
   {{#if isGM}}
   <div class="fame-nav-actions">
-    <button type="button" class="fame-nav-action-btn" data-action="openLocationCreator"><i class="fa-solid fa-map-marker-alt"></i></button>
-    <button type="button" class="fame-nav-action-btn" data-action="openFactionCreator"><i class="fa-solid fa-flag"></i></button>
-    <button type="button" class="fame-nav-action-btn" data-action="openActorCreator"><i class="fa-solid fa-user-plus"></i></button>
+    <button type="button" class="fame-nav-action-btn" data-action="openLocationCreator" data-tooltip="{{localize (concat moduleId '.tooltips.create-location')}}"><i class="fa-solid fa-map-marker-alt"></i></button>
+    <button type="button" class="fame-nav-action-btn" data-action="openFactionCreator" data-tooltip="{{localize (concat moduleId '.tooltips.create-faction')}}"><i class="fa-solid fa-flag"></i></button>
+    <button type="button" class="fame-nav-action-btn" data-action="openActorCreator" data-tooltip="{{localize (concat moduleId '.tooltips.add-actor')}}"><i class="fa-solid fa-user-plus"></i></button>
   </div>
   {{/if}}
 </div>

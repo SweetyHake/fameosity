@@ -3,6 +3,7 @@ import { ReputationEvents } from '../events.js';
 import { getIndRel } from './relations.js';
 import { getActorFactionRel } from './relations.js';
 import { getFactionToFactionRel } from './relations.js';
+import { isHidden, isRelationHidden } from './visibility.js';
 
 export function getMode(id, type) {
   const data = Data.getData();
@@ -50,7 +51,7 @@ function _getParty() {
 function _getPartyMembers(excludeId = null) {
   const party = _getParty();
   if (!party) return [];
-  return (party.members || []).filter(id => id !== excludeId);
+  return (party.members || []).filter(id => id !== excludeId && !isHidden('actor', id));
 }
 
 function _getManualActor(actorId) {
@@ -68,8 +69,14 @@ function _getManualFaction(factionId) {
 function _calcAutoActor(actorId) {
   const members = _getPartyMembers(actorId);
   if (!members.length) return 0;
-  const sum = members.reduce((acc, memberId) => acc + getIndRel(actorId, memberId), 0);
-  return Math.round(sum / members.length);
+  let count = 0;
+  let sum = 0;
+  for (const memberId of members) {
+    if (isRelationHidden('individual', actorId, memberId)) continue;
+    sum += getIndRel(actorId, memberId);
+    count++;
+  }
+  return count > 0 ? Math.round(sum / count) : 0;
 }
 
 function _calcAutoFaction(factionId) {
@@ -83,6 +90,7 @@ function _calcAutoFaction(factionId) {
 
   for (const memberId of faction.members) {
     if (!tracked.includes(memberId)) continue;
+    if (isHidden('actor', memberId)) continue;
     const memberRep = getRep(memberId, 'actor');
     const rank = _getRankMultiplier(faction, memberId);
     weightedSum += memberRep * rank;
@@ -113,8 +121,15 @@ function _calcHybridBonus(actorId) {
   if (!members.length) return 0;
 
   const base = _getManualActor(actorId);
-  const sum = members.reduce((acc, memberId) => acc + getIndRel(actorId, memberId), 0);
-  const avg = sum / members.length;
+  let count = 0;
+  let sum = 0;
+  for (const memberId of members) {
+    if (isRelationHidden('individual', actorId, memberId)) continue;
+    sum += getIndRel(actorId, memberId);
+    count++;
+  }
+  if (!count) return 0;
+  const avg = sum / count;
 
   const { max, min } = Data.getLimits();
   const maxBonus = Math.round((max - min) * 0.25);

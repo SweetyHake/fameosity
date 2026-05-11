@@ -252,6 +252,7 @@ export function attachImagePopout(html) {
 }
 
 export function attachActorRowDrag(html) {
+  // TODO: Implement actor row drag for relation reordering
 }
 
 export function attachRankDragDrop(html) {

@@ -28,21 +28,21 @@
       {{/if}}
       {{#if @root.isGM}}
         {{#if detail.controlledByFaction}}
-          <button type="button" class="fame-icon-btn" data-action="clearLocationControl" data-location="{{detail.id}}"><i class="fa-solid fa-times"></i></button>
+          <button type="button" class="fame-icon-btn" data-action="clearLocationControl" data-location="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.clear-controller')}}"><i class="fa-solid fa-times"></i></button>
         {{else}}
-          <button type="button" class="fame-icon-btn" data-action="setLocationControl" data-location="{{detail.id}}"><i class="fa-solid fa-plus"></i></button>
+          <button type="button" class="fame-icon-btn" data-action="setLocationControl" data-location="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.set-controller')}}"><i class="fa-solid fa-plus"></i></button>
         {{/if}}
       {{/if}}
     </div>
   </div>
   <div class="fame-detail-actions">
     {{#if @root.isGM}}
-      {{#if detail.canAddChild}}<button type="button" class="fame-icon-btn fame-add-child-btn" data-action="addChildLocation" data-parent="{{detail.id}}"><i class="fa-solid fa-sitemap"></i></button>{{/if}}
-      {{#if (gt detail.level 0)}}<button type="button" class="fame-icon-btn fame-unnest-btn" data-action="unnest" data-id="{{detail.id}}" data-type="location"><i class="fa-solid fa-level-up-alt"></i></button>{{/if}}
-      <button type="button" class="fame-icon-btn fame-hide-btn {{#if detail.hidden}}active{{/if}}" data-action="toggleHidden" data-type="location" data-id="{{detail.id}}">
+      {{#if detail.canAddChild}}<button type="button" class="fame-icon-btn fame-add-child-btn" data-action="addChildLocation" data-parent="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.add-child-location')}}"><i class="fa-solid fa-sitemap"></i></button>{{/if}}
+      {{#if (gt detail.level 0)}}<button type="button" class="fame-icon-btn fame-unnest-btn" data-action="unnest" data-id="{{detail.id}}" data-type="location" data-tooltip="{{localize (concat @root.moduleId '.tooltips.unnest')}}"><i class="fa-solid fa-level-up-alt"></i></button>{{/if}}
+      <button type="button" class="fame-icon-btn fame-hide-btn {{#if detail.hidden}}active{{/if}}" data-action="toggleHidden" data-type="location" data-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.toggle-hidden')}}">
         <i class="fa-solid fa-eye-slash"></i>
       </button>
-      <button type="button" class="fame-icon-btn" data-action="delete" data-type="location" data-id="{{detail.id}}"><i class="fa-solid fa-trash"></i></button>
+      <button type="button" class="fame-icon-btn" data-action="delete" data-type="location" data-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.delete')}}"><i class="fa-solid fa-trash"></i></button>
     {{/if}}
   </div>
 </div>
@@ -59,7 +59,7 @@
               data-action="toggleDescriptionEdit"
               data-entity-type="location"
               data-entity-id="{{detail.id}}"
-              title="{{localize (concat @root.moduleId '.ui.edit-description')}}">
+              data-tooltip="{{localize (concat @root.moduleId '.tooltips.edit-description')}}">
               <i class="fa-solid fa-pen"></i>
             </button>
             {{{detail.description}}}
@@ -71,7 +71,7 @@
               data-action="toggleDescriptionEdit"
               data-entity-type="location"
               data-entity-id="{{detail.id}}"
-              title="{{localize (concat @root.moduleId '.ui.edit-description')}}">
+              data-tooltip="{{localize (concat @root.moduleId '.tooltips.edit-description')}}">
               <i class="fa-solid fa-pen"></i>
             </button>
           </div>
@@ -90,7 +90,7 @@
       <i class="fa-solid fa-flag fame-section-icon"></i>
       <span>{{localize (concat @root.moduleId '.locations.factions-here')}}</span>
       <span class="fame-detail-section-count">{{detail.factionsList.length}}</span>
-      {{#if @root.isGM}}<button type="button" class="fame-detail-section-add" data-action="addFactionToLoc" data-location="{{detail.id}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
+      {{#if @root.isGM}}<button type="button" class="fame-detail-section-add" data-action="addFactionToLoc" data-location="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.add-faction-to-location')}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
     </div>
     <div class="fame-detail-section-body">
       {{#if detail.factionsList.length}}
@@ -104,8 +104,8 @@
               {{{tierBadge tier true}}}
               {{#if sourceName}}<span class="fame-detail-source-badge clickable" data-action="selectEntity" data-entity-type="location" data-entity-id="{{sourceLocationId}}">{{sourceName}}</span>{{/if}}
               {{#if @root.isGM}}
-                {{#unless sourceName}}<button type="button" class="fame-icon-btn fame-hide-btn {{#if locItemHidden}}active{{/if}}" data-action="toggleLocationItemHidden" data-location="{{../detail.id}}" data-item-type="faction" data-item-id="{{id}}"><i class="fa-solid fa-eye-slash"></i></button>{{/unless}}
-                {{#unless sourceName}}<button type="button" class="fame-icon-btn" data-action="removeFactionFromLoc" data-location="{{../detail.id}}" data-faction="{{id}}"><i class="fa-solid fa-times"></i></button>{{/unless}}
+                {{#unless sourceName}}<button type="button" class="fame-icon-btn fame-hide-btn {{#if locItemHidden}}active{{/if}}" data-action="toggleLocationItemHidden" data-location="{{../detail.id}}" data-item-type="faction" data-item-id="{{id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.toggle-location-item-hidden')}}"><i class="fa-solid fa-eye-slash"></i></button>{{/unless}}
+                {{#unless sourceName}}<button type="button" class="fame-icon-btn" data-action="removeFactionFromLoc" data-location="{{../detail.id}}" data-faction="{{id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.remove-from-location')}}"><i class="fa-solid fa-times"></i></button>{{/unless}}
               {{/if}}
             </div>
           </div>
@@ -122,7 +122,7 @@
       <i class="fa-solid fa-user fame-section-icon"></i>
       <span>{{localize (concat @root.moduleId '.locations.actors-here')}}</span>
       <span class="fame-detail-section-count">{{detail.actorsList.length}}</span>
-      {{#if @root.isGM}}<button type="button" class="fame-detail-section-add" data-action="addActorToLoc" data-location="{{detail.id}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
+      {{#if @root.isGM}}<button type="button" class="fame-detail-section-add" data-action="addActorToLoc" data-location="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.add-actor-to-location')}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
     </div>
     <div class="fame-detail-section-body">
       {{#if detail.actorsList.length}}
@@ -136,8 +136,8 @@
               {{{tierBadge tier true}}}
               {{#if sourceName}}<span class="fame-detail-source-badge clickable" data-action="selectEntity" data-entity-type="location" data-entity-id="{{sourceLocationId}}">{{sourceName}}</span>{{/if}}
               {{#if @root.isGM}}
-                {{#unless sourceName}}<button type="button" class="fame-icon-btn fame-hide-btn {{#if locItemHidden}}active{{/if}}" data-action="toggleLocationItemHidden" data-location="{{../detail.id}}" data-item-type="actor" data-item-id="{{id}}"><i class="fa-solid fa-eye-slash"></i></button>{{/unless}}
-                {{#unless sourceName}}<button type="button" class="fame-icon-btn" data-action="removeActorFromLoc" data-location="{{../detail.id}}" data-actor="{{id}}"><i class="fa-solid fa-times"></i></button>{{/unless}}
+                {{#unless sourceName}}<button type="button" class="fame-icon-btn fame-hide-btn {{#if locItemHidden}}active{{/if}}" data-action="toggleLocationItemHidden" data-location="{{../detail.id}}" data-item-type="actor" data-item-id="{{id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.toggle-location-item-hidden')}}"><i class="fa-solid fa-eye-slash"></i></button>{{/unless}}
+                {{#unless sourceName}}<button type="button" class="fame-icon-btn" data-action="removeActorFromLoc" data-location="{{../detail.id}}" data-actor="{{id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.remove-from-location')}}"><i class="fa-solid fa-times"></i></button>{{/unless}}
               {{/if}}
             </div>
           </div>

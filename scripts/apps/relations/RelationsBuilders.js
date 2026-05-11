@@ -56,7 +56,7 @@ export async function buildActorData(id, min, max, pcs, rawFactions) {
   const hidden = Core.isHidden('actor', id);
   const descriptionRaw = Data.getDescription('actors', id);
   const description = descriptionRaw
-    ? await TextEditor.enrichHTML(descriptionRaw, { async: true, relativeTo: actor })
+    ? await (foundry.applications.ux?.TextEditor?.implementation ?? TextEditor).enrichHTML(descriptionRaw, { async: true, relativeTo: actor })
     : '';
   const isPC = Core.isPlayerCharacter(id);
   const activeParty = Core.getActiveParty();
@@ -172,7 +172,7 @@ export async function buildFactionData(faction, pcs, min, max, isGM) {
   const typeInfo = getFactionTypeInfo(faction.factionType, faction.customTypeName);
   const descriptionRaw = Data.getDescription('factions', faction.id);
   const description = descriptionRaw
-    ? await TextEditor.enrichHTML(descriptionRaw, { async: true })
+    ? await (foundry.applications.ux?.TextEditor?.implementation ?? TextEditor).enrichHTML(descriptionRaw, { async: true })
     : '';
   const isPartyActive = Core.isActiveParty(faction.id);
   const isGroup = faction.factionType === 'group';
@@ -322,7 +322,7 @@ export async function buildLocationData(loc, allFactions, allActors, isGM) {
   const typeInfo = getLocationTypeInfo(loc.locationType, loc.customTypeName);
   const descriptionRaw = Data.getDescription('locations', loc.id);
   const description = descriptionRaw
-    ? await TextEditor.enrichHTML(descriptionRaw, { async: true })
+    ? await (foundry.applications.ux?.TextEditor?.implementation ?? TextEditor).enrichHTML(descriptionRaw, { async: true })
     : '';
 
   let controlledByFaction = null;

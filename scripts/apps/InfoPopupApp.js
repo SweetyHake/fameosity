@@ -36,7 +36,7 @@ export class InfoPopupApp extends foundry.applications.api.HandlebarsApplication
   async _prepareContext() {
     const info = getEntityInfo(this.entityType, this.entityId);
     const isGM = game.user.isGM;
-    const enrichedPublic = await TextEditor.enrichHTML(info.public || '', { async: true });
+    const enrichedPublic = await (foundry.applications.ux?.TextEditor?.implementation ?? TextEditor).enrichHTML(info.public || '', { async: true });
 
     return {
       info,

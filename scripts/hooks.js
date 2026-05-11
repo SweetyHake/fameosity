@@ -1,5 +1,5 @@
-import { MODULE_ID, DEFAULT_SETTINGS, DEFAULT_DATA } from './constants.js';
-import { getSettings, handleSocketMessage, getData, setData, invalidateCache } from './data.js';
+import { MODULE_ID, DEFAULT_SETTINGS, DEFAULT_DATA, DATA_SEGMENTS } from './constants.js';
+import { getSettings, handleSocketMessage, getData, setData, invalidateCache, migrateToSegments } from './data.js';
 import { ReputationEvents } from './events.js';
 import { ReputationSettingsApp } from './apps/ReputationSettingsApp.js';
 import { RelationsViewerApp } from './apps/RelationsViewerApp.js';
@@ -16,7 +16,9 @@ import { getTiers, getTier } from './data.js';
 const CACHE_MANAGED_SETTINGS = new Set([
   'reputationData',
   'reputationSettings',
-  'relationTiers'
+  'relationTiers',
+  ...Object.keys(DATA_SEGMENTS),
+  'repData-migrated'
 ]);
 
 export function openRelationsViewer() {
@@ -86,6 +88,13 @@ export function registerSettings() {
   game.settings.register(MODULE_ID, "reputationSettings", { scope: "world", config: false, type: Object, default: { ...DEFAULT_SETTINGS } });
   game.settings.register(MODULE_ID, "reputationData", { scope: "world", config: false, type: Object, default: { ...DEFAULT_DATA } });
   game.settings.register(MODULE_ID, "relationTiers", { scope: "world", config: false, type: Array, default: [] });
+
+  // Incremental data segments
+  for (const segKey of Object.keys(DATA_SEGMENTS)) {
+    game.settings.register(MODULE_ID, segKey, { scope: "world", config: false, type: Object, default: {} });
+  }
+  game.settings.register(MODULE_ID, "repData-migrated", { scope: "world", config: false, type: Boolean, default: false });
+
   game.settings.register(MODULE_ID, "relationsViewerPosition", { scope: "client", config: false, type: Object, default: {} });
   game.settings.register(MODULE_ID, "relationsViewerState", { scope: "client", config: false, type: Object, default: { closedNavGroups: [], openSections: [], treeExpandedLocations: [], treeExpandedFactions: [], navWidth: null } });
 
@@ -201,6 +210,7 @@ export function registerHooks() {
     }
     game.socket.on(`module.${MODULE_ID}`, data => handleSocketMessage(data));
     await migrateData();
+    await migrateToSegments();
 
     window.addEventListener('beforeunload', () => {
       import('./data.js').then(m => m.flushData());

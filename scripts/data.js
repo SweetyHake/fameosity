@@ -1,4 +1,4 @@
-import { MODULE_ID, DEFAULT_DATA, DEFAULT_SETTINGS, DEFAULT_TIER_KEYS, SOCKET_TYPES } from './constants.js';
+import { MODULE_ID, DEFAULT_DATA, DEFAULT_SETTINGS, DEFAULT_TIER_KEYS, SOCKET_TYPES, DATA_SEGMENTS } from './constants.js';
 import { ReputationEvents } from './events.js';
 
 let _dataCache = null;
@@ -7,6 +7,8 @@ let _tiersCache = null;
 let _saveTimeout = null;
 let _pendingResolvers = [];
 let _isSaving = false;
+let _dirtySegments = new Set();
+let _lastSavedSnapshots = {};
 const SAVE_DELAY = 300;
 
 export function escapeHtml(text) {
@@ -15,9 +17,96 @@ export function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// ─── Segment helpers ───────────────────────────────────────────────────────────
+
+function _getSegmentForKey(dataKey) {
+  for (const [segName, keys] of Object.entries(DATA_SEGMENTS)) {
+    if (keys.includes(dataKey)) return segName;
+  }
+  return null;
+}
+
+function _buildDataFromSegments() {
+  const data = {};
+  for (const [segName, keys] of Object.entries(DATA_SEGMENTS)) {
+    const seg = game.settings.get(MODULE_ID, segName) || {};
+    for (const key of keys) {
+      data[key] = seg[key] ?? foundry.utils.deepClone(DEFAULT_DATA[key]);
+    }
+  }
+  return data;
+}
+
+function _extractSegment(data, segName) {
+  const keys = DATA_SEGMENTS[segName];
+  const seg = {};
+  for (const key of keys) {
+    seg[key] = data[key];
+  }
+  return seg;
+}
+
+function _markAllDirty() {
+  for (const segName of Object.keys(DATA_SEGMENTS)) {
+    _dirtySegments.add(segName);
+  }
+}
+
+// ─── Migration ─────────────────────────────────────────────────────────────────
+
+export async function migrateToSegments() {
+  if (!game.user.isGM) return;
+
+  const migrated = game.settings.get(MODULE_ID, "repData-migrated");
+  if (migrated) return;
+
+  // Read old monolithic data
+  const oldData = game.settings.get(MODULE_ID, "reputationData");
+  if (!oldData || Object.keys(oldData).length === 0) {
+    await game.settings.set(MODULE_ID, "repData-migrated", true);
+    return;
+  }
+
+  // Clean legacy fields
+  delete oldData.personalVisibility;
+  delete oldData.customPCs;
+
+  // Ensure factionToFaction in hiddenRelations
+  if (oldData.hiddenRelations && !oldData.hiddenRelations.factionToFaction) {
+    oldData.hiddenRelations.factionToFaction = {};
+  }
+
+  // Split into segments
+  for (const [segName, keys] of Object.entries(DATA_SEGMENTS)) {
+    const seg = {};
+    for (const key of keys) {
+      seg[key] = oldData[key] ?? foundry.utils.deepClone(DEFAULT_DATA[key]);
+    }
+    await game.settings.set(MODULE_ID, segName, seg);
+  }
+
+  await game.settings.set(MODULE_ID, "repData-migrated", true);
+  _dataCache = null;
+  _lastSavedSnapshots = {};
+  _dirtySegments.clear();
+  console.log(`${MODULE_ID} | Migrated monolithic data to incremental segments`);
+}
+
+// ─── Data access ───────────────────────────────────────────────────────────────
+
 export function getData() {
   if (!_dataCache) {
-    _dataCache = foundry.utils.deepClone(game.settings.get(MODULE_ID, "reputationData")) || { ...DEFAULT_DATA };
+    const migrated = game.settings.get(MODULE_ID, "repData-migrated");
+    if (migrated) {
+      _dataCache = _buildDataFromSegments();
+    } else {
+      // Not yet migrated — use legacy monolithic setting
+      _dataCache = foundry.utils.deepClone(game.settings.get(MODULE_ID, "reputationData")) || { ...DEFAULT_DATA };
+    }
+    // Snapshot for dirty detection
+    for (const segName of Object.keys(DATA_SEGMENTS)) {
+      _lastSavedSnapshots[segName] = JSON.stringify(_extractSegment(_dataCache, segName));
+    }
   }
   return _dataCache;
 }
@@ -27,13 +116,21 @@ export async function setData(data) {
     console.warn(`${MODULE_ID} | Attempted to set empty/invalid data, aborting`, data);
     return;
   }
-  
+
   _dataCache = data;
-  
+
+  // Determine which segments changed
+  for (const segName of Object.keys(DATA_SEGMENTS)) {
+    const currentJson = JSON.stringify(_extractSegment(data, segName));
+    if (currentJson !== _lastSavedSnapshots[segName]) {
+      _dirtySegments.add(segName);
+    }
+  }
+
   if (!game.user.isGM) {
     return requestGMUpdate(data);
   }
-  
+
   return new Promise(resolve => {
     _pendingResolvers.push(resolve);
     if (_saveTimeout) clearTimeout(_saveTimeout);
@@ -47,15 +144,32 @@ async function _executeSave() {
     _saveTimeout = setTimeout(() => _executeSave(), SAVE_DELAY);
     return;
   }
-  
+
   _isSaving = true;
   _saveTimeout = null;
-  
+
   const resolvers = [..._pendingResolvers];
   _pendingResolvers = [];
-  
+
   try {
-    await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
+    const migrated = game.settings.get(MODULE_ID, "repData-migrated");
+
+    if (migrated) {
+      // Incremental: only save dirty segments
+      const savePromises = [];
+      for (const segName of _dirtySegments) {
+        const seg = _extractSegment(_dataCache, segName);
+        _lastSavedSnapshots[segName] = JSON.stringify(seg);
+        savePromises.push(game.settings.set(MODULE_ID, segName, foundry.utils.deepClone(seg)));
+      }
+      _dirtySegments.clear();
+      await Promise.all(savePromises);
+    } else {
+      // Legacy fallback (before migration runs)
+      await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
+      _dirtySegments.clear();
+    }
+
     broadcastDataUpdate();
     ReputationEvents.emit(ReputationEvents.EVENTS.DATA_LOADED, { data: _dataCache });
   } catch (e) {
@@ -84,7 +198,7 @@ async function requestGMUpdate(data) {
       game.socket.off(`module.${MODULE_ID}`, handler);
       reject(new Error('GM update request timed out'));
     }, 10000);
-    
+
     const handler = (response) => {
       if (response.requestId === requestId) {
         clearTimeout(timeout);
@@ -92,7 +206,7 @@ async function requestGMUpdate(data) {
         response.success ? resolve() : reject(new Error(response.error || 'Update failed'));
       }
     };
-    
+
     game.socket.on(`module.${MODULE_ID}`, handler);
     game.socket.emit(`module.${MODULE_ID}`, {
       type: SOCKET_TYPES.REQUEST_DATA_UPDATE,
@@ -110,7 +224,7 @@ export function requestOperation(type, payload) {
       game.socket.off(`module.${MODULE_ID}`, handler);
       reject(new Error('Operation request timed out'));
     }, 10000);
-    
+
     const handler = (response) => {
       if (response.requestId === requestId) {
         clearTimeout(timeout);
@@ -118,7 +232,7 @@ export function requestOperation(type, payload) {
         response.success ? resolve(response.result) : reject(new Error(response.error || 'Operation failed'));
       }
     };
-    
+
     game.socket.on(`module.${MODULE_ID}`, handler);
     game.socket.emit(`module.${MODULE_ID}`, { type, ...payload, requestId, userId: game.user.id });
   });
@@ -126,10 +240,6 @@ export function requestOperation(type, payload) {
 
 function _validateDataStructure(data) {
   if (!data || typeof data !== 'object') return false;
-  const requiredKeys = ['actors', 'factions', 'trackedActors'];
-  for (const key of requiredKeys) {
-    if (!(key in data)) return false;
-  }
   if (!Array.isArray(data.factions)) return false;
   if (!Array.isArray(data.trackedActors)) return false;
   return true;
@@ -144,6 +254,10 @@ export function handleSocketMessage(message) {
       if (!game.user.isGM) {
         if (_validateDataStructure(message.data)) {
           _dataCache = message.data;
+          // Update snapshots
+          for (const segName of Object.keys(DATA_SEGMENTS)) {
+            _lastSavedSnapshots[segName] = JSON.stringify(_extractSegment(_dataCache, segName));
+          }
           ReputationEvents.emit(ReputationEvents.EVENTS.DATA_LOADED, { data: _dataCache });
         }
       }
@@ -176,13 +290,31 @@ async function handleGMDataUpdate(message) {
       return;
     }
     _dataCache = message.data;
-    await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
+    _markAllDirty();
+    await _executeSaveImmediate();
     broadcastDataUpdate();
     game.socket.emit(`module.${MODULE_ID}`, { requestId: message.requestId, success: true });
     ReputationEvents.emit(ReputationEvents.EVENTS.DATA_LOADED, { data: _dataCache });
   } catch (e) {
     console.error(`${MODULE_ID} | GM update error:`, e);
     game.socket.emit(`module.${MODULE_ID}`, { requestId: message.requestId, success: false, error: e.message });
+  }
+}
+
+async function _executeSaveImmediate() {
+  const migrated = game.settings.get(MODULE_ID, "repData-migrated");
+  if (migrated) {
+    const savePromises = [];
+    for (const segName of _dirtySegments) {
+      const seg = _extractSegment(_dataCache, segName);
+      _lastSavedSnapshots[segName] = JSON.stringify(seg);
+      savePromises.push(game.settings.set(MODULE_ID, segName, foundry.utils.deepClone(seg)));
+    }
+    _dirtySegments.clear();
+    await Promise.all(savePromises);
+  } else {
+    await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
+    _dirtySegments.clear();
   }
 }
 
@@ -194,7 +326,8 @@ async function handleSetIndRel(message) {
     data.individualRelations[fromId] ??= {};
     data.individualRelations[fromId][toId] = clamp(value);
     _dataCache = data;
-    await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
+    _dirtySegments.add('repData-relations');
+    await _executeSaveImmediate();
     broadcastDataUpdate();
     game.socket.emit(`module.${MODULE_ID}`, { requestId, success: true });
     ReputationEvents.emit(ReputationEvents.EVENTS.RELATION_CHANGED, { npcId: fromId, pcId: toId, newValue: data.individualRelations[fromId][toId] });
@@ -212,7 +345,8 @@ async function handleSetFactionRel(message) {
     data.factionRelations[factionId] ??= {};
     data.factionRelations[factionId][pcId] = clamp(value);
     _dataCache = data;
-    await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
+    _dirtySegments.add('repData-relations');
+    await _executeSaveImmediate();
     broadcastDataUpdate();
     game.socket.emit(`module.${MODULE_ID}`, { requestId, success: true });
     ReputationEvents.emit(ReputationEvents.EVENTS.RELATION_CHANGED, { factionId, pcId, newValue: data.factionRelations[factionId][pcId], type: 'faction' });
@@ -230,7 +364,8 @@ async function handleSetActorFactionRel(message) {
     data.actorFactionRelations[actorId] ??= {};
     data.actorFactionRelations[actorId][factionId] = clamp(value);
     _dataCache = data;
-    await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
+    _dirtySegments.add('repData-relations');
+    await _executeSaveImmediate();
     broadcastDataUpdate();
     game.socket.emit(`module.${MODULE_ID}`, { requestId, success: true });
     ReputationEvents.emit(ReputationEvents.EVENTS.RELATION_CHANGED, { actorId, factionId, newValue: data.actorFactionRelations[actorId][factionId], type: 'actor-faction' });
@@ -248,7 +383,8 @@ async function handleSetFactionToFactionRel(message) {
     data.factionToFactionRelations[factionId1] ??= {};
     data.factionToFactionRelations[factionId1][factionId2] = clamp(value);
     _dataCache = data;
-    await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
+    _dirtySegments.add('repData-relations');
+    await _executeSaveImmediate();
     broadcastDataUpdate();
     game.socket.emit(`module.${MODULE_ID}`, { requestId, success: true });
     ReputationEvents.emit(ReputationEvents.EVENTS.RELATION_CHANGED, { factionId1, factionId2, newValue: data.factionToFactionRelations[factionId1][factionId2], type: 'faction-to-faction' });
@@ -265,7 +401,8 @@ async function handleSetCustomName(message) {
     data.actorNames ??= {};
     data.actorNames[actorId] = name;
     _dataCache = data;
-    await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
+    _dirtySegments.add('repData-entities');
+    await _executeSaveImmediate();
     broadcastDataUpdate();
     game.socket.emit(`module.${MODULE_ID}`, { requestId, success: true });
   } catch (e) {
@@ -282,7 +419,7 @@ export async function flushData() {
     _pendingResolvers = [];
     try {
       if (game.user.isGM) {
-        await game.settings.set(MODULE_ID, "reputationData", foundry.utils.deepClone(_dataCache));
+        await _executeSaveImmediate();
       } else {
         await requestGMUpdate(_dataCache);
       }
@@ -292,6 +429,8 @@ export async function flushData() {
     resolvers.forEach(r => r());
   }
 }
+
+// ─── Settings / Tiers ──────────────────────────────────────────────────────────
 
 export function getSettings() {
   if (!_settingsCache) {
@@ -362,7 +501,11 @@ export function invalidateCache() {
   _dataCache = null;
   _settingsCache = null;
   _tiersCache = null;
+  _lastSavedSnapshots = {};
+  _dirtySegments.clear();
 }
+
+// ─── Locations / Info / Descriptions ───────────────────────────────────────────
 
 export function getLocations() {
   return getData().locations || [];
@@ -439,7 +582,7 @@ export function cleanupEntityData(entityType, entityId) {
     }
 
     if (data.hiddenRelations) {
-      for (const relType of ['individual', 'faction', 'actorFaction']) {
+      for (const relType of ['individual', 'faction', 'actorFaction', 'factionToFaction']) {
         if (data.hiddenRelations[relType]) {
           delete data.hiddenRelations[relType][id];
           for (const key of Object.keys(data.hiddenRelations[relType])) {

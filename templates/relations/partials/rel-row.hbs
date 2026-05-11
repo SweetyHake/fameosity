@@ -33,11 +33,11 @@
         {{/if}}
       </div>
       {{#if @root.isGM}}
-        <button type="button" class="fame-icon-btn fame-hide-btn {{#if relHidden}}active{{/if}}" data-action="toggleRelationHidden" data-rel-type="{{relTypeKey}}" data-entity-id="{{sourceEntityId}}" data-target-id="{{targetEntityId}}">
+        <button type="button" class="fame-icon-btn fame-hide-btn {{#if relHidden}}active{{/if}}" data-action="toggleRelationHidden" data-rel-type="{{relTypeKey}}" data-entity-id="{{sourceEntityId}}" data-target-id="{{targetEntityId}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.toggle-relation-hidden')}}">
           <i class="fa-solid fa-eye-slash"></i>
         </button>
         {{#if showRemoveBtn}}
-          <button type="button" class="fame-icon-btn" data-action="removeRelation" data-rel-type="{{relTypeKey}}" data-entity-id="{{sourceEntityId}}" data-target-id="{{targetEntityId}}">
+          <button type="button" class="fame-icon-btn" data-action="removeRelation" data-rel-type="{{relTypeKey}}" data-entity-id="{{sourceEntityId}}" data-target-id="{{targetEntityId}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.remove-relation')}}">
             <i class="fa-solid fa-times"></i>
           </button>
         {{/if}}
@@ -47,11 +47,11 @@
         {{{tierBadge relTier true}}}
         {{> "relations/partials/rep-bar" barId=barId barType=relType barMode="manual" value=relValue tierColor=relTier.color canEdit=true compact=true}}
         {{#if @root.isGM}}
-          <button type="button" class="fame-icon-btn fame-hide-btn {{#if relHidden}}active{{/if}}" data-action="toggleRelationHidden" data-rel-type="{{relTypeKey}}" data-entity-id="{{sourceEntityId}}" data-target-id="{{targetEntityId}}">
+          <button type="button" class="fame-icon-btn fame-hide-btn {{#if relHidden}}active{{/if}}" data-action="toggleRelationHidden" data-rel-type="{{relTypeKey}}" data-entity-id="{{sourceEntityId}}" data-target-id="{{targetEntityId}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.toggle-relation-hidden')}}">
             <i class="fa-solid fa-eye-slash"></i>
           </button>
           {{#if showRemoveBtn}}
-            <button type="button" class="fame-icon-btn" data-action="removeRelation" data-rel-type="{{relTypeKey}}" data-entity-id="{{sourceEntityId}}" data-target-id="{{targetEntityId}}">
+            <button type="button" class="fame-icon-btn" data-action="removeRelation" data-rel-type="{{relTypeKey}}" data-entity-id="{{sourceEntityId}}" data-target-id="{{targetEntityId}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.remove-relation')}}">
               <i class="fa-solid fa-times"></i>
             </button>
           {{/if}}

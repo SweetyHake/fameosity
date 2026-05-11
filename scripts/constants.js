@@ -50,7 +50,8 @@ export const DEFAULT_DATA = {
   hiddenRelations: {
     individual: {},
     faction: {},
-    actorFaction: {}
+    actorFaction: {},
+    factionToFaction: {}
   },
   hiddenMembers: {},
   hiddenLocationItems: {
@@ -58,7 +59,6 @@ export const DEFAULT_DATA = {
     actors: {}
   },
   actorNames: {},
-  personalVisibility: {},
   locations: [],
   entityInfo: {},
   descriptions: {
@@ -66,7 +66,6 @@ export const DEFAULT_DATA = {
     factions: {},
     locations: {}
   },
-  customPCs: [],
   activePartyId: null
 };
 
@@ -79,4 +78,12 @@ export const SOCKET_TYPES = {
   SET_ACTOR_FACTION_REL: "setActorFactionRel",
   SET_CUSTOM_NAME: "setCustomName",
   SET_FACTION_TO_FACTION_REL: "setFactionToFactionRel"
+};
+
+export const DATA_SEGMENTS = {
+  'repData-entities': ['factions', 'locations', 'trackedActors', 'actors', 'actorNames', 'activePartyId'],
+  'repData-relations': ['individualRelations', 'factionRelations', 'actorFactionRelations', 'factionToFactionRelations'],
+  'repData-modes': ['modeFlags'],
+  'repData-visibility': ['hiddenItems', 'hiddenRelations', 'hiddenMembers', 'hiddenLocationItems'],
+  'repData-content': ['entityInfo', 'descriptions']
 };

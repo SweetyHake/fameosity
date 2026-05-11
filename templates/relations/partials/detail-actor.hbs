@@ -44,21 +44,21 @@
     {{/if}}
   </div>
   <div class="fame-detail-actions">
-    {{#if detail.canOpenSheet}}<button type="button" class="fame-icon-btn" data-action="openActorSheet" data-actor-id="{{detail.id}}" title="{{localize (concat @root.moduleId '.context.open-sheet')}}"><i class="fa-solid fa-id-card"></i></button>{{/if}}
+    {{#if detail.canOpenSheet}}<button type="button" class="fame-icon-btn" data-action="openActorSheet" data-actor-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.open-sheet')}}"><i class="fa-solid fa-id-card"></i></button>{{/if}}
     {{#if @root.isGM}}
-      <button type="button" class="fame-mode-btn fame-icon-btn {{#unless (eq detail.mode 'manual')}}active{{/unless}} {{#if (eq detail.mode 'auto')}}mode-auto{{else if (eq detail.mode 'hybrid')}}mode-hybrid{{/if}}" data-action="cycleActorMode" data-id="{{detail.id}}">
+      <button type="button" class="fame-mode-btn fame-icon-btn {{#unless (eq detail.mode 'manual')}}active{{/unless}} {{#if (eq detail.mode 'auto')}}mode-auto{{else if (eq detail.mode 'hybrid')}}mode-hybrid{{/if}}" data-action="cycleActorMode" data-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.cycle-mode')}}">
         <i class="fa-solid fa-{{#if (eq detail.mode 'auto')}}robot{{else if (eq detail.mode 'hybrid')}}shuffle{{else}}hand{{/if}}"></i>
       </button>
-      <button type="button" class="fame-icon-btn fame-hide-btn {{#if detail.hidden}}active{{/if}}" data-action="toggleHidden" data-type="actor" data-id="{{detail.id}}">
+      <button type="button" class="fame-icon-btn fame-hide-btn {{#if detail.hidden}}active{{/if}}" data-action="toggleHidden" data-type="actor" data-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.toggle-hidden')}}">
         <i class="fa-solid fa-eye-slash"></i>
       </button>
-      <button type="button" class="fame-icon-btn" data-action="delete" data-type="actor" data-id="{{detail.id}}"><i class="fa-solid fa-trash"></i></button>
+      <button type="button" class="fame-icon-btn" data-action="delete" data-type="actor" data-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.delete')}}"><i class="fa-solid fa-trash"></i></button>
     {{/if}}
   </div>
 </div>
 <div class="fame-detail-body">
   <div class="fame-description-block">
-    {{#if @root.isGM}}
+    {{#if (or @root.isGM detail.canEdit)}}
       {{#if detail.isEditingDescription}}
         <prose-mirror class="fame-detail-description" data-id="{{detail.id}}" data-entity-type="actors" value="{{detail.descriptionRaw}}" placeholder="{{localize (concat @root.moduleId '.ui.description-placeholder')}}"></prose-mirror>
       {{else}}
@@ -69,7 +69,7 @@
               data-action="toggleDescriptionEdit"
               data-entity-type="actor"
               data-entity-id="{{detail.id}}"
-              title="{{localize (concat @root.moduleId '.ui.edit-description')}}">
+              data-tooltip="{{localize (concat @root.moduleId '.tooltips.edit-description')}}">
               <i class="fa-solid fa-pen"></i>
             </button>
             {{{detail.description}}}
@@ -81,7 +81,7 @@
               data-action="toggleDescriptionEdit"
               data-entity-type="actor"
               data-entity-id="{{detail.id}}"
-              title="{{localize (concat @root.moduleId '.ui.edit-description')}}">
+              data-tooltip="{{localize (concat @root.moduleId '.tooltips.edit-description')}}">
               <i class="fa-solid fa-pen"></i>
             </button>
           </div>
@@ -123,7 +123,7 @@
       <i class="fa-solid fa-user-tie fame-section-icon"></i>
       <span>{{localize (concat @root.moduleId '.relations.relations-to-actors')}}</span>
       <span class="fame-detail-section-count">{{detail.npcRelations.length}}</span>
-      {{#if @root.isGM}}<button type="button" class="fame-detail-section-add" data-action="addActorRelation" data-entity-id="{{detail.id}}" data-rel-type="individual"><i class="fa-solid fa-plus"></i></button>{{/if}}
+      {{#if (or @root.isGM detail.canEdit)}}<button type="button" class="fame-detail-section-add" data-action="addActorRelation" data-entity-id="{{detail.id}}" data-rel-type="individual" data-tooltip="{{localize (concat @root.moduleId '.tooltips.add-relation')}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
     </div>
     <div class="fame-detail-section-body fame-relation-drop-zone" data-entity-id="{{detail.id}}" data-rel-type="individual">
       {{#each detail.npcRelations}}
@@ -133,7 +133,7 @@
           entityType="actor" entityId=pcId
           canEdit=(or @root.isGM ../detail.canEdit)
           relTypeKey="individual" sourceEntityId=../detail.id targetEntityId=pcId
-          showRemoveBtn=@root.isGM
+          showRemoveBtn=(or @root.isGM ../detail.canEdit)
         }}
       {{else}}
         <div class="fame-no-items">{{localize (concat @root.moduleId '.relations.no-relations')}}</div>
@@ -147,7 +147,7 @@
       <i class="fa-solid fa-flag fame-section-icon"></i>
       <span>{{localize (concat @root.moduleId '.relations.to-factions')}}</span>
       <span class="fame-detail-section-count">{{detail.factionRelations.length}}</span>
-      {{#if @root.isGM}}<button type="button" class="fame-detail-section-add" data-action="addFactionRelation" data-entity-id="{{detail.id}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
+      {{#if (or @root.isGM detail.canEdit)}}<button type="button" class="fame-detail-section-add" data-action="addFactionRelation" data-entity-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.add-faction-relation')}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
     </div>
     <div class="fame-detail-section-body fame-relation-drop-zone" data-entity-id="{{detail.id}}" data-rel-type="actorFaction">
       {{#each detail.factionRelations}}
@@ -159,7 +159,7 @@
           relTypeKey="actorFaction" sourceEntityId=../detail.id targetEntityId=factionId
           showMemberStar=(and isMember (not memberHidden))
           memberRank=rank
-          showRemoveBtn=@root.isGM
+          showRemoveBtn=(or @root.isGM ../detail.canEdit)
         }}
       {{else}}
         <div class="fame-no-items">{{localize (concat @root.moduleId '.relations.no-relations')}}</div>

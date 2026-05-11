@@ -388,7 +388,6 @@ border-radius: var(--fame-radius-sm);
 padding: 0.125rem var(--fame-space-xs);
 flex: 1;
 min-width: 80px;
-max-width: 200px;
 line-height: var(--fame-line-height);
 white-space: nowrap;
 overflow: hidden;

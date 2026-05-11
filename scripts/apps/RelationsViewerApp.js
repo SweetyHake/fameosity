@@ -4,7 +4,7 @@ import { ReputationEvents } from '../events.js';
 import * as Core from '../core/index.js';
 import { getMode, setMode } from '../core/reputation.js';
 import { PickerApp } from './PickerApp.js';
-import { LOCATION_TYPES, FACTION_TYPES, buildActorData, buildFactionData, buildLocationData, buildDetail } from './relations/RelationsBuilders.js';
+import { LOCATION_TYPES, FACTION_TYPES, buildActorData, buildFactionData, buildLocationData, buildDetail, canEditActor } from './relations/RelationsBuilders.js';
 import { loadState, saveState, resolveOwnerActor, ensureTreeExpanded, restoreNavGroups, restoreSections, restoreScroll, restoreNavWidth } from './relations/RelationsState.js';
 import { attachInputListeners, attachBarListeners, attachNavSearchListener, attachResizeHandle, attachImagePopout, attachRankDragDrop, updateBarVisual, fitTierBadges } from './relations/RelationsListeners.js';
 import { attachDropListeners, attachNestingDragDrop, attachNavItemDrag, attachDetailSectionDrop, attachNavTreeSidebarDrop } from './relations/RelationsDragDrop.js';
@@ -13,50 +13,6 @@ import { attachContextMenu } from './relations/RelationsContext.js';
 export class RelationsViewerApp extends foundry.applications.api.HandlebarsApplicationMixin(
   foundry.applications.api.ApplicationV2
 ) {
-  static DEFAULT_OPTIONS = {
-    id: "fame-relations-viewer",
-    classes: ["fame-relations-viewer", "standard-form"],
-    position: { width: 1024, height: 768 },
-    window: { icon: "fa-solid fa-users", resizable: true },
-    actions: {
-      selectEntity: RelationsViewerApp.#onSelectEntity,
-      toggleNavGroup: RelationsViewerApp.#onToggleNavGroup,
-      toggleTreeExpand: RelationsViewerApp.#onToggleTreeExpand,
-      toggleDetailSection: RelationsViewerApp.#onToggleDetailSection,
-      cycleActorMode: RelationsViewerApp.#onCycleActorMode,
-      cycleFactionMode: RelationsViewerApp.#onCycleFactionMode,
-      delete: RelationsViewerApp.#onDelete,
-      addMember: RelationsViewerApp.#onAddMember,
-      removeMember: RelationsViewerApp.#onRemoveMember,
-      addRank: RelationsViewerApp.#onAddRank,
-      deleteRank: RelationsViewerApp.#onDeleteRank,
-      addFactionToLoc: RelationsViewerApp.#onAddFactionToLoc,
-      removeFactionFromLoc: RelationsViewerApp.#onRemoveFactionFromLoc,
-      addActorToLoc: RelationsViewerApp.#onAddActorToLoc,
-      removeActorFromLoc: RelationsViewerApp.#onRemoveActorFromLoc,
-      changeImage: RelationsViewerApp.#onChangeImage,
-      adjustRep: RelationsViewerApp.#onAdjustRep,
-      toggleHidden: RelationsViewerApp.#onToggleHidden,
-      toggleRelationHidden: RelationsViewerApp.#onToggleRelationHidden,
-      toggleMemberHidden: RelationsViewerApp.#onToggleMemberHidden,
-      toggleLocationItemHidden: RelationsViewerApp.#onToggleLocationItemHidden,
-      openLocationCreator: RelationsViewerApp.#onOpenLocationCreator,
-      openFactionCreator: RelationsViewerApp.#onOpenFactionCreator,
-      openActorCreator: RelationsViewerApp.#onOpenActorCreator,
-      unnest: RelationsViewerApp.#onUnnest,
-      addChildLocation: RelationsViewerApp.#onAddChildLocation,
-      addChildFaction: RelationsViewerApp.#onAddChildFaction,
-      goToOwner: RelationsViewerApp.#onGoToOwner,
-      openActorSheet: RelationsViewerApp.#onOpenActorSheet,
-      togglePartyActive: RelationsViewerApp.#onTogglePartyActive,
-      setLocationControl: RelationsViewerApp.#onSetLocationControl,
-      clearLocationControl: RelationsViewerApp.#onClearLocationControl,
-      addActorRelation: RelationsViewerApp.#onAddActorRelation,
-      addFactionRelation: RelationsViewerApp.#onAddFactionRelation,
-      addFactionToFactionRelation: RelationsViewerApp.#onAddFactionToFactionRelation,
-      removeRelation: RelationsViewerApp.#onRemoveRelation,
-    }
-  };
 
   static PARTS = {
     content: { template: `modules/${MODULE_ID}/templates/relations/main.hbs` }
@@ -180,7 +136,7 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     let detail = null;
     if (this.selectedType && this.selectedId) {
       detail = buildDetail(this, this.selectedType, this.selectedId, allLocations, allFactions, allActorsFlat);
-      if (detail && isGM) {
+      if (detail && (isGM || detail.canEdit)) {
         detail.isEditingDescription = this._editingDescriptions.has(`${this.selectedType}:${this.selectedId}`);
       }
     }
@@ -513,16 +469,18 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
 
   static async #onAddActorRelation(event, target) {
     event.stopPropagation();
-    if (!game.user.isGM) return;
     const entityId = target.dataset.entityId;
+    if (!game.user.isGM && !canEditActor(entityId)) return;
     const relType = target.dataset.relType;
     
     PickerApp.openActorPicker({
       filter: a => a.id !== entityId,
       callback: async targetId => {
         if (relType === 'individual') {
+          if (Core.getIndRel(entityId, targetId) !== undefined && Data.getData().individualRelations?.[entityId]?.[targetId] !== undefined) return;
           await Core.setIndRel(entityId, targetId, 0);
         } else if (relType === 'faction') {
+          if (Data.getData().factionRelations?.[entityId]?.[targetId] !== undefined) return;
           await Core.setFactionRel(entityId, targetId, 0);
         }
       }
@@ -531,11 +489,12 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
 
   static async #onAddFactionRelation(event, target) {
     event.stopPropagation();
-    if (!game.user.isGM) return;
     const entityId = target.dataset.entityId;
+    if (!game.user.isGM && !canEditActor(entityId)) return;
     
     PickerApp.openFactionPicker({
       callback: async factionId => {
+        if (Data.getData().actorFactionRelations?.[entityId]?.[factionId] !== undefined) return;
         await Core.setActorFactionRel(entityId, factionId, 0);
       }
     });
@@ -549,6 +508,7 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     PickerApp.openFactionPicker({
       filter: f => f.id !== entityId,
       callback: async targetFactionId => {
+        if (Data.getData().factionToFactionRelations?.[entityId]?.[targetFactionId] !== undefined) return;
         await Core.setFactionToFactionRel(entityId, targetFactionId, 0);
       }
     });
@@ -556,9 +516,9 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
 
   static async #onRemoveRelation(event, target) {
     event.stopPropagation();
-    if (!game.user.isGM) return;
     
     const { relType, entityId, targetId } = target.dataset;
+    if (!game.user.isGM && !canEditActor(entityId)) return;
     
     if (relType === 'individual') {
       await Core.removeIndRel(entityId, targetId);
@@ -631,7 +591,9 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
 
   static #onToggleDescriptionEdit(event, target) {
     event.stopPropagation();
-    if (!game.user.isGM) return;
+    const entityId = target.dataset.entityId;
+    const entityType = target.dataset.entityType;
+    if (!game.user.isGM && !(entityType === 'actor' && canEditActor(entityId))) return;
     const key = `${target.dataset.entityType}:${target.dataset.entityId}`;
     if (this._editingDescriptions.has(key)) {
       this._editingDescriptions.delete(key);

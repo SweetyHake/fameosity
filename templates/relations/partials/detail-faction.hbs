@@ -56,16 +56,16 @@
   <div class="fame-detail-actions">
     {{#if @root.isGM}}
       {{#unless detail.isPartyActive}}
-        <button type="button" class="fame-mode-btn fame-icon-btn {{#unless (eq detail.mode 'manual')}}active{{/unless}} {{#if (eq detail.mode 'auto')}}mode-auto{{else if (eq detail.mode 'hybrid')}}mode-hybrid{{/if}}" data-action="cycleFactionMode" data-id="{{detail.id}}">
+        <button type="button" class="fame-mode-btn fame-icon-btn {{#unless (eq detail.mode 'manual')}}active{{/unless}} {{#if (eq detail.mode 'auto')}}mode-auto{{else if (eq detail.mode 'hybrid')}}mode-hybrid{{/if}}" data-action="cycleFactionMode" data-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.cycle-mode')}}">
           <i class="fa-solid fa-{{#if (eq detail.mode 'auto')}}robot{{else if (eq detail.mode 'hybrid')}}shuffle{{else}}hand{{/if}}"></i>
         </button>
       {{/unless}}
-      {{#if detail.canAddChild}}<button type="button" class="fame-icon-btn fame-add-child-btn" data-action="addChildFaction" data-parent="{{detail.id}}"><i class="fa-solid fa-sitemap"></i></button>{{/if}}
-      {{#if (gt detail.level 0)}}<button type="button" class="fame-icon-btn fame-unnest-btn" data-action="unnest" data-id="{{detail.id}}" data-type="faction"><i class="fa-solid fa-level-up-alt"></i></button>{{/if}}
-      <button type="button" class="fame-icon-btn fame-hide-btn {{#if detail.hidden}}active{{/if}}" data-action="toggleHidden" data-type="faction" data-id="{{detail.id}}">
+      {{#if detail.canAddChild}}<button type="button" class="fame-icon-btn fame-add-child-btn" data-action="addChildFaction" data-parent="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.add-child-faction')}}"><i class="fa-solid fa-sitemap"></i></button>{{/if}}
+      {{#if (gt detail.level 0)}}<button type="button" class="fame-icon-btn fame-unnest-btn" data-action="unnest" data-id="{{detail.id}}" data-type="faction" data-tooltip="{{localize (concat @root.moduleId '.tooltips.unnest')}}"><i class="fa-solid fa-level-up-alt"></i></button>{{/if}}
+      <button type="button" class="fame-icon-btn fame-hide-btn {{#if detail.hidden}}active{{/if}}" data-action="toggleHidden" data-type="faction" data-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.toggle-hidden')}}">
         <i class="fa-solid fa-eye-slash"></i>
       </button>
-      <button type="button" class="fame-icon-btn" data-action="delete" data-type="faction" data-id="{{detail.id}}"><i class="fa-solid fa-trash"></i></button>
+      <button type="button" class="fame-icon-btn" data-action="delete" data-type="faction" data-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.delete')}}"><i class="fa-solid fa-trash"></i></button>
     {{/if}}
   </div>
 </div>
@@ -82,7 +82,7 @@
               data-action="toggleDescriptionEdit"
               data-entity-type="faction"
               data-entity-id="{{detail.id}}"
-              title="{{localize (concat @root.moduleId '.ui.edit-description')}}">
+              data-tooltip="{{localize (concat @root.moduleId '.tooltips.edit-description')}}">
               <i class="fa-solid fa-pen"></i>
             </button>
             {{{detail.description}}}
@@ -94,7 +94,7 @@
               data-action="toggleDescriptionEdit"
               data-entity-type="faction"
               data-entity-id="{{detail.id}}"
-              title="{{localize (concat @root.moduleId '.ui.edit-description')}}">
+              data-tooltip="{{localize (concat @root.moduleId '.tooltips.edit-description')}}">
               <i class="fa-solid fa-pen"></i>
             </button>
           </div>
@@ -141,7 +141,7 @@
         <i class="fa-solid fa-user-tie fame-section-icon"></i>
         <span>{{localize (concat @root.moduleId '.relations.relations-to-actors')}}</span>
         <span class="fame-detail-section-count">{{detail.factionNpcRels.length}}</span>
-        {{#if @root.isGM}}<button type="button" class="fame-detail-section-add" data-action="addActorRelation" data-entity-id="{{detail.id}}" data-rel-type="faction"><i class="fa-solid fa-plus"></i></button>{{/if}}
+        {{#if @root.isGM}}<button type="button" class="fame-detail-section-add" data-action="addActorRelation" data-entity-id="{{detail.id}}" data-rel-type="faction" data-tooltip="{{localize (concat @root.moduleId '.tooltips.add-relation')}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
       </div>
       <div class="fame-detail-section-body fame-relation-drop-zone" data-entity-id="{{detail.id}}" data-rel-type="faction">
         {{#each detail.factionNpcRels}}
@@ -169,7 +169,7 @@
         <i class="fa-solid fa-flag fame-section-icon"></i>
         <span>{{localize (concat @root.moduleId '.relations.to-factions')}}</span>
         <span class="fame-detail-section-count">{{detail.factionToFactionRels.length}}</span>
-        {{#if @root.isGM}}<button type="button" class="fame-detail-section-add" data-action="addFactionToFactionRelation" data-entity-id="{{detail.id}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
+        {{#if @root.isGM}}<button type="button" class="fame-detail-section-add" data-action="addFactionToFactionRelation" data-entity-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.add-faction-to-faction-relation')}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
       </div>
       <div class="fame-detail-section-body fame-relation-drop-zone" data-entity-id="{{detail.id}}" data-rel-type="factionToFaction">
         {{#each detail.factionToFactionRels}}
@@ -194,7 +194,7 @@
       <i class="fa-solid fa-users fame-section-icon"></i>
       <span>{{localize (concat @root.moduleId '.ranks.members')}}</span>
       <span class="fame-detail-section-count">{{detail.members.length}}</span>
-      {{#if @root.isGM}}<button type="button" class="fame-detail-section-add" data-action="addMember" data-faction="{{detail.id}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
+      {{#if @root.isGM}}<button type="button" class="fame-detail-section-add" data-action="addMember" data-faction="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.add-member')}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
     </div>
     <div class="fame-detail-section-body fame-member-drop-zone" data-faction-id="{{detail.id}}">
       {{#each detail.members}}
@@ -218,10 +218,10 @@
                 {{/unless}}
               {{/if}}
               {{#unless sourceName}}
-                <button type="button" class="fame-icon-btn fame-hide-btn {{#if hidden}}active{{/if}}" data-action="toggleMemberHidden" data-faction="{{../detail.id}}" data-actor="{{id}}">
+                <button type="button" class="fame-icon-btn fame-hide-btn {{#if hidden}}active{{/if}}" data-action="toggleMemberHidden" data-faction="{{../detail.id}}" data-actor="{{id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.toggle-member-hidden')}}">
                   <i class="fa-solid fa-eye-slash"></i>
                 </button>
-                <button type="button" class="fame-icon-btn" data-action="removeMember" data-faction="{{../detail.id}}" data-actor="{{id}}"><i class="fa-solid fa-times"></i></button>
+                <button type="button" class="fame-icon-btn" data-action="removeMember" data-faction="{{../detail.id}}" data-actor="{{id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.remove-member')}}"><i class="fa-solid fa-times"></i></button>
               {{/unless}}
             {{/if}}
           </div>
@@ -237,7 +237,7 @@
         <i class="fa-solid fa-medal fame-section-icon"></i>
         <span>{{localize (concat @root.moduleId '.ranks.title')}}</span>
         <span class="fame-detail-section-count">{{detail.ranks.length}}</span>
-        <button type="button" class="fame-detail-section-add" data-action="addRank" data-faction="{{detail.id}}"><i class="fa-solid fa-plus"></i></button>
+        <button type="button" class="fame-detail-section-add" data-action="addRank" data-faction="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.add-rank')}}"><i class="fa-solid fa-plus"></i></button>
       </div>
       <div class="fame-detail-section-body">
         {{#each detail.ranks}}
@@ -246,7 +246,7 @@
             <input type="color" class="fame-rank-color" value="{{this.color}}" data-faction="{{../detail.id}}" data-rank="{{this.id}}">
             <input type="text" class="fame-rank-name" value="{{this.name}}" data-faction="{{../detail.id}}" data-rank="{{this.id}}">
             <input type="number" class="fame-rank-multiplier" value="{{this.multiplier}}" step="0.1" data-faction="{{../detail.id}}" data-rank="{{this.id}}">
-            <button type="button" class="fame-icon-btn" data-action="deleteRank" data-faction="{{../detail.id}}" data-rank="{{this.id}}"><i class="fa-solid fa-trash"></i></button>
+            <button type="button" class="fame-icon-btn" data-action="deleteRank" data-faction="{{../detail.id}}" data-rank="{{this.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.delete-rank')}}"><i class="fa-solid fa-trash"></i></button>
           </div>
         {{else}}<div class="fame-no-items">—</div>{{/each}}
       </div>

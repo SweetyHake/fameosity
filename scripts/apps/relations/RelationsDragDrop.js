@@ -24,7 +24,7 @@ function _extractDragData(event) {
 
   if (!data?.type) {
     try {
-      data = TextEditor.getDragEventData?.(event);
+      data = (foundry.applications.ux?.TextEditor?.implementation ?? TextEditor).getDragEventData?.(event);
     } catch {}
   }
 
@@ -203,7 +203,7 @@ export function attachNestingDragDrop(html, app) {
 }
 
 export function attachNavItemDrag(html) {
-
+  // TODO: Implement navigator item drag-and-drop for reordering/nesting
 }
 
 export function attachDetailSectionDrop(html) {
@@ -335,7 +335,7 @@ export function attachNavTreeSidebarDrop(html, app) {
 
     if (!rawData) {
       try {
-        rawData = TextEditor.getDragEventData?.(e);
+        rawData = (foundry.applications.ux?.TextEditor?.implementation ?? TextEditor).getDragEventData?.(e);
       } catch {}
     }
 
