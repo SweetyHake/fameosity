@@ -40,6 +40,13 @@ export class EntityCreatorApp extends foundry.applications.api.ApplicationV2 {
     this.pendingActors = [];
     this.selectedSubType = null;
     this._isSubmitting = false;
+
+    const iconMap = {
+      [EntityCreatorApp.TYPES.LOCATION]: 'fa-solid fa-map-marker-alt',
+      [EntityCreatorApp.TYPES.FACTION]: 'fa-solid fa-flag',
+      [EntityCreatorApp.TYPES.ACTOR]: 'fa-solid fa-user-plus'
+    };
+    this.options.window.icon = iconMap[this.entityType];
   }
 
   get title() {
@@ -49,15 +56,6 @@ export class EntityCreatorApp extends foundry.applications.api.ApplicationV2 {
       [EntityCreatorApp.TYPES.ACTOR]: `${MODULE_ID}.creator.title-actor`
     };
     return game.i18n.localize(titleMap[this.entityType]);
-  }
-
-  get windowIcon() {
-    const iconMap = {
-      [EntityCreatorApp.TYPES.LOCATION]: 'fa-solid fa-map-marker-alt',
-      [EntityCreatorApp.TYPES.FACTION]: 'fa-solid fa-flag',
-      [EntityCreatorApp.TYPES.ACTOR]: 'fa-solid fa-user-plus'
-    };
-    return iconMap[this.entityType];
   }
 
   _getFilteredTypes() {
@@ -107,8 +105,7 @@ export class EntityCreatorApp extends foundry.applications.api.ApplicationV2 {
     };
   }
 
-  _renderHTML(_context) {
-    const context = this._prepareContext();
+  _renderHTML(context) {
     const div = document.createElement("div");
     div.className = "fame-creator-content";
 
@@ -311,13 +308,15 @@ export class EntityCreatorApp extends foundry.applications.api.ApplicationV2 {
   async _handleSubmit(html) {
     if (this._isSubmitting) return;
     this._isSubmitting = true;
-    
-    this.close();
-    
+
     if (this.entityType === EntityCreatorApp.TYPES.ACTOR) {
+      this.close();
       await this._submitActors();
     } else {
-      await this._submitEntity(html);
+      const nameInput = html.querySelector('.fame-creator-name-input');
+      const name = nameInput?.value?.trim();
+      this.close();
+      await this._submitEntity(name);
     }
   }
 
@@ -333,11 +332,8 @@ export class EntityCreatorApp extends foundry.applications.api.ApplicationV2 {
     }
   }
 
-  async _submitEntity(html) {
+  async _submitEntity(name) {
     if (!this.selectedSubType) return;
-
-    const nameInput = html.querySelector('.fame-creator-name-input');
-    const name = nameInput?.value?.trim();
 
     if (this.entityType === EntityCreatorApp.TYPES.LOCATION) {
       const typeInfo = EntityCreatorApp.LOCATION_TYPES.find(t => t.id === this.selectedSubType);

@@ -1,4 +1,4 @@
-.fame-entity-item {
+﻿.fame-entity-item {
   border: 1px solid var(--fame-color-border);
   border-radius: var(--fame-radius-md);
   overflow: hidden;
@@ -9,8 +9,8 @@
 }
 
 .fame-entity-item:hover {
-  border-color: var(--fame-color-gold);
-  box-shadow: var(--fame-shadow-card), var(--fame-shadow-glow-gold);
+  border-color: var(--fame-accent);
+  box-shadow: var(--fame-shadow-card);
 }
 
 .fame-entity-item.hidden {
@@ -46,7 +46,7 @@
 }
 
 .fame-entity-item.drag-over {
-  border: 2px dashed var(--fame-color-gold);
+  border: 2px dashed var(--fame-accent);
 }
 
 .fame-entity-header {
@@ -77,8 +77,7 @@
 }
 
 .fame-entity-img.editable:hover {
-  border-color: var(--fame-color-gold);
-  transform: scale(1.03);
+  transform: scale(1.05);
 }
 
 .fame-entity-info {
@@ -117,9 +116,8 @@
 }
 
 .fame-entity-name-input:focus {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
   outline: none;
-  box-shadow: var(--fame-shadow-glow-gold);
 }
 
 .fame-entity-actions {
@@ -185,7 +183,7 @@
 }
 
 .fame-location-stats .fame-stat i {
-  color: var(--fame-color-gold);
+  color: var(--fame-color-text-secondary);
 }
 
 .fame-location-members {
@@ -209,7 +207,6 @@
 
 .fame-location-member.clickable:hover {
   background: var(--fame-color-surface-hover);
-  border-color: var(--fame-color-gold);
 }
 
 .fame-section-label {
@@ -252,9 +249,9 @@
 }
 
 .fame-section-add-btn:hover {
-  border-color: var(--fame-color-gold);
-  color: var(--fame-color-gold);
-  box-shadow: var(--fame-shadow-glow-gold);
+  background: var(--fame-color-surface-hover);
+  border-color: var(--fame-color-border);
+  color: var(--fame-color-text-emphatic);
 }
 
 .fame-drop-target {
@@ -264,7 +261,7 @@
 }
 
 .fame-drop-target.drag-over {
-  box-shadow: inset 0 0 0 2px var(--fame-color-gold);
+  box-shadow: inset 0 0 0 2px var(--fame-accent);
 }
 
 .fame-drop-target .fame-no-items {
@@ -284,12 +281,12 @@
 }
 
 .fame-faction-mode-select:focus {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
   outline: none;
 }
 
 .fame-faction-mode-select:hover {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
 }
 
 .fame-collapsible-section {
@@ -360,8 +357,8 @@
 }
 
 .fame-global-drop-zone.drag-over .fame-drop-hint {
-  border-color: var(--fame-color-gold);
-  color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
+  color: var(--fame-accent);
 }
 
 .fame-entity-item,
@@ -384,7 +381,7 @@
 .fame-char-location-item:hover,
 .fame-char-faction-item:hover,
 .fame-char-actor-item:hover {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
 }
 
 .fame-entity-header:hover .fame-entity-name,
@@ -394,8 +391,7 @@
 .fame-char-location-item.clickable:hover .fame-char-loc-name,
 .fame-char-faction-header.clickable:hover .fame-char-fac-name,
 .fame-char-actor-header.clickable:hover .fame-char-rel-name {
-  color: var(--fame-color-gold);
-  text-shadow: 0 0 8px var(--fame-color-gold);
+  color: var(--fame-color-text-emphatic);
 }
 
 .fame-entity-type-badge {
@@ -416,7 +412,7 @@
 }
 
 .fame-entity-type-badge i {
-  color: var(--fame-color-gold);
+  color: var(--fame-color-text-secondary);
   font-size: 0.7rem;
 }
 
@@ -453,7 +449,7 @@
   border-radius: var(--fame-radius-sm);
   background: var(--fame-color-surface);
   border: 1px solid var(--fame-color-border-soft);
-  color: var(--fame-color-gold);
+  color: var(--fame-color-text-secondary);
   flex-shrink: 0;
 }
 
@@ -485,7 +481,7 @@
 }
 
 .fame-entity-stats .fame-stat i {
-  color: var(--fame-color-gold);
+  color: var(--fame-color-text-secondary);
   font-size: 0.7rem;
 }
 
@@ -550,7 +546,7 @@
 }
 
 .fame-detail-type-select:focus {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
   outline: none;
 }
 
@@ -569,14 +565,12 @@
 }
 
 .fame-entity-description:focus {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
   outline: none;
-  box-shadow: var(--fame-shadow-glow-gold);
 }
 
 .fame-entity-description::placeholder {
   color: var(--fame-color-text-subtle);
-  font-style: italic;
 }
 
 .fame-entity-description-display {
@@ -586,7 +580,6 @@
   color: var(--fame-color-text-secondary);
   font-size: 0.85rem;
   line-height: var(--fame-line-height);
-  font-style: italic;
 }
 
 .fame-entity-name-row .fame-tier-badge {
@@ -606,14 +599,14 @@
 }
 
 .fame-entity-item.fame-drop-highlight {
-  box-shadow: inset 0 0 0 2px var(--fame-color-gold);
+  box-shadow: inset 0 0 0 2px var(--fame-accent);
 }
 
 .fame-entity-item.fame-drop-highlight::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(159, 146, 117, 0.08);
+  background: rgba(255, 128, 0, 0.08);
   pointer-events: none;
   border-radius: inherit;
   z-index: 2;
@@ -636,7 +629,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--fame-color-gold);
+  background: var(--fame-color-text-subtle);
   opacity: 0.5;
 }
 
@@ -677,7 +670,7 @@
 }
 
 .fame-actor-group-header i {
-  color: var(--fame-color-gold);
+  color: var(--fame-color-text-secondary);
 }
 
 .fame-actor-group-header .fame-group-count {
@@ -717,7 +710,7 @@
 }
 
 .fame-type-select-badge i {
-  color: var(--fame-color-gold);
+  color: var(--fame-color-text-secondary);
   font-size: 0.7rem;
   pointer-events: none;
 }
@@ -779,32 +772,6 @@
 .fame-detail-member-name-row .fame-detail-member-name {
   flex: 1;
   min-width: 0;
-}
-
-.fame-detail-header {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--fame-space-lg);
-  padding: var(--fame-space-lg);
-  border-bottom: 1px solid var(--fame-color-border-soft);
-  flex-shrink: 0;
-  background: linear-gradient(135deg, var(--fame-color-surface-active) 0%, var(--fame-color-surface) 60%, transparent 100%);
-}
-
-.fame-detail-title-area {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--fame-space-xs);
-}
-
-.fame-detail-actions {
-  display: flex;
-  gap: 2px;
-  flex-shrink: 0;
-  align-self: flex-start;
-  margin-left: auto;
 }
 
 .fame-detail-source-badge.clickable {

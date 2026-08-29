@@ -5,10 +5,19 @@ import * as Core from '../core/index.js';
 import { getMode, setMode } from '../core/reputation.js';
 import { PickerApp } from './PickerApp.js';
 import { LOCATION_TYPES, FACTION_TYPES, buildActorData, buildFactionData, buildLocationData, buildDetail, canEditActor } from './relations/RelationsBuilders.js';
-import { loadState, saveState, resolveOwnerActor, ensureTreeExpanded, restoreNavGroups, restoreSections, restoreScroll, restoreNavWidth } from './relations/RelationsState.js';
+import { loadState, saveState, resolvePinnedOwner, ensureTreeExpanded, restoreNavGroups, restoreSections, restoreDescriptions, restoreSubsections, restoreScroll, restoreNavWidth } from './relations/RelationsState.js';
+import { openSlotDropdown, closeSlotDropdowns } from './relations/RelationsDropdown.js';
 import { attachInputListeners, attachBarListeners, attachNavSearchListener, attachResizeHandle, attachImagePopout, attachRankDragDrop, updateBarVisual, fitTierBadges } from './relations/RelationsListeners.js';
-import { attachDropListeners, attachNestingDragDrop, attachNavItemDrag, attachDetailSectionDrop, attachNavTreeSidebarDrop } from './relations/RelationsDragDrop.js';
+import { attachDropListeners, attachNestingDragDrop, attachDetailSectionDrop, attachNavTreeSidebarDrop } from './relations/RelationsDragDrop.js';
 import { attachContextMenu } from './relations/RelationsContext.js';
+import { ensureRelationsTemplates } from '../core/templates.js';
+
+const MODE_IDS = ['manual', 'auto', 'hybrid'];
+const MODE_ICONS = {
+  manual: 'fa-solid fa-hand',
+  auto: 'fa-solid fa-robot',
+  hybrid: 'fa-solid fa-shuffle'
+};
 
 export class RelationsViewerApp extends foundry.applications.api.HandlebarsApplicationMixin(
   foundry.applications.api.ApplicationV2
@@ -25,7 +34,7 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     this._unsubscribers = [];
     this._busy = false;
     this._editingDescriptions = new Set();
-    this.ownerActorId = resolveOwnerActor();
+    this.ownerActorId = resolvePinnedOwner(this);
     if (!this.selectedType && this.ownerActorId) {
       this.selectedType = 'actor';
       this.selectedId = this.ownerActorId;
@@ -52,7 +61,7 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     const scheduleRender = foundry.utils.debounce(() => {
       if (this._busy || !this.rendered) return;
       this.render();
-    }, 250);
+    }, 120);
     this._unsubscribers = Object.values(ReputationEvents.EVENTS).map(event =>
       ReputationEvents.on(event, scheduleRender)
     );
@@ -60,12 +69,14 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
 
   async close(options = {}) {
     this._saveState();
+    closeSlotDropdowns();
     this._unsubscribers.forEach(unsub => typeof unsub === 'function' && unsub());
     this._unsubscribers = [];
     return super.close(options);
   }
 
   async _prepareContext(options) {
+    await ensureRelationsTemplates();
     const { min, max } = Data.getLimits();
     const isGM = game.user.isGM;
     const pcs = Core.getPCs();
@@ -74,6 +85,17 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     let allActorsFlat = (await Promise.all(
       Core.getTracked().map(id => buildActorData(id, min, max, pcs, rawFactions))
     )).filter(Boolean);
+
+    // sidebar must list every active-party member, even if not added to tracking
+    const earlyParty = Core.getActiveParty();
+    const trackedSet = new Set(Core.getTracked());
+    const untrackedPartyMembers = (earlyParty?.members || []).filter(id => !trackedSet.has(id));
+    if (untrackedPartyMembers.length) {
+      const extras = (await Promise.all(
+        untrackedPartyMembers.map(id => buildActorData(id, min, max, pcs, rawFactions))
+      )).filter(Boolean);
+      allActorsFlat.push(...extras);
+    }
 
     let allFactionsFlat = await Promise.all(
       rawFactions.map(f => buildFactionData(f, pcs, min, max, isGM))
@@ -121,13 +143,17 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
 
     const activeParty = Core.getActiveParty();
     const activePartyMembers = activeParty ? new Set(activeParty.members || []) : null;
-    const { pcs: playerActorsRaw, npcs: npcActors } = Core.separatePlayerAndNPC(allActorsFlat);
+    const { pcs: playerActorsRaw, npcs: npcActorsRaw } = Core.separatePlayerAndNPC(allActorsFlat);
 
     let playerActors;
+    let npcActors;
     if (activePartyMembers) {
+      // party members form the first group; every other tracked actor must stay visible in the second one
       playerActors = allActorsFlat.filter(a => activePartyMembers.has(a.id));
+      npcActors = allActorsFlat.filter(a => !activePartyMembers.has(a.id));
     } else {
       playerActors = playerActorsRaw;
+      npcActors = npcActorsRaw;
     }
 
     playerActors.sort((a, b) => a.name.localeCompare(b.name));
@@ -166,6 +192,7 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
   }
 
   _onRender(context, options) {
+    closeSlotDropdowns();
     const html = this.element;
     const content = html.querySelector('.fame-relations-content');
     if (content) {
@@ -182,12 +209,13 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
       attachDropListeners(html);
       attachNestingDragDrop(html, this);
       attachRankDragDrop(html);
-      attachNavItemDrag(html);
       attachDetailSectionDrop(html);
       attachNavTreeSidebarDrop(html, this);
     }
     restoreNavGroups(html, this);
     restoreSections(html, this);
+    restoreDescriptions(html, this);
+    restoreSubsections(html, this);
     restoreScroll(html, this);
     restoreNavWidth(html, this);
     fitTierBadges(html);
@@ -210,19 +238,88 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
   static #onGoToOwner(event, target) {
     event.stopPropagation();
     if (!this.ownerActorId) return;
-    const actor = game.actors.get(this.ownerActorId);
-    if (actor) {
-      const tracked = Core.getTracked();
-      if (!tracked.includes(this.ownerActorId)) {
-        if (!actor.hasPlayerOwner) Core.ensureImportant(actor);
-        Core.addTracked(this.ownerActorId);
-      }
+    RelationsViewerApp.#trackAndSelectActor(this, this.ownerActorId);
+  }
+
+  static #trackAndSelectActor(app, actorId) {
+    const actor = game.actors.get(actorId);
+    const tracked = Core.getTracked();
+    if (actor && !tracked.includes(actorId)) {
+      if (!actor.hasPlayerOwner) Core.ensureImportant(actor);
+      Core.addTracked(actorId);
     }
-    this.selectedType = 'actor';
-    this.selectedId = this.ownerActorId;
-    this.scrollPos = 0;
-    this._saveState();
-    this.render();
+    app.selectedType = 'actor';
+    app.selectedId = actorId;
+    app.scrollPos = 0;
+    app._saveState();
+    app.render();
+  }
+
+  static #onOpenOwnerPicker(event, target) {
+    event.stopPropagation();
+    const pcs = Core.getPCs().filter(a =>
+      game.user.isGM || a.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER));
+    if (!pcs.length) return;
+
+    const items = [{ header: true, label: game.i18n.localize(`${MODULE_ID}.ui.pick-character`) }];
+    for (const pc of pcs) {
+      items.push({
+        img: pc.img,
+        label: Core.getDisplayName(pc.id),
+        checked: pc.id === this.ownerActorId,
+        action: async () => {
+          this.pinnedOwnerActorId = pc.id;
+          this.ownerActorId = pc.id;
+          try {
+            await game.user.setFlag(MODULE_ID, 'ownerActorId', pc.id);
+          } catch (err) {
+            console.warn(`${MODULE_ID} | Could not persist pinned owner on user:`, err);
+          }
+          RelationsViewerApp.#trackAndSelectActor(this, pc.id);
+        }
+      });
+    }
+
+    openSlotDropdown(target.closest('.fame-context-slot') ?? target, items);
+  }
+
+  static #onOpenPartyPicker(event, target) {
+    event.stopPropagation();
+    if (!game.user.isGM) return;
+
+    const items = [{ header: true, label: game.i18n.localize(`${MODULE_ID}.ui.pick-party`) }];
+    for (const group of Core.getFactions().filter(f => f.factionType === 'group')) {
+      items.push({
+        img: group.image,
+        label: group.name,
+        checked: Core.isActiveParty(group.id),
+        action: async () => {
+          await Core.setActiveParty(group.id);
+          this.render();
+        }
+      });
+    }
+
+    items.push({ separator: true });
+    items.push({
+      icon: 'fa-solid fa-plus',
+      label: game.i18n.localize(`${MODULE_ID}.ui.create-group`),
+      action: () => import('./EntityCreatorApp.js').then(m => m.EntityCreatorApp.openFactionCreator())
+    });
+
+    openSlotDropdown(target.closest('.fame-context-slot') ?? target, items);
+  }
+
+  static async #onCreateActiveParty(event, target) {
+    event.stopPropagation();
+    if (!game.user.isGM) return;
+    const before = Core.getActivePartyId();
+    await Core.ensureActiveParty();
+    if (Core.getActivePartyId() !== before) {
+      this.render();
+    } else if (!Core.getActivePartyId()) {
+      ui.notifications.warn(game.i18n.localize(`${MODULE_ID}.ui.no-active-party-gm`));
+    }
   }
 
   static #onOpenActorSheet(event, target) {
@@ -321,20 +418,26 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     await Core.toggleLocationItemHidden(target.dataset.location, target.dataset.itemType, target.dataset.itemId);
   }
 
-  static async #onCycleActorMode(event, target) {
-    event.stopPropagation();
-    if (!game.user.isGM) return;
-    const modes = ['manual', 'auto', 'hybrid'];
-    const current = getMode(target.dataset.id, 'actor');
-    await setMode(target.dataset.id, 'actor', modes[(modes.indexOf(current) + 1) % 3]);
+  static #onOpenActorModePicker(event, target) {
+    RelationsViewerApp.#openModeDropdown(event, target, 'actor');
   }
 
-  static async #onCycleFactionMode(event, target) {
+  static #onOpenFactionModePicker(event, target) {
+    RelationsViewerApp.#openModeDropdown(event, target, 'faction');
+  }
+
+  static #openModeDropdown(event, target, type) {
     event.stopPropagation();
     if (!game.user.isGM) return;
-    const modes = ['manual', 'auto', 'hybrid'];
-    const current = getMode(target.dataset.id, 'faction');
-    await setMode(target.dataset.id, 'faction', modes[(modes.indexOf(current) + 1) % 3]);
+    const id = target.dataset.id;
+    const current = getMode(id, type);
+    openSlotDropdown(target, MODE_IDS.map(mode => ({
+      icon: MODE_ICONS[mode],
+      label: game.i18n.localize(`${MODULE_ID}.mode.${mode}`),
+      tooltip: game.i18n.localize(`${MODULE_ID}.tooltips.mode-${mode}`),
+      checked: mode === current,
+      action: () => setMode(id, type, mode)
+    })), { align: 'center' });
   }
 
   static async #onDelete(event, target) {
@@ -380,6 +483,7 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
   static #onOpenLocationCreator() { import('./EntityCreatorApp.js').then(m => m.EntityCreatorApp.openLocationCreator()); }
   static #onOpenFactionCreator() { import('./EntityCreatorApp.js').then(m => m.EntityCreatorApp.openFactionCreator()); }
   static #onOpenActorCreator() { import('./EntityCreatorApp.js').then(m => m.EntityCreatorApp.openActorCreator()); }
+  static #onOpenReputationSettings() { game.modules.get(MODULE_ID)?.api?.openReputationSettings?.(); }
 
   static async #onTogglePartyActive(event, target) {
     event.stopPropagation();
@@ -477,7 +581,7 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
       filter: a => a.id !== entityId,
       callback: async targetId => {
         if (relType === 'individual') {
-          if (Core.getIndRel(entityId, targetId) !== undefined && Data.getData().individualRelations?.[entityId]?.[targetId] !== undefined) return;
+          if (Data.getData().individualRelations?.[entityId]?.[targetId] !== undefined) return;
           await Core.setIndRel(entityId, targetId, 0);
         } else if (relType === 'faction') {
           if (Data.getData().factionRelations?.[entityId]?.[targetId] !== undefined) return;
@@ -603,6 +707,28 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     this.render();
   }
 
+  static #onToggleDescription(event, target) {
+    event.stopPropagation();
+    const key = target.dataset.descKey;
+    const el = target.closest('.fame-description-block');
+    if (!key || !el) return;
+    el.classList.toggle('collapsed');
+    if (el.classList.contains('collapsed')) this.collapsedDescriptions.add(key);
+    else this.collapsedDescriptions.delete(key);
+    this._saveState();
+  }
+
+  static #onToggleDetailSubsection(event, target) {
+    event.stopPropagation();
+    const id = target.dataset.subsection;
+    const el = target.closest('.fame-detail-subsection');
+    if (!el || !id) return;
+    el.classList.toggle('collapsed');
+    if (el.classList.contains('collapsed')) this.collapsedSubsections.add(id);
+    else this.collapsedSubsections.delete(id);
+    this._saveState();
+  }
+
   static DEFAULT_OPTIONS = {
     id: "fame-relations-viewer",
     classes: ["fame-relations-viewer", "standard-form"],
@@ -613,8 +739,9 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
       toggleNavGroup: RelationsViewerApp.#onToggleNavGroup,
       toggleTreeExpand: RelationsViewerApp.#onToggleTreeExpand,
       toggleDetailSection: RelationsViewerApp.#onToggleDetailSection,
-      cycleActorMode: RelationsViewerApp.#onCycleActorMode,
-      cycleFactionMode: RelationsViewerApp.#onCycleFactionMode,
+      toggleDetailSubsection: RelationsViewerApp.#onToggleDetailSubsection,
+      openActorModePicker: RelationsViewerApp.#onOpenActorModePicker,
+      openFactionModePicker: RelationsViewerApp.#onOpenFactionModePicker,
       delete: RelationsViewerApp.#onDelete,
       addMember: RelationsViewerApp.#onAddMember,
       removeMember: RelationsViewerApp.#onRemoveMember,
@@ -633,10 +760,14 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
       openLocationCreator: RelationsViewerApp.#onOpenLocationCreator,
       openFactionCreator: RelationsViewerApp.#onOpenFactionCreator,
       openActorCreator: RelationsViewerApp.#onOpenActorCreator,
+      openReputationSettings: RelationsViewerApp.#onOpenReputationSettings,
       unnest: RelationsViewerApp.#onUnnest,
       addChildLocation: RelationsViewerApp.#onAddChildLocation,
       addChildFaction: RelationsViewerApp.#onAddChildFaction,
       goToOwner: RelationsViewerApp.#onGoToOwner,
+      openOwnerPicker: RelationsViewerApp.#onOpenOwnerPicker,
+      openPartyPicker: RelationsViewerApp.#onOpenPartyPicker,
+      createActiveParty: RelationsViewerApp.#onCreateActiveParty,
       openActorSheet: RelationsViewerApp.#onOpenActorSheet,
       togglePartyActive: RelationsViewerApp.#onTogglePartyActive,
       setLocationControl: RelationsViewerApp.#onSetLocationControl,
@@ -646,6 +777,7 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
       addFactionToFactionRelation: RelationsViewerApp.#onAddFactionToFactionRelation,
       removeRelation: RelationsViewerApp.#onRemoveRelation,
       toggleDescriptionEdit: RelationsViewerApp.#onToggleDescriptionEdit,
+      toggleDescription: RelationsViewerApp.#onToggleDescription,
     }
   };
 }

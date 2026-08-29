@@ -69,34 +69,3 @@ export async function ensureActiveParty() {
   
   return Factions.getFactions().find(f => f.id === newParty.id);
 }
-
-export function getPartyReputation(factionId) {
-  const party = getActiveParty();
-  if (!party) return null;
-  
-  const data = Data.getData();
-  return data.factionRelations?.[factionId]?.[party.id] ?? 0;
-}
-
-export async function setPartyReputation(factionId, value) {
-  const party = getActiveParty();
-  if (!party) return;
-  
-  const data = Data.getData();
-  data.factionRelations ??= {};
-  data.factionRelations[factionId] ??= {};
-  data.factionRelations[factionId][party.id] = Data.clamp(value);
-  await Data.setData(data);
-  
-  ReputationEvents.emit(ReputationEvents.EVENTS.RELATION_CHANGED, {
-    factionId,
-    partyId: party.id,
-    newValue: data.factionRelations[factionId][party.id],
-    type: 'party'
-  });
-}
-
-export async function addPartyReputation(factionId, delta) {
-  const current = getPartyReputation(factionId) ?? 0;
-  await setPartyReputation(factionId, current + delta);
-}

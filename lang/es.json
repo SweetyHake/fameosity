@@ -21,6 +21,10 @@
         "show": "Mostrar valores",
         "hide": "Ocultar valores"
       },
+      "dynamicDispositionColors": {
+        "name": "Colores dinámicos de disposición",
+        "hint": "Sustituye los colores estándar del borde de los tokens (disposición, excepto Secret) por el color de la actitud del PNJ hacia el token seleccionado, o hacia el grupo activo si no hay selección"
+      },
       "reputationMin": {
         "name": "Reputación Mínima"
       },
@@ -57,6 +61,7 @@
       "importTiers": "Importar Niveles de Relación",
       "importData": "Importar Facciones, Ubicaciones y Relaciones",
       "exportSuccess": "Datos exportados correctamente",
+      "exportError": "Error al exportar datos",
       "importSuccess": "Datos importados correctamente",
       "importError": "Error al importar datos",
       "importInvalid": "Formato de archivo de importación no válido",
@@ -89,10 +94,7 @@
     "mode": {
       "manual": "Manual",
       "auto": "Auto",
-      "hybrid": "Híbrido",
-      "manual-hint": "Modo Manual: La reputación se establece directamente",
-      "auto-hint": "Modo Auto: Se calcula a partir de las relaciones",
-      "hybrid-hint": "Modo Híbrido: Base + Bono por relación (máx. 50%)"
+      "hybrid": "Híbrido"
     },
     "reputation": {
       "window-title": "Reputación",
@@ -199,14 +201,50 @@
       "relation-worsened": "La relación de {source} con {target} ha empeorado"
     },
     "tooltips": {
-      "delete": "Eliminar",
+      "delete": "Eliminar permanentemente",
       "hide": "Ocultar a los jugadores",
       "show": "Mostrar a los jugadores",
-      "hidden": "Oculto a los jugadores",
-      "unnest": "Sacar del elemento padre",
-      "add-child": "Añadir elemento hijo",
-      "add-to-tracking": "Añadir al seguimiento",
-      "announce-wanted": "Anunciar estado de búsqueda y notificar a todos"
+      "unnest": "Separar del elemento padre: pasará a ser de nivel superior",
+      "add-to-tracking": "Seguir la reputación de este personaje",
+      "toggle-hidden": "Mostrar/ocultar a los jugadores (lo oculto solo lo ve el GM)",
+      "add-relation": "Añadir una opinión personal",
+      "add-faction-relation": "Añadir la opinión del personaje sobre una facción",
+      "add-faction-to-faction-relation": "Añadir la actitud de una facción hacia otra",
+      "add-member": "Incluir al actor entre los miembros de esta facción",
+      "add-rank": "Añadir un nuevo rango a esta facción",
+      "delete-rank": "Eliminar este rango",
+      "remove-member": "Expulsar de la facción (no elimina al actor)",
+      "toggle-member-hidden": "Mostrar/ocultar esta membresía a los jugadores",
+      "remove-relation": "Eliminar este registro de relación",
+      "reset-ind-relation": "Quitar este registro de opinión personal",
+      "rank-multiplier": "Cuánto pesan los miembros de este rango en la reputación automática de la facción",
+      "reset-relation": "Desvincular del grupo activo (elimina este registro de reputación)",
+      "toggle-relation-hidden": "Mostrar/ocultar esta relación a los jugadores",
+      "increase-rep": "+1 a este valor (Ctrl: +5)",
+      "decrease-rep": "−1 a este valor (Ctrl: −5)",
+      "open-sheet": "Abrir la hoja del personaje",
+      "edit-description": "Editar descripción",
+      "add-child-location": "Añadir una ubicación dentro de esta",
+      "add-child-faction": "Añadir una subfacción bajo esta facción",
+      "set-controller": "Elegir qué facción controla esta ubicación",
+      "clear-controller": "Quitar la facción controladora",
+      "add-faction-to-location": "Añadir una facción existente a esta ubicación",
+      "add-actor-to-location": "Situar un actor existente en esta ubicación",
+      "remove-from-location": "Sacar de esta ubicación sin eliminar el registro",
+      "toggle-location-item-hidden": "Mostrar/ocultar esta entrada de la ubicación a los jugadores",
+      "create-location": "Crear una nueva ubicación",
+      "create-faction": "Crear una nueva facción",
+      "create-actor": "Crear un actor nuevo",
+      "mode-picker": "Modo de cálculo: cómo se actualiza este valor de reputación",
+      "mode-manual": "Manual: el valor se fija con el deslizador o los botones +/− y nunca cambia solo.",
+      "mode-auto": "Auto: solo lectura. Los actores muestran el promedio de sus opiniones personales sobre los miembros del grupo (los botones +/− las desplazan todas a la vez); las facciones promedian la reputación de sus miembros ponderada por rango.",
+      "mode-hybrid": "Híbrido: solo lectura. El valor manual queda como base y se desplaza a la mitad hacia la actitud automática (máximo ±25% de la escala).",
+      "hud-rep-dec": "Actitud hacia {party}: −1 (Ctrl: −5)",
+      "hud-rep-inc": "Actitud hacia {party}: +1 (Ctrl: +5)",
+      "hud-open-relations": "Abrir la vista de relaciones",
+      "hud-personal-dec": "Opinión personal de {name}: −1 (Ctrl: −5)",
+      "hud-personal-inc": "Opinión personal de {name}: +1 (Ctrl: +5)",
+      "hud-personal-target": "Opinión personal de {name}"
     },
     "errors": {
       "saveFailed": "Fallo al guardar los datos de reputación",
@@ -241,10 +279,19 @@
       "no-active-party-gm": "No hay grupo activo asignado. Crea un grupo y establécelo como activo.",
       "no-active-party-player": "No eres parte de un grupo activo.",
       "personal-reputation": "Reputación Personal",
+      "active-party": "Grupo Activo",
       "custom-type-name-placeholder": "Nombre de tipo personalizado...",
       "current-active-party": "Grupo Activo",
+      "description": "Descripción",
       "edit-description": "Editar descripción",
-      "no-description": "Sin descripción"
+      "no-description": "Sin descripción",
+      "context-character": "Personaje Activo",
+      "context-party": "Grupo Activo",
+      "pick-character": "Cambiar personaje",
+      "pick-party": "Establecer Grupo Activo",
+      "no-character": "Ninguno",
+      "no-party": "Sin asignar",
+      "create-group": "Crear Grupo"
     },
     "creator": {
       "title-location": "Crear Ubicación",

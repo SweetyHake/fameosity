@@ -100,13 +100,6 @@ export async function removeFactionMember(factionId, actorId) {
   return false;
 }
 
-export function getFactionRep(factionId) {
-  const data = Data.getData();
-  const partyId = data.activePartyId;
-  if (!partyId) return 0;
-  return data.factionToFactionRelations?.[factionId]?.[partyId] ?? 0;
-}
-
 let _repModule = null;
 function _getRepModule() {
   if (!_repModule) {
@@ -128,14 +121,6 @@ function _getRepModule() {
     };
   }
   return _repModule;
-}
-
-export async function setFactionRep(factionId, value) {
-  const factions = getFactions();
-  const faction = factions.find(f => f.id === factionId);
-  if (!faction) return;
-  faction.reputation = Data.clamp(value);
-  await setFactions(factions);
 }
 
 export function getFactionRank(factionId, actorId) {

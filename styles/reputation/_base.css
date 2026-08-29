@@ -1,3 +1,129 @@
+/* ========================================
+   shared window chrome for all module windows
+   ======================================== */
+
+.fame-relations-viewer,
+.fame-reputation-settings,
+.fame-entity-creator,
+.fame-picker-app {
+  border-radius: var(--fame-radius-md);
+  overflow: hidden;
+}
+
+.fame-relations-viewer.application,
+.fame-reputation-settings.application,
+.fame-entity-creator.application,
+.fame-picker-app.application {
+  background: var(--fame-bg-primary);
+}
+
+/* standard-form sits on the window root: kill its flex gap
+   so no transparent strip appears between header and content */
+.fame-relations-viewer.standard-form,
+.fame-reputation-settings.standard-form,
+.fame-entity-creator.standard-form,
+.fame-picker-app.standard-form {
+  gap: 0;
+}
+
+.fame-relations-viewer .window-header,
+.fame-reputation-settings .window-header,
+.fame-entity-creator .window-header,
+.fame-picker-app .window-header {
+  border: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  background: var(--fame-bg-primary);
+}
+
+/* centered title sitting behind the header controls */
+.fame-relations-viewer .window-header .window-title,
+.fame-reputation-settings .window-header .window-title,
+.fame-entity-creator .window-header .window-title,
+.fame-picker-app .window-header .window-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;
+  background: transparent;
+  font-size: var(--fame-font-size-xl);
+  margin: 0;
+  padding: 0;
+  z-index: 0;
+}
+
+/* make sure header buttons sit above the title */
+.fame-relations-viewer .window-header .header-control,
+.fame-relations-viewer .window-header button,
+.fame-reputation-settings .window-header .header-control,
+.fame-reputation-settings .window-header button,
+.fame-entity-creator .window-header .header-control,
+.fame-entity-creator .window-header button,
+.fame-picker-app .window-header .header-control,
+.fame-picker-app .window-header button {
+  position: relative;
+  z-index: 1;
+}
+
+/* fa icon pinned to the left edge, like core window chrome
+   (in FVTT 14 the icon is a separate header element, not inside .window-title) */
+.fame-relations-viewer .window-header > i,
+.fame-relations-viewer .window-header .window-icon,
+.fame-reputation-settings .window-header > i,
+.fame-reputation-settings .window-header .window-icon,
+.fame-entity-creator .window-header > i,
+.fame-entity-creator .window-header .window-icon,
+.fame-picker-app .window-header > i,
+.fame-picker-app .window-header .window-icon {
+  position: absolute;
+  left: var(--fame-space-md);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.fame-relations-viewer .window-content,
+.fame-reputation-settings .window-content,
+.fame-entity-creator .window-content,
+.fame-picker-app .window-content {
+  padding-block-start: 0;
+  background: var(--fame-bg-primary);
+
+  & button.active,
+  & button:focus {
+    outline: none;
+    box-shadow: none;
+  }
+}
+
+/* unified fieldset look */
+.fame-relations-content fieldset,
+.fame-settings-content fieldset,
+.fame-creator-content fieldset,
+.fame-picker-content fieldset {
+  margin: 0;
+  padding: var(--fame-space-sm);
+  border: 1px solid var(--fame-color-border);
+  border-radius: var(--fame-radius-md);
+  background: transparent;
+}
+
+.fame-relations-content legend,
+.fame-settings-content legend,
+.fame-creator-content legend,
+.fame-picker-content legend {
+  padding: 0 var(--fame-space-sm);
+  font-weight: bold;
+  font-size: var(--fame-font-size-lg);
+  color: var(--fame-color-text-emphatic);
+}
+
+/* ========================================
+   transitions guard
+   ======================================== */
+
 .fame-relations-content.no-transitions,
 .fame-relations-content.no-transitions *,
 .fame-relations-content.no-transitions *::before,
@@ -5,6 +131,10 @@
   transition: none !important;
   animation: none !important;
 }
+
+/* ========================================
+   viewer layout base
+   ======================================== */
 
 .fame-relations-viewer .window-content {
   padding: 0;
@@ -18,10 +148,10 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  font-size: 0.875rem;
+  font-size: var(--fame-font-size-md);
   line-height: var(--fame-line-height);
   color: var(--fame-color-text-emphatic);
-} 
+}
 
 .fame-scroll-list {
   display: flex;
@@ -31,14 +161,18 @@
 
 .fame-no-items {
   color: var(--fame-color-text-subtle);
-  font-style: italic;
   padding: var(--fame-space-md);
   line-height: var(--fame-line-height);
 }
 
 .fame-no-items.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
   text-align: center;
-  padding: 1.5rem;
+  padding: var(--fame-space-xl);
 }
 
 .fame-drop-zone {
@@ -49,7 +183,7 @@
   color: var(--fame-color-text-subtle);
   margin-bottom: var(--fame-space-sm);
   flex-shrink: 0;
-  transition: border-color 0.2s ease, color 0.2s ease;
+  transition: border-color var(--fame-transition-fast) ease, color var(--fame-transition-fast) ease;
 }
 
 .fame-drop-zone.member-drop,
@@ -60,8 +194,8 @@
 }
 
 .fame-drop-zone.drag-over {
-  border-color: var(--fame-color-gold);
-  color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
+  color: var(--fame-accent);
 }
 
 .fame-relations-viewer .window-content > .fame-tabs {
@@ -79,6 +213,10 @@
   display: flex;
   flex-direction: column;
 }
+
+/* ========================================
+   search
+   ======================================== */
 
 .fame-search-row {
   display: flex;
@@ -105,16 +243,18 @@
 .fame-search-input {
   width: 100%;
   padding: var(--fame-space-md) var(--fame-space-lg) var(--fame-space-md) 2rem;
+  background: var(--fame-color-surface);
   border: 1px solid var(--fame-color-border);
   border-radius: var(--fame-radius-sm);
+  color: var(--fame-color-text-emphatic);
   transition: none;
   line-height: var(--fame-line-height);
 }
 
 .fame-search-input:focus {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-color-border);
   outline: none;
-  box-shadow: var(--fame-shadow-glow-gold);
+  box-shadow: none;
 }
 
 .fame-search-input::placeholder {
@@ -134,21 +274,28 @@
   color: var(--fame-color-text-secondary);
   cursor: pointer;
   flex-shrink: 0;
-  transition: all 0.15s ease;
+  transition: all var(--fame-transition-fast);
 }
 
 .fame-search-add-btn:hover {
-  border-color: var(--fame-color-gold);
-  color: var(--fame-color-gold);
-  box-shadow: var(--fame-shadow-glow-gold);
+  background: var(--fame-color-surface-hover);
+  border-color: var(--fame-color-border);
+  color: var(--fame-color-text-emphatic);
 }
 
 .fame-global-drop-zone.drag-over {
-  box-shadow: inset 0 0 0 2px var(--fame-color-gold);
+  box-shadow: inset 0 0 0 2px var(--fame-accent);
 }
 
-*:focus-visible {
-  outline: 2px solid var(--fame-color-gold);
+/* ========================================
+   focus
+   ======================================== */
+
+.fame-relations-viewer *:focus-visible,
+.fame-reputation-settings *:focus-visible,
+.fame-entity-creator *:focus-visible,
+.fame-picker-app *:focus-visible {
+  outline: 2px solid var(--fame-accent);
   outline-offset: 1px;
 }
 
@@ -156,79 +303,67 @@
 .fame-relations-content select:focus-visible,
 .fame-relations-content textarea:focus-visible,
 .fame-relations-content button:focus-visible {
-  outline: 2px solid var(--fame-color-gold);
+  outline: 2px solid var(--fame-accent);
   outline-offset: 1px;
-  box-shadow: var(--fame-shadow-glow-gold);
 }
 
-.fame-relations-content ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+/* ========================================
+   custom scrollbar for all module windows
+   ======================================== */
+
+.fame-relations-viewer ::-webkit-scrollbar,
+.fame-reputation-settings ::-webkit-scrollbar,
+.fame-entity-creator ::-webkit-scrollbar,
+.fame-picker-app ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-.fame-relations-content ::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.fame-relations-content ::-webkit-scrollbar-thumb {
-  background: var(--fame-color-gold);
-  border-radius: var(--fame-radius-sm);
-  opacity: 0.5;
-}
-
-.fame-relations-content ::-webkit-scrollbar-thumb:hover {
-  background: var(--fame-color-gold);
-  opacity: 1;
-}
-
-.fame-relations-content {
-  scrollbar-color: var(--fame-color-gold) transparent;
-  scrollbar-width: thin;
-}
-
-.fame-relations-content *::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-
-.fame-relations-content *::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.fame-relations-content *::-webkit-scrollbar-thumb {
-  background: var(--fame-color-gold);
+.fame-relations-viewer ::-webkit-scrollbar-track,
+.fame-reputation-settings ::-webkit-scrollbar-track,
+.fame-entity-creator ::-webkit-scrollbar-track,
+.fame-picker-app ::-webkit-scrollbar-track {
+  background: var(--fame-scrollbar-track);
   border-radius: var(--fame-radius-sm);
 }
 
-.fame-relations-content *::-webkit-scrollbar-thumb:hover {
-  background: var(--fame-color-text-emphatic);
-}
-
-.fame-relations-content * {
-  scrollbar-color: var(--fame-color-gold) transparent;
-  scrollbar-width: thin;
-}
-
-.fame-relations-viewer .window-content::-webkit-scrollbar {
-  width: 4px;
-}
-
-.fame-relations-viewer .window-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.fame-relations-viewer .window-content::-webkit-scrollbar-thumb {
-  background: var(--fame-color-gold);
+.fame-relations-viewer ::-webkit-scrollbar-thumb,
+.fame-reputation-settings ::-webkit-scrollbar-thumb,
+.fame-entity-creator ::-webkit-scrollbar-thumb,
+.fame-picker-app ::-webkit-scrollbar-thumb {
+  background: var(--fame-scrollbar-thumb);
   border-radius: var(--fame-radius-sm);
 }
 
-.fame-relations-viewer .window-content {
-  scrollbar-color: var(--fame-color-gold) transparent;
+.fame-relations-viewer ::-webkit-scrollbar-thumb:hover,
+.fame-reputation-settings ::-webkit-scrollbar-thumb:hover,
+.fame-entity-creator ::-webkit-scrollbar-thumb:hover,
+.fame-picker-app ::-webkit-scrollbar-thumb:hover {
+  background: var(--fame-scrollbar-thumb-hover);
+}
+
+.fame-relations-viewer ::-webkit-scrollbar-corner,
+.fame-reputation-settings ::-webkit-scrollbar-corner,
+.fame-entity-creator ::-webkit-scrollbar-corner,
+.fame-picker-app ::-webkit-scrollbar-corner {
+  background: var(--fame-scrollbar-track);
+}
+
+/* firefox scrollbar styling */
+.fame-relations-viewer,
+.fame-reputation-settings,
+.fame-entity-creator,
+.fame-picker-app,
+.fame-relations-viewer *,
+.fame-reputation-settings *,
+.fame-entity-creator *,
+.fame-picker-app * {
   scrollbar-width: thin;
+  scrollbar-color: var(--fame-scrollbar-thumb) var(--fame-scrollbar-track);
 }
 
 .fame-relations-content select {
-  background: transparent;
+  background: var(--fame-color-surface);
   color: var(--fame-color-text-emphatic);
 }
 

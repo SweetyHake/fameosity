@@ -1,4 +1,4 @@
-.fame-entity-creator .window-content {
+﻿.fame-entity-creator .window-content {
   padding: 0;
 }
 
@@ -29,33 +29,37 @@
   gap: var(--fame-space-md);
 }
 
+/* selectable type chips, hero checkbox pattern */
 .fame-creator-type-item {
   display: flex;
   align-items: center;
   gap: var(--fame-space-md);
   padding: 0.625rem;
-  border: 1px solid var(--fame-color-border);
-  border-radius: var(--fame-radius-md);
+  border: 1px solid transparent;
+  border-radius: var(--fame-radius-sm);
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color var(--fame-transition-fast), background var(--fame-transition-fast);
   background: var(--fame-color-surface);
 }
 
 .fame-creator-type-item:hover {
-  border-color: var(--fame-color-gold);
-  box-shadow: var(--fame-shadow-glow-gold);
+  background: var(--fame-color-surface-hover);
+  border-color: var(--fame-color-border);
 }
 
 .fame-creator-type-item.selected {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
   background: var(--fame-color-surface-active);
-  box-shadow: var(--fame-shadow-glow-gold);
 }
 
 .fame-creator-type-item i {
-  color: var(--fame-color-gold);
+  color: var(--fame-color-text-secondary);
   width: 20px;
   text-align: center;
+}
+
+.fame-creator-type-item.selected i {
+  color: var(--fame-accent);
 }
 
 .fame-creator-type-name {
@@ -68,14 +72,15 @@
   width: 100%;
   padding: var(--fame-space-md);
   border: 1px solid var(--fame-color-border);
-  border-radius: var(--fame-radius-md);
+  border-radius: var(--fame-radius-sm);
+  background: var(--fame-bg-tertiary);
+  color: var(--fame-color-text-emphatic);
   line-height: var(--fame-line-height);
 }
 
 .fame-creator-name-input:focus {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
   outline: none;
-  box-shadow: var(--fame-shadow-glow-gold);
 }
 
 .fame-creator-footer {
@@ -83,26 +88,29 @@
   border-top: 1px solid var(--fame-color-border-soft);
 }
 
+/* primary action button, hero toolbar style */
 .fame-creator-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--fame-space-sm);
   padding: var(--fame-space-md) var(--fame-space-xl);
-  border: 1px solid var(--fame-color-border);
+  border: none;
   border-radius: var(--fame-radius-md);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: filter var(--fame-transition-fast);
+  background: var(--fame-accent);
+  color: #ffffff;
 }
 
 .fame-creator-btn:hover:not([disabled]) {
-  border-color: var(--fame-color-gold);
-  color: var(--fame-color-gold);
-  box-shadow: var(--fame-shadow-glow-gold);
+  filter: brightness(1.1);
+  color: #ffffff;
 }
 
 .fame-creator-btn[disabled] {
-  opacity: 0.5;
+  background: var(--fame-bg-tertiary);
+  color: var(--fame-color-text-subtle);
   cursor: not-allowed;
 }
 
@@ -120,11 +128,14 @@
   display: flex;
   flex-direction: column;
   gap: var(--fame-space-sm);
-  transition: border-color 0.15s ease;
+  background: var(--fame-bg-tertiary);
+  transition: border-color var(--fame-transition-fast), background-color var(--fame-transition-fast);
 }
 
 .fame-creator-actor-drop-zone.drag-over {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
+  border-style: solid;
+  background-color: var(--fame-color-surface-hover);
 }
 
 .fame-creator-drop-hint {
@@ -134,7 +145,6 @@
   height: 100%;
   min-height: 100px;
   color: var(--fame-color-text-secondary);
-  font-style: italic;
   text-align: center;
   line-height: var(--fame-line-height);
 }
@@ -146,12 +156,12 @@
   padding: var(--fame-space-sm);
   border: 1px solid var(--fame-color-border);
   border-radius: var(--fame-radius-md);
-  transition: border-color 0.1s ease;
+  transition: background var(--fame-transition-fast);
   background: var(--fame-color-surface);
 }
 
 .fame-creator-actor-item:hover {
-  border-color: var(--fame-color-gold);
+  background: var(--fame-color-surface-hover);
 }
 
 .fame-creator-actor-img {
@@ -185,6 +195,7 @@
   gap: var(--fame-space-md);
 }
 
+/* tertiary bordered buttons, hero add-more pattern */
 .fame-creator-quick-btn {
   flex: 1;
   display: flex;
@@ -195,14 +206,16 @@
   border: 1px solid var(--fame-color-border);
   border-radius: var(--fame-radius-md);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--fame-transition-fast);
   font-size: 0.85rem;
   line-height: var(--fame-line-height);
+  background: var(--fame-bg-tertiary);
+  color: var(--fame-color-text-secondary);
 }
 
 .fame-creator-quick-btn:hover {
-  border-color: var(--fame-color-gold);
-  color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
+  color: var(--fame-color-text-emphatic);
   background: var(--fame-color-surface-hover);
 }
 

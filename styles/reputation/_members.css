@@ -1,4 +1,4 @@
-.fame-member-item,
+﻿.fame-member-item,
 .fame-relation-item {
   display: flex;
   align-items: center;
@@ -44,10 +44,6 @@
   cursor: pointer;
 }
 
-.fame-member-img.clickable:hover {
-  border-color: var(--fame-color-gold);
-}
-
 .fame-member-name.clickable:hover {
   color: var(--fame-color-gold);
 }
@@ -90,13 +86,13 @@
   align-items: center;
   gap: var(--fame-space-xs);
   padding: 0.0625rem 0.3125rem;
-  border-radius: var(--fame-radius-lg);
-  color: white;
+  background: var(--fame-bg-tertiary);
+  border: 1px solid;
+  border-radius: var(--fame-radius-sm);
   font-weight: 600;
   text-transform: uppercase;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  font-size: var(--fame-font-size-xs);
   width: fit-content;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .fame-member-rank-badge.manual {
@@ -113,35 +109,28 @@
 }
 
 .fame-member-rank-select:focus {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
   outline: none;
 }
 
 .fame-member-rank-select:hover {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
 }
 
 .fame-tier-badge {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.125rem var(--fame-space-xs);
-  border-radius: var(--fame-radius-lg);
-  color: white;
+  padding: 0.125rem var(--fame-space-sm);
+  background: var(--fame-bg-tertiary);
+  border: 1px solid;
+  border-radius: var(--fame-radius-sm);
   font-weight: 600;
   white-space: nowrap;
   text-transform: uppercase;
   letter-spacing: var(--fame-letter-spacing-caps);
   flex-shrink: 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  text-align: center;
-  width: 86px;
-  min-width: 86px;
-  height: 18px;
-  line-height: 18px;
-  overflow: hidden;
-  font-size: 0.7rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  font-size: var(--fame-font-size-xs);
 }
 
 .fame-tier-badge.small {
@@ -165,7 +154,7 @@
 .fame-faction-wanted-rep-reward:focus,
 .fame-location-wanted-reward:focus,
 .fame-faction-wanted-reward:focus {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
   outline: none;
 }
 
@@ -174,7 +163,7 @@
 }
 
 .fame-detail-wanted-row.drag-over {
-  box-shadow: inset 0 -2px 0 var(--fame-color-gold);
+  box-shadow: inset 0 -2px 0 var(--fame-accent);
 }
 
 .fame-detail-wanted-row.dragging {

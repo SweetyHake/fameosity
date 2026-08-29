@@ -1,4 +1,4 @@
-.fame-settings-content {
+﻿.fame-settings-content {
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -7,33 +7,49 @@
 
 .fame-settings-tabs {
   display: flex;
+  justify-content: center;
+  gap: 0;
+  margin-inline: var(--fame-space-sm);
+  border-top: 1px solid var(--fame-color-border);
   border-bottom: 1px solid var(--fame-color-border);
   flex-shrink: 0;
 }
 
 .fame-settings-tab {
   flex: 1;
-  text-align: center;
-  padding: var(--fame-space-md);
+  padding: var(--fame-space-md) var(--fame-space-xl);
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--fame-color-border);
+  border-radius: 0;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  font-weight: 500;
-  transition: all 0.15s ease;
-  line-height: var(--fame-line-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--fame-space-xs);
+  font-weight: normal;
+  font-size: var(--fame-font-size-lg);
+  color: var(--fame-color-text-subtle);
+  transition: color var(--fame-transition-fast), background var(--fame-transition-fast);
+}
+
+.fame-settings-tab:last-child {
+  border-right: none;
 }
 
 .fame-settings-tab:hover {
-  color: var(--fame-color-gold);
   background: var(--fame-color-surface-hover);
+  color: var(--fame-color-text-secondary);
 }
 
 .fame-settings-tab.active {
-  border-bottom-color: var(--fame-color-gold);
-  color: var(--fame-color-gold);
+  background: transparent;
+  color: var(--fame-accent);
+  font-weight: bold;
 }
 
-.fame-settings-tab i {
-  margin-right: var(--fame-space-xs);
+.fame-settings-tab.active i {
+  color: var(--fame-accent);
 }
 
 .fame-settings-panel {
@@ -89,22 +105,24 @@
 .fame-settings-content input[type="number"],
 .fame-settings-content select {
   padding: var(--fame-space-sm);
+  background: var(--fame-color-surface);
   border: 1px solid var(--fame-color-border);
   border-radius: var(--fame-radius-sm);
+  color: var(--fame-color-text-emphatic);
 }
 
 .fame-settings-content input[type="text"]:focus,
 .fame-settings-content input[type="number"]:focus,
 .fame-settings-content select:focus {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
   outline: none;
-  box-shadow: var(--fame-shadow-glow-gold);
+  box-shadow: none;
 }
 
 .fame-settings-content input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: var(--fame-color-gold);
+  accent-color: var(--fame-accent);
 }
 
 .fame-tiers-section {
@@ -141,7 +159,7 @@
 }
 
 .fame-tier-item .fame-tier-name:focus {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
   outline: none;
 }
 
@@ -154,7 +172,7 @@
 }
 
 .fame-tier-item .fame-tier-min:focus {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
   outline: none;
 }
 
@@ -203,7 +221,7 @@
 }
 
 .fame-rank-item .fame-rank-name:focus {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
   outline: none;
 }
 
@@ -216,7 +234,7 @@
 }
 
 .fame-rank-item .fame-rank-min:focus {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
   outline: none;
 }
 
@@ -245,27 +263,8 @@
 }
 
 .fame-rank-add-btn:hover {
-  border-color: var(--fame-color-gold);
-  color: var(--fame-color-gold);
-}
-
-.fame-viewer-content {
-  padding: var(--fame-space-md);
-}
-
-.fame-viewer-content .fame-reset-btn {
-  width: 100%;
-  margin-top: var(--fame-space-md);
-  padding: var(--fame-space-sm);
-  border: 1px solid var(--fame-color-border);
-  border-radius: var(--fame-radius-md);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.fame-viewer-content .fame-reset-btn:hover {
-  border-color: var(--fame-color-error);
-  color: var(--fame-color-error);
+  background: var(--fame-color-surface-hover);
+  color: var(--fame-color-text-emphatic);
 }
 
 .fame-hybrid-settings {
@@ -295,14 +294,14 @@
 
 .fame-hybrid-slider-row input[type="range"] {
   flex: 1;
-  accent-color: var(--fame-color-gold);
+  accent-color: var(--fame-accent);
 }
 
 .fame-hybrid-value {
   min-width: 40px;
   text-align: right;
   font-weight: 600;
-  color: var(--fame-color-gold);
+  color: var(--fame-color-text-emphatic);
 }
 
 .fame-export-import-section {
@@ -331,8 +330,8 @@
 }
 
 .fame-export-import-row button:hover {
-  border-color: var(--fame-color-gold);
-  color: var(--fame-color-gold);
+  background: var(--fame-color-surface-hover);
+  color: var(--fame-color-text-emphatic);
 }
 
 .fame-import-options {
@@ -354,7 +353,7 @@
 .fame-checkbox-label input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: var(--fame-color-gold);
+  accent-color: var(--fame-accent);
 }
 
 .fame-danger-zone {
@@ -408,6 +407,6 @@
 }
 
 .fame-rank-item .fame-rank-multiplier:focus {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
   outline: none;
 }

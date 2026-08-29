@@ -118,25 +118,6 @@ export function showNotification(message, delta, ownerIds = null) {
   }
 }
 
-export function showBroadcastNotification(message) {
-  const container = getOrCreateContainer();
-  const notification = document.createElement("div");
-  notification.className = 'fame-notification negative';
-  notification.innerHTML = `
-    <div class="fame-notification-icon">
-      <i class="fa-solid fa-exclamation-triangle"></i>
-    </div>
-    <div class="fame-notification-content">
-      <span class="fame-notification-message">${escapeHtmlLocal(message)}</span>
-    </div>
-  `;
-  container.appendChild(notification);
-  playNotificationSound();
-  const key = `broadcast-${Date.now()}`;
-  activeNotifications.set(key, notification);
-  scheduleRemoval(notification, key, container);
-}
-
 export function showRelationChangeNotification(sourceName, targetName, delta, targetPcId = null, options = {}) {
   const settings = Data.getSettings();
   if (!settings.enabled || delta === 0) return;
@@ -149,18 +130,6 @@ export function showRelationChangeNotification(sourceName, targetName, delta, ta
   });
 
   showNotification(message, delta);
-}
-
-export function broadcastWantedAnnouncement(pcName, locationName, level) {
-  const message = game.i18n.format(`${MODULE_ID}.wanted.announced`, {
-    name: pcName, location: locationName, level: '★'.repeat(level)
-  });
-
-  game.socket.emit(`module.${MODULE_ID}`, {
-    type: "showNotification", message, delta: -1, ownerIds: null
-  });
-
-  showBroadcastNotification(message);
 }
 
 export async function changeReputation(delta, actorId = null) {

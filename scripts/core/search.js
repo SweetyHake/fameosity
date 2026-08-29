@@ -1,6 +1,7 @@
-import * as Locations from './locations.js';
+﻿import * as Locations from './locations.js';
 import * as Factions from './factions.js';
 import * as Actors from './actors.js';
+import { cleanName } from '../data.js';
 
 export function findByName(name, type = null) {
   if (!name) return null;
@@ -8,12 +9,12 @@ export function findByName(name, type = null) {
   
   const searchLocations = () => {
     const location = Locations.getLocations().find(l => l.name.toLowerCase() === query);
-    return location ? { ...location, entityType: 'location' } : null;
+    return location ? { ...location, name: cleanName(location.name) || location.name, entityType: "location" } : null;
   };
   
   const searchFactions = () => {
     const faction = Factions.getFactions().find(f => f.name.toLowerCase() === query);
-    return faction ? { ...faction, entityType: 'faction' } : null;
+    return faction ? { ...faction, name: cleanName(faction.name) || faction.name, entityType: "faction" } : null;
   };
   
   const searchActors = () => {

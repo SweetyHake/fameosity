@@ -1,4 +1,4 @@
-import { MODULE_ID } from '../../constants.js';
+﻿import { MODULE_ID } from '../../constants.js';
 import * as Data from '../../data.js';
 import * as Core from '../../core/index.js';
 import { getRep, getMode } from '../../core/reputation.js';
@@ -54,7 +54,7 @@ export async function buildActorData(id, min, max, pcs, rawFactions) {
   const reputation = getRep(id, 'actor');
   const tier = Data.getTier(reputation);
   const hidden = Core.isHidden('actor', id);
-  const descriptionRaw = Data.getDescription('actors', id);
+  const descriptionRaw = Data.getDescription('actors', id) || _getSystemBiography(actor);
   const description = descriptionRaw
     ? await (foundry.applications.ux?.TextEditor?.implementation ?? TextEditor).enrichHTML(descriptionRaw, { async: true, relativeTo: actor })
     : '';
@@ -65,11 +65,11 @@ export async function buildActorData(id, min, max, pcs, rawFactions) {
 
   let partyReputation = null;
   let partyTier = null;
-  let hasActiveParty = !!activeParty;
+  const hasActiveParty = !!activeParty;
 
   if (activeParty && !isActivePartyMember) {
-    partyReputation = getRep(id, 'actor');
-    partyTier = Data.getTier(partyReputation);
+    partyReputation = reputation;
+    partyTier = tier;
   }
 
   const pcRelations = [];
@@ -132,7 +132,7 @@ export async function buildActorData(id, min, max, pcs, rawFactions) {
     if (!relationExists && !isMember && !relHidden) return null;
 
     return {
-      factionId: faction.id, factionName: faction.name, factionImg: faction.image,
+      factionId: faction.id, factionName: Data.cleanName(faction.name), factionImg: faction.image,
       value, tier: Data.getTier(value), isMember,
       memberHidden: Core.isMemberHidden(faction.id, id),
       rank: isMember ? Core.getFactionRank(faction.id, id) : null,
@@ -144,7 +144,7 @@ export async function buildActorData(id, min, max, pcs, rawFactions) {
   factionRelations.sort((a, b) => a.factionName.localeCompare(b.factionName));
 
   return {
-    id, name: Core.getDisplayName(id), originalName: actor.name,
+    id, name: Core.getDisplayName(id), originalName: Data.cleanName(actor.name),
     customName: Core.getCustomName(id), img: actor.img,
     reputation, mode, tier, hidden, description, descriptionRaw,
     canEdit: canEditActor(id), isPC, isActivePartyMember,
@@ -164,6 +164,15 @@ function _isActorOwnerOnline(actor) {
   });
 }
 
+/**
+ * Biography fallback when the module has no description of its own.
+ * dnd5e: only the player-visible part of the sheet biography (.public).
+ */
+function _getSystemBiography(actor) {
+  if (game.system?.id !== 'dnd5e') return '';
+  return actor.system?.details?.biography?.public || '';
+}
+
 export async function buildFactionData(faction, pcs, min, max, isGM) {
   const mode = getMode(faction.id, 'faction');
   const reputation = getRep(faction.id, 'faction');
@@ -181,11 +190,11 @@ export async function buildFactionData(faction, pcs, min, max, isGM) {
 
   let partyReputation = null;
   let partyTier = null;
-  let hasActiveParty = !!activeParty;
+  const hasActiveParty = !!activeParty;
 
   if (activeParty && !isPartyActive) {
-    partyReputation = getRep(faction.id, 'faction');
-    partyTier = Data.getTier(partyReputation);
+    partyReputation = reputation;
+    partyTier = tier;
   }
 
   const memberSet = new Set(faction.members || []);
@@ -242,7 +251,7 @@ export async function buildFactionData(faction, pcs, min, max, isGM) {
       if (!relationExists && !relHidden) return null;
 
       return {
-        targetFactionId: f.id, targetFactionName: f.name,
+        targetFactionId: f.id, targetFactionName: Data.cleanName(f.name),
         targetFactionImg: f.image || 'icons/svg/mystery-man.svg',
         value, tier: Data.getTier(value),
         hidden: relHidden,
@@ -286,7 +295,7 @@ export async function buildFactionData(faction, pcs, min, max, isGM) {
           manualRankId: childFac.memberRanks?.[childMemberId] || null,
           hidden: Core.isMemberHidden(childFac.id, childMemberId),
           actorHidden: false,
-          sourceName: childFac.name, sourceFactionId: childFac.id,
+          sourceName: Data.cleanName(childFac.name), sourceFactionId: childFac.id,
           tier: Data.getTier(memberRep)
         });
       }
@@ -296,7 +305,7 @@ export async function buildFactionData(faction, pcs, min, max, isGM) {
   members.sort((a, b) => a.name.localeCompare(b.name));
 
   return {
-    ...faction, reputation, mode, tier, members, hidden, typeInfo, description, descriptionRaw,
+    ...faction, name: Data.cleanName(faction.name), reputation, mode, tier, members, hidden, typeInfo, description, descriptionRaw,
     partyReputation, partyTier, hasActiveParty,
     activePartyName: activeParty?.name || null,
     factionRels: [...pcRels, ...npcRels],
@@ -377,7 +386,7 @@ export async function buildLocationData(loc, allFactions, allActors, isGM) {
   actorsList.sort((a, b) => a.name.localeCompare(b.name));
 
   return {
-    ...loc, factionsList, actorsList,
+    ...loc, name: Data.cleanName(loc.name), factionsList, actorsList,
     factionCount: factionsList.length, actorCount: actorsList.length,
     hidden, typeInfo, description, descriptionRaw, controlledByFaction
   };

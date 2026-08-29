@@ -5,16 +5,11 @@
   cursor: pointer;
   padding: var(--fame-space-xs);
   flex-shrink: 0;
-  transition: color 0.1s ease, transform 0.1s ease;
+  transition: color var(--fame-transition-fast);
 }
 
 .fame-icon-btn:hover {
-  color: var(--fame-color-gold);
-  transform: scale(1.1);
-}
-
-.fame-icon-btn:active {
-  transform: scale(0.95);
+  color: var(--fame-color-text-emphatic);
 }
 
 .fame-add-btn {
@@ -28,50 +23,61 @@
 }
 
 .fame-add-btn:hover {
-  border-color: var(--fame-color-gold);
-  color: var(--fame-color-gold);
-  box-shadow: var(--fame-shadow-glow-gold);
+  background: var(--fame-color-surface-hover);
+  color: var(--fame-color-text-emphatic);
 }
 
+/* primary action, hero toolbar style */
 .fame-save-btn {
   padding: var(--fame-space-md) var(--fame-space-xl);
-  border: 1px solid var(--fame-color-border);
+  border: none;
   border-radius: var(--fame-radius-md);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: filter var(--fame-transition-fast);
+  background: var(--fame-accent);
+  color: #ffffff;
 }
 
 .fame-save-btn:hover {
-  border-color: var(--fame-color-gold);
-  color: var(--fame-color-gold);
-  box-shadow: var(--fame-shadow-glow-gold);
+  filter: brightness(1.1);
+  color: #ffffff;
 }
 
-.fame-mode-btn {
-  position: relative;
-  width: 24px;
-  height: 24px;
-  border: none;
-  border-radius: var(--fame-radius-sm);
-  display: flex;
-  align-items: center;
+.fame-mode-chip {
+  width: 96px;
   justify-content: center;
-  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.65rem;
+  border: 1px solid var(--fame-color-border);
+  border-radius: 999px;
+  background: var(--fame-color-surface);
   color: var(--fame-color-text-secondary);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--fame-letter-spacing-caps);
+  line-height: 1.4;
   cursor: pointer;
-  transition: color 0.15s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: color var(--fame-transition-fast), border-color var(--fame-transition-fast);
 }
 
-.fame-mode-btn:hover {
-  color: var(--fame-color-gold);
+.fame-mode-chip:hover {
+  color: var(--fame-color-text-emphatic);
+  border-color: var(--fame-color-gold);
 }
 
-.fame-mode-btn.active {
-  color: var(--fame-color-gold);
+.fame-mode-chip.mode-auto {
+  color: var(--fame-accent);
+  border-color: var(--fame-accent);
 }
 
-.fame-mode-btn.active.hybrid {
+.fame-mode-chip.mode-hybrid {
   color: var(--fame-color-warning);
+  border-color: var(--fame-color-warning);
 }
 
 .fame-hide-btn {
@@ -119,6 +125,15 @@
   box-shadow: none;
 }
 
+/* destructive actions turn red on hover, like hero clear/remove buttons */
+.fame-relations-content .fame-icon-btn[data-action="delete"]:hover,
+.fame-relations-content .fame-icon-btn[data-action="deleteRank"]:hover,
+.fame-relations-content .fame-icon-btn[data-action="removeMember"]:hover,
+.fame-creator-content .fame-icon-btn[data-action="delete"]:hover,
+.fame-settings-content .fame-icon-btn[data-action="delete"]:hover {
+  color: var(--color-level-error, var(--fame-color-error));
+}
+
 .fame-icon-btn,
 .fame-icon-btn:focus,
 .fame-icon-btn:focus-visible,
@@ -143,4 +158,85 @@
 .fame-nav-action-btn:focus,
 .fame-nav-action-btn:focus-visible {
   outline: none;
+}
+
+.fame-nav-item-img,
+.fame-detail-img,
+.fame-detail-rel-img,
+.fame-controlled-faction-img,
+.fame-picker-img,
+.fame-creator-actor-img {
+  object-fit: cover;
+  object-position: top center;
+}
+
+#token-hud {
+  overflow: visible;
+}
+
+#token-hud .fame-token-hud {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -8px;
+  transform: translateY(-100%);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px;
+  background: var(--control-bg-color);
+  border: 1px solid var(--control-border-color);
+  border-radius: 4px;
+  box-shadow: 0 0 10px var(--color-shadow-dark);
+  pointer-events: all;
+  --control-size: 22px;
+}
+
+#token-hud .fame-token-hud .fame-token-hud-bar {
+  position: relative;
+  height: 7px;
+  border-radius: 4px;
+  background: var(--control-hover-bg-color);
+  overflow: hidden;
+}
+
+#token-hud .fame-token-hud .fame-token-hud-bar .zero {
+  position: absolute;
+  left: 50%;
+  top: -1px;
+  bottom: -1px;
+  width: 1px;
+  background: currentColor;
+  opacity: 0.45;
+}
+
+#token-hud .fame-token-hud .fame-token-hud-bar .fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 2px;
+}
+
+#token-hud .fame-token-hud .fame-hud-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3px;
+  min-width: 0;
+}
+
+#token-hud .fame-token-hud .fame-hud-row.personal {
+  padding-top: 3px;
+  border-top: 1px solid var(--control-border-color);
+}
+
+#token-hud .fame-token-hud .control-icon {
+  font-size: var(--font-size-12);
+}
+
+#token-hud .fame-token-hud .fame-hud-mark {
+  color: var(--control-icon-color);
+  opacity: 0.7;
+  font-size: var(--font-size-11);
+  padding: 0 1px;
 }

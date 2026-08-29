@@ -1,5 +1,5 @@
-import { MODULE_ID } from '../constants.js';
-import { escapeHtml, getSettings, setSettings, getTiers, setTiers, getDefaultTiers, getData, setData } from '../data.js';
+import { MODULE_ID, DEFAULT_DATA, DEFAULT_SETTINGS } from '../constants.js';
+import { escapeHtml, getSettings, setSettings, getTiers, setTiers, getDefaultTiers, getData, setData, validateDataStructure } from '../data.js';
 
 export class ReputationSettingsApp extends foundry.applications.api.ApplicationV2 {
   static DEFAULT_OPTIONS = {
@@ -13,7 +13,7 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
 
   constructor(options = {}) {
     super(options);
-    this.currentTab = 'general';
+    this.currentTab = 'tiers';
   }
 
   get title() {
@@ -22,7 +22,6 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
 
   async _prepareContext() {
     return {
-      settings: getSettings(),
       tiers: getTiers(),
       currentTab: this.currentTab
     };
@@ -43,22 +42,8 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
       </div>
     `).join('');
 
-    const modes = ['manual', 'auto', 'hybrid'];
-    const actorModeOptions = modes.map(mode =>
-      `<option value="${mode}" ${(context.settings.defaultActorMode || 'manual') === mode ? 'selected' : ''}>${game.i18n.localize(`${MODULE_ID}.mode.${mode}`)}</option>`
-    ).join('');
-    const factionModeOptions = modes.map(mode =>
-      `<option value="${mode}" ${(context.settings.defaultFactionMode || 'manual') === mode ? 'selected' : ''}>${game.i18n.localize(`${MODULE_ID}.mode.${mode}`)}</option>`
-    ).join('');
-
     div.innerHTML = `
       <nav class="fame-settings-tabs">
-        <a class="fame-settings-tab ${context.currentTab === 'general' ? 'active' : ''}" data-tab="general">
-          <i class="fa-solid fa-cog"></i> ${game.i18n.localize(`${MODULE_ID}.settings.tab-general`)}
-        </a>
-        <a class="fame-settings-tab ${context.currentTab === 'modes' ? 'active' : ''}" data-tab="modes">
-          <i class="fa-solid fa-sliders"></i> ${game.i18n.localize(`${MODULE_ID}.settings.tab-modes`)}
-        </a>
         <a class="fame-settings-tab ${context.currentTab === 'tiers' ? 'active' : ''}" data-tab="tiers">
           <i class="fa-solid fa-layer-group"></i> ${game.i18n.localize(`${MODULE_ID}.settings.tab-tiers`)}
         </a>
@@ -66,45 +51,6 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
           <i class="fa-solid fa-database"></i> ${game.i18n.localize(`${MODULE_ID}.settings.tab-data`)}
         </a>
       </nav>
-
-      <div class="fame-settings-panel ${context.currentTab === 'general' ? 'active' : ''}" data-tab="general">
-        <div class="fame-form-group">
-          <label>${game.i18n.localize(`${MODULE_ID}.settings.enabled.name`)}</label>
-          <input type="checkbox" name="enabled" ${context.settings.enabled ? 'checked' : ''}>
-          <p class="fame-hint">${game.i18n.localize(`${MODULE_ID}.settings.enabled.hint`)}</p>
-        </div>
-        <div class="fame-form-group">
-          <label>${game.i18n.localize(`${MODULE_ID}.settings.displayMode.name`)}</label>
-          <select name="displayMode">
-            <option value="show" ${context.settings.displayMode === 'show' ? 'selected' : ''}>${game.i18n.localize(`${MODULE_ID}.settings.displayMode.show`)}</option>
-            <option value="hide" ${context.settings.displayMode === 'hide' ? 'selected' : ''}>${game.i18n.localize(`${MODULE_ID}.settings.displayMode.hide`)}</option>
-          </select>
-          <p class="fame-hint">${game.i18n.localize(`${MODULE_ID}.settings.displayMode.hint`)}</p>
-        </div>
-        <div class="fame-form-group-row">
-          <div class="fame-form-group">
-            <label>${game.i18n.localize(`${MODULE_ID}.settings.reputationMin.name`)}</label>
-            <input type="number" name="min" value="${context.settings.min}">
-          </div>
-          <div class="fame-form-group">
-            <label>${game.i18n.localize(`${MODULE_ID}.settings.reputationMax.name`)}</label>
-            <input type="number" name="max" value="${context.settings.max}">
-          </div>
-        </div>
-      </div>
-
-      <div class="fame-settings-panel ${context.currentTab === 'modes' ? 'active' : ''}" data-tab="modes">
-        <div class="fame-form-group">
-          <label>${game.i18n.localize(`${MODULE_ID}.settings.defaultActorMode.name`)}</label>
-          <select name="defaultActorMode">${actorModeOptions}</select>
-          <p class="fame-hint">${game.i18n.localize(`${MODULE_ID}.settings.defaultActorMode.hint`)}</p>
-        </div>
-        <div class="fame-form-group">
-          <label>${game.i18n.localize(`${MODULE_ID}.settings.defaultFactionMode.name`)}</label>
-          <select name="defaultFactionMode">${factionModeOptions}</select>
-          <p class="fame-hint">${game.i18n.localize(`${MODULE_ID}.settings.defaultFactionMode.hint`)}</p>
-        </div>
-      </div>
 
       <div class="fame-settings-panel ${context.currentTab === 'tiers' ? 'active' : ''}" data-tab="tiers">
         <div class="fame-form-group fame-tiers-section">
@@ -196,15 +142,6 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
         }))
         .sort((a, b) => a.minValue - b.minValue);
 
-      await setSettings({
-        enabled: html.querySelector('[name="enabled"]').checked,
-        displayMode: html.querySelector('[name="displayMode"]').value,
-        min: parseInt(html.querySelector('[name="min"]').value),
-        max: parseInt(html.querySelector('[name="max"]').value),
-        defaultActorMode: html.querySelector('[name="defaultActorMode"]').value,
-        defaultFactionMode: html.querySelector('[name="defaultFactionMode"]').value
-      });
-
       await setTiers(tiers);
       this.close();
     });
@@ -223,7 +160,12 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
 
     try {
       const blob = new Blob([jsonStr], { type: 'application/json' });
-      saveAs(blob, filename);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
       ui.notifications.info(game.i18n.localize(`${MODULE_ID}.settings.exportSuccess`));
     } catch (err) {
       console.error(MODULE_ID, 'Export failed:', err);
@@ -250,6 +192,10 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
       const importSettings = html.querySelector('[name="importSettings"]')?.checked ?? true;
       const importTiers = html.querySelector('[name="importTiers"]')?.checked ?? true;
       const importData = html.querySelector('[name="importData"]')?.checked ?? true;
+      if (importData && importObj.data && !validateDataStructure(importObj.data)) {
+        ui.notifications.error(game.i18n.localize(`${MODULE_ID}.settings.importInvalid`));
+        return;
+      }
       if (importSettings && importObj.settings) await setSettings(importObj.settings);
       if (importTiers && importObj.tiers) await setTiers(importObj.tiers);
       if (importData && importObj.data) await setData(importObj.data);
@@ -272,10 +218,9 @@ export class ReputationSettingsApp extends foundry.applications.api.ApplicationV
       no: { default: true }
     });
     if (!confirmed) return;
-    const { DEFAULT_DATA, DEFAULT_SETTINGS } = await import('../constants.js');
     await setSettings({ ...DEFAULT_SETTINGS });
     await setTiers(getDefaultTiers());
-    await setData({ ...DEFAULT_DATA });
+    await setData(foundry.utils.deepClone(DEFAULT_DATA));
     ui.notifications.info(game.i18n.localize(`${MODULE_ID}.settings.resetSuccess`));
     this.render();
   }

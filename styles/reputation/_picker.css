@@ -1,4 +1,4 @@
-.fame-picker-content {
+﻿.fame-picker-content {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -14,15 +14,20 @@
 .fame-picker-search-input {
   width: 100%;
   padding: var(--fame-space-md) var(--fame-space-lg) var(--fame-space-md) 2rem;
+  background: var(--fame-color-surface);
   border: 1px solid var(--fame-color-border);
-  border-radius: var(--fame-radius-md);
+  border-radius: var(--fame-radius-sm);
+  color: var(--fame-color-text-emphatic);
   line-height: var(--fame-line-height);
 }
 
 .fame-picker-search-input:focus {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
   outline: none;
-  box-shadow: var(--fame-shadow-glow-gold);
+}
+
+.fame-picker-search-input::placeholder {
+  color: var(--fame-color-text-subtle);
 }
 
 .fame-picker-search i {
@@ -43,19 +48,6 @@
   padding-right: 4px;
 }
 
-.fame-picker-list::-webkit-scrollbar {
-  width: 4px;
-}
-
-.fame-picker-list::-webkit-scrollbar-thumb {
-  background: var(--fame-color-scrollbar);
-  border-radius: var(--fame-radius-sm);
-}
-
-.fame-picker-list::-webkit-scrollbar-thumb:hover {
-  background: var(--fame-color-gold);
-}
-
 .fame-picker-item {
   display: flex;
   align-items: center;
@@ -64,13 +56,13 @@
   border: 1px solid var(--fame-color-border);
   border-radius: var(--fame-radius-md);
   cursor: pointer;
-  transition: border-color 0.1s ease, box-shadow 0.1s ease;
+  transition: border-color var(--fame-transition-fast), background var(--fame-transition-fast);
   background: var(--fame-color-surface);
 }
 
 .fame-picker-item:hover {
-  border-color: var(--fame-color-gold);
-  box-shadow: var(--fame-shadow-glow-gold);
+  background: var(--fame-color-surface-hover);
+  border-color: var(--fame-accent);
 }
 
 .fame-picker-img {
@@ -109,13 +101,13 @@
   color: var(--fame-color-text-secondary);
 }
 
+/* hero badge pill */
 .fame-picker-tag {
   padding: 0.125rem var(--fame-space-sm);
-  border: 1px solid var(--fame-color-border);
+  background: var(--fame-bg-tertiary);
   border-radius: var(--fame-radius-sm);
   color: var(--fame-color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: var(--fame-letter-spacing-caps);
+  font-size: var(--fame-font-size-xs);
   margin-left: auto;
   flex-shrink: 0;
 }

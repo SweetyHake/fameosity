@@ -70,36 +70,36 @@ export function attachDropListeners(html) {
 
 export function attachNestingDragDrop(html, app) {
   html.querySelectorAll('.fame-nav-item[data-entity-type]').forEach(item => {
+    // Драг включён ТОЛЬКО для актёров. Локации и фракции перетаскивать
+    // нельзя (отключено всегда): ни вложенность в дереве, ни дроп в зоны —
+    // обработчики ниже стали недостижимы и оставлены лишь для истории.
+    if (item.dataset.entityType !== 'actor') return;
+
     item.setAttribute('draggable', 'true');
+
+    // Актёры помечаются data-actor-id: модуль Showstopper (панель портретов)
+    // распознаёт по нему драг на canvas и показывает live-превью токена
+    // (кольцо/арт), прячет ОС-призрак и синхронизирует wildcard-изображение
+    // с превью. Без атрибута Fameosity-драги не опознаются и ставятся без
+    // превью, как обычный браузерный drag.
+    if (item.dataset.entityId) {
+      item.dataset.actorId = item.dataset.entityId;
+    }
 
     item.addEventListener('dragstart', e => {
       e.stopPropagation();
 
-      const entityType = item.dataset.entityType;
-      const entityId = item.dataset.entityId;
+      const actor = game.actors.get(item.dataset.entityId);
+      if (!actor) return;
 
-      const internalData = {
-        type: entityType,
-        id: entityId,
-        fameEntityType: entityType,
-        fameEntityId: entityId
-      };
-
-      e.dataTransfer.setData('application/json', JSON.stringify(internalData));
-
-      if (entityType === 'actor') {
-        const actor = game.actors.get(entityId);
-        if (actor) {
-          e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'Actor', uuid: actor.uuid }));
-        } else {
-          e.dataTransfer.setData('text/plain', JSON.stringify(internalData));
-        }
-      } else {
-        e.dataTransfer.setData('text/plain', JSON.stringify(internalData));
-      }
-
+      e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'Actor', uuid: actor.uuid }));
       e.dataTransfer.effectAllowed = 'copyMove';
       item.classList.add('dragging');
+
+      // Портрет у курсора показываем только БЕЗ Showstopper: при активном
+      // Showstopper превью рисуется на холсте, а его capture-обработчик уже
+      // поставил невидимый setDragImage — наш перебил бы его последним.
+      if (game.modules.get('showstopper')?.active === true) return;
 
       const img = item.querySelector('.fame-nav-item-img');
       if (img) {
@@ -118,61 +118,6 @@ export function attachNestingDragDrop(html, app) {
       item.classList.remove('dragging');
       html.querySelectorAll('.fame-drop-highlight').forEach(el => el.classList.remove('fame-drop-highlight'));
     });
-
-    if (item.dataset.entityType === 'location' || item.dataset.entityType === 'faction') {
-      item.addEventListener('dragover', e => {
-        e.preventDefault();
-        e.stopPropagation();
-        const dragging = html.querySelector('.fame-nav-item.dragging');
-        if (!dragging || dragging === item) return;
-        if (dragging.dataset.entityType !== item.dataset.entityType) return;
-        item.classList.add('fame-drop-highlight');
-        e.dataTransfer.dropEffect = 'move';
-      });
-
-      item.addEventListener('dragleave', e => {
-        if (!item.contains(e.relatedTarget)) item.classList.remove('fame-drop-highlight');
-      });
-
-      item.addEventListener('drop', async e => {
-        e.preventDefault();
-        e.stopPropagation();
-        item.classList.remove('fame-drop-highlight');
-
-        let data;
-        try { data = JSON.parse(e.dataTransfer.getData('application/json')); } catch { return; }
-        if (!data?.id || data.id === item.dataset.entityId) return;
-        if (data.type !== item.dataset.entityType) return;
-
-        const targetId = item.dataset.entityId;
-
-        if (data.type === 'location') {
-          const allLocs = Core.getLocations();
-          const child = allLocs.find(l => l.id === data.id);
-          const parent = allLocs.find(l => l.id === targetId);
-          if (!child || !parent) return;
-          if (Core.isDescendant(allLocs, data.id, targetId)) return;
-          if (!Core.canNestLocation(parent.locationType, child.locationType)) {
-            ui.notifications.warn(game.i18n.localize(`${MODULE_ID}.errors.cannotNest`));
-            return;
-          }
-          await Core.setLocationParent(data.id, targetId);
-          app.treeExpandedLocations.add(targetId);
-        } else if (data.type === 'faction') {
-          const allFacs = Core.getFactions();
-          const child = allFacs.find(f => f.id === data.id);
-          const parent = allFacs.find(f => f.id === targetId);
-          if (!child || !parent) return;
-          if (Core.isDescendant(allFacs, data.id, targetId)) return;
-          if (!Core.canNestFaction(parent.factionType, child.factionType)) {
-            ui.notifications.warn(game.i18n.localize(`${MODULE_ID}.errors.cannotNest`));
-            return;
-          }
-          await Core.setFactionParent(data.id, targetId);
-          app.treeExpandedFactions.add(targetId);
-        }
-      });
-    }
   });
 
   html.querySelectorAll('.fame-nav-group-header[data-group="locations"], .fame-nav-group-header[data-group="factions"]').forEach(header => {
@@ -200,10 +145,6 @@ export function attachNestingDragDrop(html, app) {
       else if (data.type === 'faction') await Core.setFactionParent(data.id, null);
     });
   });
-}
-
-export function attachNavItemDrag(html) {
-  // TODO: Implement navigator item drag-and-drop for reordering/nesting
 }
 
 export function attachDetailSectionDrop(html) {

@@ -16,6 +16,7 @@
   @param showMemberStar  - boolean
   @param memberRank      - rank object {name, color} or null
   @param showRemoveBtn   - boolean
+  @param showResetBtn    - reset button (rotate-left) instead of the hard-remove one; same action, non-destructive semantics
 --}}
 <div class="fame-detail-rel-row {{#if relHidden}}is-hidden{{/if}}">
   <div class="fame-detail-rel-left">
@@ -29,7 +30,7 @@
         <i class="fa-solid fa-users fame-member-status-icon"></i>
         <span class="fame-member-status-text">{{localize (concat @root.moduleId '.relations.faction-member')}}</span>
         {{#if memberRank}}
-          <span class="fame-member-rank-badge" style="background:{{memberRank.color}}">{{memberRank.name}}</span>
+          <span class="fame-member-rank-badge" style="color:{{memberRank.color}};border-color:{{memberRank.color}}">{{memberRank.name}}</span>
         {{/if}}
       </div>
       {{#if @root.isGM}}
@@ -50,7 +51,11 @@
           <button type="button" class="fame-icon-btn fame-hide-btn {{#if relHidden}}active{{/if}}" data-action="toggleRelationHidden" data-rel-type="{{relTypeKey}}" data-entity-id="{{sourceEntityId}}" data-target-id="{{targetEntityId}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.toggle-relation-hidden')}}">
             <i class="fa-solid fa-eye-slash"></i>
           </button>
-          {{#if showRemoveBtn}}
+          {{#if showResetBtn}}
+            <button type="button" class="fame-icon-btn" data-action="removeRelation" data-rel-type="{{relTypeKey}}" data-entity-id="{{sourceEntityId}}" data-target-id="{{targetEntityId}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.reset-ind-relation')}}">
+              <i class="fa-solid fa-rotate-left"></i>
+            </button>
+          {{else if showRemoveBtn}}
             <button type="button" class="fame-icon-btn" data-action="removeRelation" data-rel-type="{{relTypeKey}}" data-entity-id="{{sourceEntityId}}" data-target-id="{{targetEntityId}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.remove-relation')}}">
               <i class="fa-solid fa-times"></i>
             </button>

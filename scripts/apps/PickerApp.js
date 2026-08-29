@@ -1,5 +1,5 @@
 import { MODULE_ID } from '../constants.js';
-import { escapeHtml, getTier } from '../data.js';
+import { escapeHtml, getTier, cleanName } from '../data.js';
 import { getTracked, getDisplayName, getPCs } from '../core/actors.js';
 import { getFactions } from '../core/factions.js';
 import { getRep, getMode } from '../core/reputation.js';
@@ -100,7 +100,7 @@ export class PickerApp extends foundry.applications.api.ApplicationV2 {
         const rep = getRep(faction.id, 'faction');
         const tier = getTier(rep);
         return {
-          id: faction.id, name: faction.name, img: faction.image,
+          id: faction.id, name: cleanName(faction.name) || faction.name, img: faction.image,
           reputation: rep, tier, memberCount: (faction.members || []).length
         };
       });
@@ -135,7 +135,7 @@ export class PickerApp extends foundry.applications.api.ApplicationV2 {
           <div class="fame-picker-info">
             <span class="fame-picker-name">${escapeHtml(item.name)}</span>
             <span class="fame-picker-meta">
-              <span class="fame-tier-badge small" style="background:${item.tier.color}">${escapeHtml(item.tier.name)}</span>
+              <span class="fame-tier-badge small" style="color:${item.tier.color};border-color:${item.tier.color}">${escapeHtml(item.tier.name)}</span>
               <span class="fame-picker-stat"><i class="fa-solid fa-users"></i> ${item.memberCount}</span>
             </span>
           </div>

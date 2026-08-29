@@ -54,16 +54,36 @@ function _getPartyMembers(excludeId = null) {
   return (party.members || []).filter(id => id !== excludeId && !isHidden('actor', id));
 }
 
+/**
+ * Shared cascade for an NPC's attitude toward a party:
+ * personal opinion (explicit 0 = "no opinion" is skipped) -> faction stance -> null.
+ */
+export function partyAttitude(npcId, partyId) {
+  if (!partyId) return null;
+  const data = Data.getData();
+  const personal = data.actorFactionRelations?.[npcId]?.[partyId];
+  if (personal !== undefined && personal !== 0) return personal;
+  const faction = (data.factions || []).find(f => (f.members || []).includes(npcId));
+  if (faction) {
+    const inherited = getFactionToFactionRel(faction.id, partyId);
+    if (inherited !== undefined) return inherited;
+  }
+  return personal !== undefined ? personal : null;
+}
+
 function _getManualActor(actorId) {
   const party = _getParty();
   if (!party) return 0;
-  return getActorFactionRel(actorId, party.id);
+  return partyAttitude(actorId, party.id) ?? 0;
 }
 
 function _getManualFaction(factionId) {
   const party = _getParty();
   if (!party) return 0;
-  return getFactionToFactionRel(factionId, party.id);
+  const data = Data.getData();
+  const personal = data.factionToFactionRelations?.[factionId]?.[party.id];
+  if (personal !== undefined && personal !== 0) return personal;
+  return personal !== undefined ? personal : 0;
 }
 
 function _calcAutoActor(actorId) {

@@ -1,5 +1,6 @@
-import { MODULE_ID } from '../constants.js';
+﻿import { MODULE_ID } from '../constants.js';
 import * as Data from '../data.js';
+import { cleanName } from '../data.js';
 import * as Actors from './actors.js';
 import * as Relations from './relations.js';
 import * as Factions from './factions.js';
@@ -22,14 +23,14 @@ function resolveEntities(input) {
       const actor = game.actors.get(item);
       if (actor) return { type: 'actor', id: item, name: Actors.getDisplayName(item), entity: actor };
       const faction = Factions.getFaction(item);
-      if (faction) return { type: 'faction', id: item, name: faction.name, entity: faction };
+      if (faction) return { type: 'faction', id: item, name: Data.cleanName(faction.name) || faction.name, entity: faction };
       return null;
     }
     if (item?.documentName === 'Actor' || item?.constructor?.documentName === 'Actor') {
       return { type: 'actor', id: item.id, name: Actors.getDisplayName(item.id), entity: item };
     }
     if (item?.id && item?.name && item?.members !== undefined) {
-      return { type: 'faction', id: item.id, name: item.name, entity: item };
+      return { type: 'faction', id: item.id, name: Data.cleanName(item.name) || item.name, entity: item };
     }
     if (item?.type && item?.id) {
       if (item.type === 'actor') {
@@ -38,7 +39,7 @@ function resolveEntities(input) {
       }
       if (item.type === 'faction') {
         const faction = Factions.getFaction(item.id);
-        return faction ? { type: 'faction', id: item.id, name: faction.name, entity: faction } : null;
+        return faction ? { type: 'faction', id: item.id, name: Data.cleanName(faction.name) || faction.name, entity: faction } : null;
       }
     }
     return null;
@@ -113,7 +114,6 @@ export async function setRep(sources, targets, value, options = {}) {
   const {
     notification = NOTIFICATION_MODES.DEFAULT,
     bidirectional = false,
-    reason = '',
     setBaseRep = false
   } = options;
 
@@ -202,7 +202,6 @@ export async function addRep(sources, targets, delta, options = {}) {
   const {
     notification = NOTIFICATION_MODES.DEFAULT,
     bidirectional = false,
-    reason = '',
     addBaseRep = false
   } = options;
 

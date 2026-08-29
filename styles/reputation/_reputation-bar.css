@@ -1,4 +1,4 @@
-.fame-bar-container {
+﻿.fame-bar-container {
   display: flex;
   align-items: center;
   gap: var(--fame-space-xs);
@@ -36,10 +36,10 @@
   right: 0;
   height: 6px;
   transform: translateY(-50%);
-  background: var(--fame-shadow-25);
+  background: var(--fame-bg-tertiary);
   border-radius: var(--fame-radius-sm);
   border: 1px solid var(--fame-color-border-soft);
-  box-shadow: var(--fame-shadow-inset);
+  
 }
 
 .fame-bar-zero {
@@ -67,13 +67,13 @@
   height: 14px;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 1px 4px var(--fame-shadow-45), 0 0 0 1px rgba(0, 0, 0, 0.1);
+  border: 2px solid var(--fame-bg-primary);
+  box-shadow: var(--fame-shadow-card);
 }
 
 .fame-bar:hover .fame-bar-thumb {
   transform: translate(-50%, -50%) scale(1.15);
-  box-shadow: 0 1px 6px var(--fame-shadow-45), 0 0 8px currentColor;
+  box-shadow: var(--fame-shadow-card);
   transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
@@ -101,7 +101,7 @@
   color: var(--fame-color-text-subtle);
   min-width: 22px;
   flex-shrink: 0;
-  font-size: 0.75rem;
+  font-size: var(--fame-font-size-sm);
 }
 
 .fame-bar-min {
@@ -123,6 +123,7 @@
   font-weight: 700;
   width: 42px;
   text-align: center;
+  background: var(--fame-bg-tertiary);
   border: 1px solid var(--fame-color-border);
   border-radius: var(--fame-radius-sm);
   padding: 0.125rem;
@@ -130,9 +131,8 @@
 }
 
 .fame-bar-val:focus {
-  border-color: var(--fame-color-gold);
+  border-color: var(--fame-accent);
   outline: none;
-  box-shadow: var(--fame-shadow-glow-gold);
 }
 
 .fame-bar-adj {
@@ -150,9 +150,10 @@
 }
 
 .fame-bar-adj:hover:not([disabled]) {
-  border-color: var(--fame-color-gold);
-  color: var(--fame-color-gold);
-  box-shadow: var(--fame-shadow-glow-gold);
+  background: var(--fame-color-surface-hover);
+  border-color: var(--fame-color-border);
+  color: var(--fame-color-text-emphatic);
+  box-shadow: none;
 }
 
 .fame-bar-adj:active:not([disabled]) {

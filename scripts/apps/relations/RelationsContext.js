@@ -520,6 +520,25 @@ async function duplicateEntity(entityType, entityId) {
         data.factionRelations[newFac.id] = { ...data.factionRelations[entityId] };
       }
       
+      if (data.actorFactionRelations) {
+        for (const [actorId, rels] of Object.entries(data.actorFactionRelations)) {
+          if (rels?.[entityId] !== undefined) {
+            data.actorFactionRelations[actorId] ??= {};
+            data.actorFactionRelations[actorId][newFac.id] = rels[entityId];
+          }
+        }
+      }
+      
+      if (data.factionToFactionRelations) {
+        for (const [facId, rels] of Object.entries(data.factionToFactionRelations)) {
+          if (facId === entityId) continue;
+          if (rels?.[entityId] !== undefined) {
+            data.factionToFactionRelations[facId] ??= {};
+            data.factionToFactionRelations[facId][newFac.id] = rels[entityId];
+          }
+        }
+      }
+      
       if (data.factionToFactionRelations?.[entityId]) {
         data.factionToFactionRelations[newFac.id] = { ...data.factionToFactionRelations[entityId] };
       }
@@ -537,6 +556,21 @@ function renderContextMenu(event, items) {
   menu.style.visibility = 'hidden';
   menu.style.zIndex = '10000';
 
+  const close = () => {
+    menu.remove();
+    document.removeEventListener('click', closeHandler);
+    document.removeEventListener('contextmenu', closeHandler);
+    document.removeEventListener('keydown', keyHandler);
+  };
+
+  const closeHandler = e => {
+    if (!menu.contains(e.target)) close();
+  };
+
+  const keyHandler = e => {
+    if (e.key === 'Escape') close();
+  };
+
   for (const item of items) {
     if (item.separator) {
       const sep = document.createElement('div');
@@ -550,7 +584,7 @@ function renderContextMenu(event, items) {
     row.innerHTML = `<i class="${item.icon}"></i><span>${item.label}</span>`;
     row.addEventListener('click', async e => {
       e.stopPropagation();
-      menu.remove();
+      close();
       await item.action();
     });
     menu.appendChild(row);
@@ -575,16 +609,9 @@ function renderContextMenu(event, items) {
     menu.style.visibility = 'visible';
   });
 
-  const closeHandler = e => {
-    if (!menu.contains(e.target)) {
-      menu.remove();
-      document.removeEventListener('click', closeHandler);
-      document.removeEventListener('contextmenu', closeHandler);
-    }
-  };
-
   setTimeout(() => {
     document.addEventListener('click', closeHandler);
     document.addEventListener('contextmenu', closeHandler);
+    document.addEventListener('keydown', keyHandler);
   }, 0);
 }

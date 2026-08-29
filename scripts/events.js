@@ -9,6 +9,7 @@ export class ReputationEvents {
     RELATION_CHANGED: 'relation:changed',
     LOCATION_CHANGED: 'location:changed',
     DATA_LOADED: 'data:loaded',
+    DATA_CHANGED: 'data:changed',
     SETTINGS_CHANGED: 'settings:changed',
     MEMBER_CHANGED: 'member:changed',
     RANK_CHANGED: 'rank:changed',

@@ -1,85 +1,90 @@
 <div class="fame-detail-header">
-  <img class="fame-detail-img {{#if @root.isGM}}editable{{/if}}" src="{{detail.image}}" {{#if @root.isGM}}data-action="changeImage" data-type="location" data-id="{{detail.id}}"{{/if}}>
-  <div class="fame-detail-title-area">
-    <div class="fame-detail-name-row">
-      {{#if @root.isGM}}<input type="text" class="fame-detail-name-input" value="{{detail.name}}" data-id="{{detail.id}}" data-type="location">
-      {{else}}<span class="fame-detail-name-display">{{detail.name}}</span>{{/if}}
-      {{#if @root.isGM}}
-        <span class="fame-type-select-badge">
-          <i class="fa-solid {{detail.typeInfo.icon}}"></i>
-          <select class="fame-type-select" data-id="{{detail.id}}" data-entity-type="location">
-            {{#each @root.locationTypes}}<option value="{{id}}" {{#if (eq id ../detail.locationType)}}selected{{/if}}>{{name}}</option>{{/each}}
-          </select>
-        </span>
-      {{else}}
-        <span class="fame-entity-type-badge"><i class="fa-solid {{detail.typeInfo.icon}}"></i> {{detail.typeInfo.name}}</span>
-      {{/if}}
-    </div>
-    <div class="fame-detail-controlled-row {{#unless detail.controlledByFaction}}fame-controlled-empty{{/unless}}">
-      <i class="fa-solid fa-crown"></i>
-      <span class="fame-controlled-label">{{localize (concat @root.moduleId '.locations.controlled-by')}}</span>
-      {{#if detail.controlledByFaction}}
-        <span class="fame-controlled-faction clickable" data-action="selectEntity" data-entity-type="faction" data-entity-id="{{detail.controlledByFaction.id}}">
-          <img class="fame-controlled-faction-img" src="{{detail.controlledByFaction.image}}">
-          <span>{{detail.controlledByFaction.name}}</span>
-        </span>
-      {{else}}
-        <span class="fame-controlled-none">{{localize (concat @root.moduleId '.locations.no-control')}}</span>
-      {{/if}}
-      {{#if @root.isGM}}
-        {{#if detail.controlledByFaction}}
-          <button type="button" class="fame-icon-btn" data-action="clearLocationControl" data-location="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.clear-controller')}}"><i class="fa-solid fa-times"></i></button>
+  <div class="fame-detail-header-top">
+    <img class="fame-detail-img {{#if @root.isGM}}editable{{/if}}" src="{{detail.image}}" {{#if @root.isGM}}data-action="changeImage" data-type="location" data-id="{{detail.id}}"{{/if}}>
+    <div class="fame-detail-title-area">
+      <div class="fame-detail-name-row">
+        {{#if @root.isGM}}<input type="text" class="fame-detail-name-input" value="{{detail.name}}" data-id="{{detail.id}}" data-type="location">
+        {{else}}<span class="fame-detail-name-display">{{detail.name}}</span>{{/if}}
+        {{#if @root.isGM}}
+          <span class="fame-type-select-badge">
+            <i class="fa-solid {{detail.typeInfo.icon}}"></i>
+            <select class="fame-type-select" data-id="{{detail.id}}" data-entity-type="location">
+              {{#each @root.locationTypes}}<option value="{{id}}" {{#if (eq id ../detail.locationType)}}selected{{/if}}>{{name}}</option>{{/each}}
+            </select>
+          </span>
         {{else}}
-          <button type="button" class="fame-icon-btn" data-action="setLocationControl" data-location="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.set-controller')}}"><i class="fa-solid fa-plus"></i></button>
+          <span class="fame-entity-type-badge"><i class="fa-solid {{detail.typeInfo.icon}}"></i> {{detail.typeInfo.name}}</span>
         {{/if}}
+      </div>
+      <div class="fame-detail-controlled-row {{#unless detail.controlledByFaction}}fame-controlled-empty{{/unless}}">
+        <i class="fa-solid fa-crown"></i>
+        <span class="fame-controlled-label">{{localize (concat @root.moduleId '.locations.controlled-by')}}</span>
+        {{#if detail.controlledByFaction}}
+          <span class="fame-controlled-faction clickable" data-action="selectEntity" data-entity-type="faction" data-entity-id="{{detail.controlledByFaction.id}}">
+            <img class="fame-controlled-faction-img" src="{{detail.controlledByFaction.image}}">
+            <span>{{detail.controlledByFaction.name}}</span>
+          </span>
+        {{else}}
+          <span class="fame-controlled-none">{{localize (concat @root.moduleId '.locations.no-control')}}</span>
+        {{/if}}
+        {{#if @root.isGM}}
+          {{#if detail.controlledByFaction}}
+            <button type="button" class="fame-icon-btn" data-action="clearLocationControl" data-location="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.clear-controller')}}"><i class="fa-solid fa-times"></i></button>
+          {{else}}
+            <button type="button" class="fame-icon-btn" data-action="setLocationControl" data-location="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.set-controller')}}"><i class="fa-solid fa-plus"></i></button>
+          {{/if}}
+        {{/if}}
+      </div>
+    </div>
+    <div class="fame-detail-actions">
+      {{#if @root.isGM}}
+        {{#if detail.canAddChild}}<button type="button" class="fame-icon-btn fame-add-child-btn" data-action="addChildLocation" data-parent="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.add-child-location')}}"><i class="fa-solid fa-sitemap"></i></button>{{/if}}
+        {{#if (gt detail.level 0)}}<button type="button" class="fame-icon-btn fame-unnest-btn" data-action="unnest" data-id="{{detail.id}}" data-type="location" data-tooltip="{{localize (concat @root.moduleId '.tooltips.unnest')}}"><i class="fa-solid fa-level-up-alt"></i></button>{{/if}}
+        {{#if (or detail.canAddChild (gt detail.level 0))}}<span class="fame-actions-divider"></span>{{/if}}
+        <button type="button" class="fame-icon-btn fame-hide-btn {{#if detail.hidden}}active{{/if}}" data-action="toggleHidden" data-type="location" data-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.toggle-hidden')}}">
+          <i class="fa-solid fa-eye-slash"></i>
+        </button>
+        <span class="fame-actions-divider"></span>
+        <button type="button" class="fame-icon-btn" data-action="delete" data-type="location" data-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.delete')}}"><i class="fa-solid fa-trash"></i></button>
       {{/if}}
     </div>
-  </div>
-  <div class="fame-detail-actions">
-    {{#if @root.isGM}}
-      {{#if detail.canAddChild}}<button type="button" class="fame-icon-btn fame-add-child-btn" data-action="addChildLocation" data-parent="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.add-child-location')}}"><i class="fa-solid fa-sitemap"></i></button>{{/if}}
-      {{#if (gt detail.level 0)}}<button type="button" class="fame-icon-btn fame-unnest-btn" data-action="unnest" data-id="{{detail.id}}" data-type="location" data-tooltip="{{localize (concat @root.moduleId '.tooltips.unnest')}}"><i class="fa-solid fa-level-up-alt"></i></button>{{/if}}
-      <button type="button" class="fame-icon-btn fame-hide-btn {{#if detail.hidden}}active{{/if}}" data-action="toggleHidden" data-type="location" data-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.toggle-hidden')}}">
-        <i class="fa-solid fa-eye-slash"></i>
-      </button>
-      <button type="button" class="fame-icon-btn" data-action="delete" data-type="location" data-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.delete')}}"><i class="fa-solid fa-trash"></i></button>
-    {{/if}}
   </div>
 </div>
 <div class="fame-detail-body">
-  <div class="fame-description-block">
+  <div class="fame-description-block" data-desc-key="location:{{detail.id}}">
     {{#if @root.isGM}}
       {{#if detail.isEditingDescription}}
         <prose-mirror class="fame-detail-description" data-id="{{detail.id}}" data-entity-type="locations" value="{{detail.descriptionRaw}}" placeholder="{{localize (concat @root.moduleId '.ui.description-placeholder')}}"></prose-mirror>
       {{else}}
+        <div class="fame-description-header" data-action="toggleDescription" data-desc-key="location:{{detail.id}}">
+          <i class="fa-solid fa-chevron-right fame-section-chevron"></i>
+          <i class="fa-solid fa-align-left fame-section-icon"></i>
+          <span>{{localize (concat @root.moduleId '.ui.description')}}</span>
+          <button type="button"
+            class="fame-icon-btn fame-description-edit-btn"
+            data-action="toggleDescriptionEdit"
+            data-entity-type="location"
+            data-entity-id="{{detail.id}}"
+            data-tooltip="{{localize (concat @root.moduleId '.tooltips.edit-description')}}">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+        </div>
         {{#if detail.descriptionRaw}}
-          <div class="fame-detail-description-display">
-            <button type="button"
-              class="fame-icon-btn fame-description-edit-btn"
-              data-action="toggleDescriptionEdit"
-              data-entity-type="location"
-              data-entity-id="{{detail.id}}"
-              data-tooltip="{{localize (concat @root.moduleId '.tooltips.edit-description')}}">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            {{{detail.description}}}
-          </div>
-        {{else}}
-          <div class="fame-detail-description-empty">
-            <button type="button"
-              class="fame-icon-btn fame-description-edit-btn"
-              data-action="toggleDescriptionEdit"
-              data-entity-type="location"
-              data-entity-id="{{detail.id}}"
-              data-tooltip="{{localize (concat @root.moduleId '.tooltips.edit-description')}}">
-              <i class="fa-solid fa-pen"></i>
-            </button>
+          <div class="fame-description-body">
+            <div class="fame-detail-description-display">{{{detail.description}}}</div>
           </div>
         {{/if}}
       {{/if}}
     {{else}}
       {{#if detail.description}}
-        <div class="fame-detail-description-display">{{{detail.description}}}</div>
+        <div class="fame-description-header" data-action="toggleDescription" data-desc-key="location:{{detail.id}}">
+          <i class="fa-solid fa-chevron-right fame-section-chevron"></i>
+          <i class="fa-solid fa-align-left fame-section-icon"></i>
+          <span>{{localize (concat @root.moduleId '.ui.description')}}</span>
+        </div>
+        <div class="fame-description-body">
+          <div class="fame-detail-description-display">{{{detail.description}}}</div>
+        </div>
       {{/if}}
     {{/if}}
   </div>

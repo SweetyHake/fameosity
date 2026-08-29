@@ -1,7 +1,7 @@
 {
   "id": "fameosity",
   "title": "Fameosity",
-  "version": "14.2.1",
+  "version": "14.3.0",
   "compatibility": {
     "minimum": "13",
     "verified": "14",
@@ -37,9 +37,6 @@
       "flags": {}
     }
   ],
-  "scripts": [
-    "lib/FileSaver.js"
-  ],
   "esmodules": [
     "scripts/index.js"
   ],
@@ -50,15 +47,6 @@
   ],
   "url": "https://github.com/SweetyHake/fameosity",
   "manifest": "https://raw.githubusercontent.com/SweetyHake/fameosity/refs/heads/main/module.json",
-  "download": "https://github.com/SweetyHake/fameosity/releases/download/14.2.1/module.zip",
-  "relationships": {
-    "requires": [
-      {
-        "id": "socketlib",
-        "type": "module",
-        "compatibility": {}
-      }
-    ]
-  },
+  "download": "https://github.com/SweetyHake/fameosity/releases/download/14.3.0/module.zip",
   "flags": {}
 }

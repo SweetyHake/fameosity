@@ -1,4 +1,4 @@
-import { SOCKET_TYPES } from '../constants.js';
+﻿import { SOCKET_TYPES } from '../constants.js';
 import * as Data from '../data.js';
 import { ReputationEvents } from '../events.js';
 import { getPCs } from './actors.js';
@@ -10,39 +10,20 @@ export function getIndRel(fromId, toId) {
 export async function setIndRel(fromId, toId, value) {
   const oldValue = getIndRel(fromId, toId);
   const clampedValue = Data.clamp(value);
-  
-  if (!game.user.isGM) {
-    await Data.requestOperation(SOCKET_TYPES.SET_IND_REL, { fromId, toId, value: clampedValue });
-    const data = Data.getData();
-    data.individualRelations ??= {};
-    data.individualRelations[fromId] ??= {};
-    data.individualRelations[fromId][toId] = clampedValue;
-    return;
-  }
-  
+
   const data = Data.getData();
   data.individualRelations ??= {};
   data.individualRelations[fromId] ??= {};
   data.individualRelations[fromId][toId] = clampedValue;
-  await Data.setData(data);
   ReputationEvents.emit(ReputationEvents.EVENTS.RELATION_CHANGED, { npcId: fromId, pcId: toId, oldValue, newValue: clampedValue });
-}
 
-export async function adjustIndRels(actorId, delta) {
-  const pcs = getPCs().filter(pc => pc.id !== actorId);
-  if (!pcs.length) return;
-  
-  const data = Data.getData();
-  data.individualRelations ??= {};
-  data.individualRelations[actorId] ??= {};
-  
-  for (const pc of pcs) {
-    const current = data.individualRelations[actorId][pc.id] ?? 0;
-    data.individualRelations[actorId][pc.id] = Data.clamp(current + delta);
+  if (!game.user.isGM) {
+    Data.requestOperation(SOCKET_TYPES.SET_IND_REL, { fromId, toId, value: clampedValue })
+      .catch(err => console.warn(`${MODULE_ID} | Sync failed:`, err));
+    return;
   }
-  
+
   await Data.setData(data);
-  ReputationEvents.emit(ReputationEvents.EVENTS.RELATION_CHANGED, { actorId, delta, bulk: true });
 }
 
 export function getFactionRel(factionId, pcId) {
@@ -52,22 +33,20 @@ export function getFactionRel(factionId, pcId) {
 export async function setFactionRel(factionId, pcId, value) {
   const oldValue = getFactionRel(factionId, pcId);
   const clampedValue = Data.clamp(value);
-  
-  if (!game.user.isGM) {
-    await Data.requestOperation(SOCKET_TYPES.SET_FACTION_REL, { factionId, pcId, value: clampedValue });
-    const data = Data.getData();
-    data.factionRelations ??= {};
-    data.factionRelations[factionId] ??= {};
-    data.factionRelations[factionId][pcId] = clampedValue;
-    return;
-  }
-  
+
   const data = Data.getData();
   data.factionRelations ??= {};
   data.factionRelations[factionId] ??= {};
   data.factionRelations[factionId][pcId] = clampedValue;
-  await Data.setData(data);
   ReputationEvents.emit(ReputationEvents.EVENTS.RELATION_CHANGED, { factionId, pcId, oldValue, newValue: clampedValue, type: 'faction' });
+
+  if (!game.user.isGM) {
+    Data.requestOperation(SOCKET_TYPES.SET_FACTION_REL, { factionId, pcId, value: clampedValue })
+      .catch(err => console.warn(`${MODULE_ID} | Sync failed:`, err));
+    return;
+  }
+
+  await Data.setData(data);
 }
 
 export function getActorFactionRel(actorId, factionId) {
@@ -77,22 +56,20 @@ export function getActorFactionRel(actorId, factionId) {
 export async function setActorFactionRel(actorId, factionId, value) {
   const oldValue = getActorFactionRel(actorId, factionId);
   const clampedValue = Data.clamp(value);
-  
-  if (!game.user.isGM) {
-    await Data.requestOperation(SOCKET_TYPES.SET_ACTOR_FACTION_REL, { actorId, factionId, value: clampedValue });
-    const data = Data.getData();
-    data.actorFactionRelations ??= {};
-    data.actorFactionRelations[actorId] ??= {};
-    data.actorFactionRelations[actorId][factionId] = clampedValue;
-    return;
-  }
-  
+
   const data = Data.getData();
   data.actorFactionRelations ??= {};
   data.actorFactionRelations[actorId] ??= {};
   data.actorFactionRelations[actorId][factionId] = clampedValue;
-  await Data.setData(data);
   ReputationEvents.emit(ReputationEvents.EVENTS.RELATION_CHANGED, { actorId, factionId, oldValue, newValue: clampedValue, type: 'actor-faction' });
+
+  if (!game.user.isGM) {
+    Data.requestOperation(SOCKET_TYPES.SET_ACTOR_FACTION_REL, { actorId, factionId, value: clampedValue })
+      .catch(err => console.warn(`${MODULE_ID} | Sync failed:`, err));
+    return;
+  }
+
+  await Data.setData(data);
 }
 
 export function getFactionToFactionRel(factionId1, factionId2) {
@@ -103,21 +80,19 @@ export async function setFactionToFactionRel(factionId1, factionId2, value) {
   const oldValue = getFactionToFactionRel(factionId1, factionId2);
   const clampedValue = Data.clamp(value);
 
-  if (!game.user.isGM) {
-    await Data.requestOperation(SOCKET_TYPES.SET_FACTION_TO_FACTION_REL, { factionId1, factionId2, value: clampedValue });
-    const data = Data.getData();
-    data.factionToFactionRelations ??= {};
-    data.factionToFactionRelations[factionId1] ??= {};
-    data.factionToFactionRelations[factionId1][factionId2] = clampedValue;
-    return;
-  }
-
   const data = Data.getData();
   data.factionToFactionRelations ??= {};
   data.factionToFactionRelations[factionId1] ??= {};
   data.factionToFactionRelations[factionId1][factionId2] = clampedValue;
-  await Data.setData(data);
   ReputationEvents.emit(ReputationEvents.EVENTS.RELATION_CHANGED, { factionId1, factionId2, oldValue, newValue: clampedValue, type: 'faction-to-faction' });
+
+  if (!game.user.isGM) {
+    Data.requestOperation(SOCKET_TYPES.SET_FACTION_TO_FACTION_REL, { factionId1, factionId2, value: clampedValue })
+      .catch(err => console.warn(`${MODULE_ID} | Sync failed:`, err));
+    return;
+  }
+
+  await Data.setData(data);
 }
 
 export async function removeIndRel(fromId, toId) {

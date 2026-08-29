@@ -1,131 +1,143 @@
 <div class="fame-detail-header">
-  <img class="fame-detail-img" src="{{detail.img}}" data-actor-id="{{detail.id}}">
-  <div class="fame-detail-title-area">
-    <div class="fame-detail-name-row">
-      {{#if @root.isGM}}<input type="text" class="fame-detail-name-input" value="{{detail.customName}}" placeholder="{{detail.originalName}}" data-id="{{detail.id}}" data-type="actor">
-      {{else}}<span class="fame-detail-name-display">{{detail.name}}</span>{{/if}}
-      {{#unless detail.isActivePartyMember}}
-        {{{tierText (or detail.partyTier detail.tier)}}}
-      {{/unless}}
+  <div class="fame-detail-header-top">
+    <img class="fame-detail-img" src="{{detail.img}}" data-actor-id="{{detail.id}}">
+    <div class="fame-detail-title-area">
+      <div class="fame-detail-name-row">
+        {{#if @root.isGM}}<input type="text" class="fame-detail-name-input" value="{{detail.customName}}" placeholder="{{detail.originalName}}" data-id="{{detail.id}}" data-type="actor">
+        {{else}}<span class="fame-detail-name-display">{{detail.name}}</span>{{/if}}
+        {{#unless detail.isActivePartyMember}}
+          {{{tierText (or detail.partyTier detail.tier)}}}
+        {{/unless}}
+      </div>
+      {{#if detail.isActivePartyMember}}
+        <div class="fame-member-status">
+          <i class="fa-solid fa-star fame-member-status-icon"></i>
+          <span class="fame-member-status-text">{{#if detail.activePartyName}}{{detail.activePartyName}}{{else}}{{localize (concat @root.moduleId '.ui.active-party')}}{{/if}}</span>
+        </div>
+      {{else}}
+        {{#unless detail.hasActiveParty}}
+          <div class="fame-no-items" style="padding: 0.25rem 0; margin: 0;">
+            {{#if @root.isGM}}
+              <i class="fa-solid fa-exclamation-triangle" style="color:var(--fame-color-warning)"></i>
+              {{localize (concat @root.moduleId '.ui.no-active-party-gm')}}
+            {{else}}
+              {{localize (concat @root.moduleId '.ui.no-active-party-player')}}
+            {{/if}}
+          </div>
+        {{/unless}}
+      {{/if}}
     </div>
-    {{#if detail.isActivePartyMember}}
-      <div class="fame-member-status">
-        <i class="fa-solid fa-star fame-member-status-icon"></i>
-        <span class="fame-member-status-text">{{#if detail.activePartyName}}{{detail.activePartyName}}{{else}}{{localize (concat @root.moduleId '.ui.active-party')}}{{/if}}</span>
+    <div class="fame-detail-actions">
+      {{#if detail.canOpenSheet}}<button type="button" class="fame-icon-btn" data-action="openActorSheet" data-actor-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.open-sheet')}}"><i class="fa-solid fa-id-card"></i></button>{{/if}}
+      {{#if @root.isGM}}
+        <span class="fame-actions-divider"></span>
+        <button type="button" class="fame-icon-btn fame-hide-btn {{#if detail.hidden}}active{{/if}}" data-action="toggleHidden" data-type="actor" data-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.toggle-hidden')}}">
+          <i class="fa-solid fa-eye-slash"></i>
+        </button>
+        <span class="fame-actions-divider"></span>
+        <button type="button" class="fame-icon-btn" data-action="delete" data-type="actor" data-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.delete')}}"><i class="fa-solid fa-trash"></i></button>
+      {{/if}}
+    </div>
+  </div>
+  {{#if detail.isActivePartyMember}}{{else if detail.hasActiveParty}}
+    {{#if (or @root.isGM detail.canEdit)}}
+      <div class="fame-detail-rep-bar">
+        {{#if @root.isGM}}
+          <button type="button" class="fame-mode-chip mode-{{detail.mode}}" data-action="openActorModePicker" data-type="actor" data-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.mode-picker')}}">
+            <i class="fa-solid fa-{{#if (eq detail.mode 'auto')}}robot{{else if (eq detail.mode 'hybrid')}}shuffle{{else}}hand{{/if}}"></i>
+            <span>{{localize (concat @root.moduleId '.mode.' detail.mode)}}</span>
+          </button>
+        {{/if}}
+        {{> "relations/partials/rep-bar"
+          barId=(concat detail.id ":" @root.activePartyId)
+          barType="actor-faction"
+          barMode=detail.mode
+          value=detail.partyReputation
+          tierColor=detail.partyTier.color
+          canEdit=true
+          isAuto=(eq detail.mode "auto")
+          isHybrid=(eq detail.mode "hybrid")
+        }}
+        <button type="button" class="fame-icon-btn" data-action="removeRelation" data-rel-type="actorFaction" data-entity-id="{{detail.id}}" data-target-id="{{@root.activePartyId}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.reset-relation')}}"><i class="fa-solid fa-rotate-left"></i></button>
       </div>
     {{else}}
-      {{#if detail.hasActiveParty}}
-        {{#if (or @root.isGM detail.canEdit)}}
-          <div class="fame-detail-rep-bar">
-            {{> "relations/partials/rep-bar"
-              barId=(concat detail.id ":" @root.activePartyId)
-              barType="actor-faction"
-              barMode=detail.mode
-              value=detail.partyReputation
-              tierColor=detail.partyTier.color
-              canEdit=true
-              isAuto=(eq detail.mode "auto")
-              isHybrid=(eq detail.mode "hybrid")
-            }}
-          </div>
-        {{else}}
-          <span class="fame-bar-value" style="color:{{detail.partyTier.color}}">{{#if (gt detail.partyReputation 0)}}+{{/if}}{{detail.partyReputation}}</span>
-        {{/if}}
-      {{else}}
-        <div class="fame-no-items" style="padding: 0.25rem 0; margin: 0;">
-          {{#if @root.isGM}}
-            <i class="fa-solid fa-exclamation-triangle" style="color:var(--fame-color-warning)"></i>
-            {{localize (concat @root.moduleId '.ui.no-active-party-gm')}}
-          {{else}}
-            {{localize (concat @root.moduleId '.ui.no-active-party-player')}}
-          {{/if}}
-        </div>
-      {{/if}}
+      <div class="fame-detail-rep-bar">
+        <span class="fame-bar-value" style="color:{{detail.partyTier.color}}">{{#if (gt detail.partyReputation 0)}}+{{/if}}{{detail.partyReputation}}</span>
+      </div>
     {{/if}}
-  </div>
-  <div class="fame-detail-actions">
-    {{#if detail.canOpenSheet}}<button type="button" class="fame-icon-btn" data-action="openActorSheet" data-actor-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.open-sheet')}}"><i class="fa-solid fa-id-card"></i></button>{{/if}}
-    {{#if @root.isGM}}
-      <button type="button" class="fame-mode-btn fame-icon-btn {{#unless (eq detail.mode 'manual')}}active{{/unless}} {{#if (eq detail.mode 'auto')}}mode-auto{{else if (eq detail.mode 'hybrid')}}mode-hybrid{{/if}}" data-action="cycleActorMode" data-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.cycle-mode')}}">
-        <i class="fa-solid fa-{{#if (eq detail.mode 'auto')}}robot{{else if (eq detail.mode 'hybrid')}}shuffle{{else}}hand{{/if}}"></i>
-      </button>
-      <button type="button" class="fame-icon-btn fame-hide-btn {{#if detail.hidden}}active{{/if}}" data-action="toggleHidden" data-type="actor" data-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.toggle-hidden')}}">
-        <i class="fa-solid fa-eye-slash"></i>
-      </button>
-      <button type="button" class="fame-icon-btn" data-action="delete" data-type="actor" data-id="{{detail.id}}" data-tooltip="{{localize (concat @root.moduleId '.tooltips.delete')}}"><i class="fa-solid fa-trash"></i></button>
-    {{/if}}
-  </div>
+  {{/if}}
 </div>
 <div class="fame-detail-body">
-  <div class="fame-description-block">
+  <div class="fame-description-block" data-desc-key="actor:{{detail.id}}">
     {{#if (or @root.isGM detail.canEdit)}}
       {{#if detail.isEditingDescription}}
         <prose-mirror class="fame-detail-description" data-id="{{detail.id}}" data-entity-type="actors" value="{{detail.descriptionRaw}}" placeholder="{{localize (concat @root.moduleId '.ui.description-placeholder')}}"></prose-mirror>
       {{else}}
+        <div class="fame-description-header" data-action="toggleDescription" data-desc-key="actor:{{detail.id}}">
+          <i class="fa-solid fa-chevron-right fame-section-chevron"></i>
+          <i class="fa-solid fa-align-left fame-section-icon"></i>
+          <span>{{localize (concat @root.moduleId '.ui.description')}}</span>
+          <button type="button"
+            class="fame-icon-btn fame-description-edit-btn"
+            data-action="toggleDescriptionEdit"
+            data-entity-type="actor"
+            data-entity-id="{{detail.id}}"
+            data-tooltip="{{localize (concat @root.moduleId '.tooltips.edit-description')}}">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+        </div>
         {{#if detail.descriptionRaw}}
-          <div class="fame-detail-description-display">
-            <button type="button"
-              class="fame-icon-btn fame-description-edit-btn"
-              data-action="toggleDescriptionEdit"
-              data-entity-type="actor"
-              data-entity-id="{{detail.id}}"
-              data-tooltip="{{localize (concat @root.moduleId '.tooltips.edit-description')}}">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-            {{{detail.description}}}
-          </div>
-        {{else}}
-          <div class="fame-detail-description-empty">
-            <button type="button"
-              class="fame-icon-btn fame-description-edit-btn"
-              data-action="toggleDescriptionEdit"
-              data-entity-type="actor"
-              data-entity-id="{{detail.id}}"
-              data-tooltip="{{localize (concat @root.moduleId '.tooltips.edit-description')}}">
-              <i class="fa-solid fa-pen"></i>
-            </button>
+          <div class="fame-description-body">
+            <div class="fame-detail-description-display">{{{detail.description}}}</div>
           </div>
         {{/if}}
       {{/if}}
     {{else}}
       {{#if detail.description}}
-        <div class="fame-detail-description-display">{{{detail.description}}}</div>
+        <div class="fame-description-header" data-action="toggleDescription" data-desc-key="actor:{{detail.id}}">
+          <i class="fa-solid fa-chevron-right fame-section-chevron"></i>
+          <i class="fa-solid fa-align-left fame-section-icon"></i>
+          <span>{{localize (concat @root.moduleId '.ui.description')}}</span>
+        </div>
+        <div class="fame-description-body">
+          <div class="fame-detail-description-display">{{{detail.description}}}</div>
+        </div>
       {{/if}}
     {{/if}}
-  </div>
-
-  <div class="fame-detail-section" data-section-id="act-pc-rels-{{detail.id}}">
-    <div class="fame-detail-section-header" data-action="toggleDetailSection" data-section="act-pc-rels-{{detail.id}}">
-      <i class="fa-solid fa-chevron-right fame-section-chevron"></i>
-      <i class="fa-solid fa-user fame-section-icon"></i>
-      <span>{{#if detail.activePartyName}}{{detail.activePartyName}}{{else}}{{localize (concat @root.moduleId '.ui.player-characters')}}{{/if}}</span>
-      <span class="fame-detail-section-count">{{detail.playerRelations.length}}</span>
-    </div>
-    <div class="fame-detail-section-body">
-      {{#each detail.playerRelations}}
-        {{> "relations/partials/rel-row"
-          relId=pcId relName=pcName relImg=pcImg relValue=value relTier=tier relHidden=hidden
-          relType="individual" barId=(concat ../detail.id ":" pcId)
-          entityType="actor" entityId=pcId
-          canEdit=(or @root.isGM ../detail.canEdit)
-          relTypeKey="individual" sourceEntityId=../detail.id targetEntityId=pcId
-          showRemoveBtn=false
-        }}
-      {{else}}
-        <div class="fame-no-items">{{localize (concat @root.moduleId '.relations.no-members')}}</div>
-      {{/each}}
-    </div>
   </div>
 
   <div class="fame-detail-section" data-section-id="act-npc-rels-{{detail.id}}">
     <div class="fame-detail-section-header" data-action="toggleDetailSection" data-section="act-npc-rels-{{detail.id}}">
       <i class="fa-solid fa-chevron-right fame-section-chevron"></i>
-      <i class="fa-solid fa-user-tie fame-section-icon"></i>
+      <i class="fa-solid fa-user fame-section-icon"></i>
       <span>{{localize (concat @root.moduleId '.relations.relations-to-actors')}}</span>
-      <span class="fame-detail-section-count">{{detail.npcRelations.length}}</span>
+      <span class="fame-detail-section-count">{{sum detail.playerRelations.length detail.npcRelations.length}}</span>
       {{#if (or @root.isGM detail.canEdit)}}<button type="button" class="fame-detail-section-add" data-action="addActorRelation" data-entity-id="{{detail.id}}" data-rel-type="individual" data-tooltip="{{localize (concat @root.moduleId '.tooltips.add-relation')}}"><i class="fa-solid fa-plus"></i></button>{{/if}}
     </div>
     <div class="fame-detail-section-body fame-relation-drop-zone" data-entity-id="{{detail.id}}" data-rel-type="individual">
+      {{#if detail.playerRelations.length}}
+        <div class="fame-detail-subsection" data-subsection-id="act-party-{{detail.id}}">
+          <div class="fame-detail-subsection-header" data-action="toggleDetailSubsection" data-subsection="act-party-{{detail.id}}">
+            <i class="fa-solid fa-chevron-right fame-subsection-chevron"></i>
+            <i class="fa-solid fa-star fame-subsection-star"></i>
+            <span>{{#if detail.activePartyName}}{{detail.activePartyName}}{{else}}{{localize (concat @root.moduleId '.ui.active-party')}}{{/if}}</span>
+            <span class="fame-detail-section-count">{{detail.playerRelations.length}}</span>
+          </div>
+          <div class="fame-detail-subsection-body">
+          {{#each detail.playerRelations}}
+            {{> "relations/partials/rel-row"
+              relId=pcId relName=pcName relImg=pcImg relValue=value relTier=tier relHidden=hidden
+              relType="individual" barId=(concat ../detail.id ":" pcId)
+              entityType="actor" entityId=pcId
+              canEdit=(or @root.isGM ../detail.canEdit)
+              relTypeKey="individual" sourceEntityId=../detail.id targetEntityId=pcId
+              showRemoveBtn=false
+              showResetBtn=true
+            }}
+          {{/each}}
+          </div>
+        </div>
+      {{/if}}
       {{#each detail.npcRelations}}
         {{> "relations/partials/rel-row"
           relId=pcId relName=pcName relImg=pcImg relValue=value relTier=tier relHidden=hidden

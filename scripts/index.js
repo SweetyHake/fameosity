@@ -12,12 +12,12 @@ export * from './core/locations.js';
 export * from './core/notifications.js';
 export * from './core/api.js';
 export * from './core/search.js';
+export * from './core/disposition-colors.js';
+export * from './core/token-hud.js';
 export { confirmDelete } from './core/index.js';
 
 export * from './apps/ReputationSettingsApp.js';
-export * from './apps/ReputationViewerApp.js';
 export * from './apps/RelationsViewerApp.js';
-export * from './apps/InfoPopupApp.js';
 export * from './apps/PickerApp.js';
 export * from './apps/EntityCreatorApp.js';
 

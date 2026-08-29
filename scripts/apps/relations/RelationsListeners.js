@@ -79,14 +79,14 @@ export function attachInputListeners(html, app) {
       const value = e.target.value ?? '';
       await Data.setDescription(entityType, id, value);
     });
-    editor.addEventListener('save', e => {
+    editor.addEventListener('save', async e => {
       const { entityType, id } = e.target.dataset;
       const value = e.target.value ?? '';
       const data = Data.getData();
       data.descriptions ??= { actors: {}, factions: {}, locations: {} };
       data.descriptions[entityType] ??= {};
       data.descriptions[entityType][id] = value;
-      Data.setData(data);
+      await Data.setData(data);
       const key = `${entityType === 'actors' ? 'actor' : entityType === 'factions' ? 'faction' : 'location'}:${id}`;
       app._editingDescriptions?.delete(key);
       requestAnimationFrame(() => app.render());
@@ -249,10 +249,6 @@ export function attachImagePopout(html) {
       e.stopPropagation();
     });
   });
-}
-
-export function attachActorRowDrag(html) {
-  // TODO: Implement actor row drag for relation reordering
 }
 
 export function attachRankDragDrop(html) {

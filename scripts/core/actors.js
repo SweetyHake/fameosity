@@ -65,9 +65,9 @@ export async function setCustomName(actorId, name) {
 
 export function getDisplayName(actorId) {
   const custom = getCustomName(actorId);
-  if (custom) return custom;
+  if (custom) return Data.cleanName(custom) || custom;
   const actor = game.actors.get(actorId);
-  return actor?.name || "Unknown";
+  return Data.cleanName(actor?.name) || actor?.name || "Unknown";
 }
 
 export async function ensureImportant(actor) {

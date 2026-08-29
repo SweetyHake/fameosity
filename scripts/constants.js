@@ -27,7 +27,8 @@ export const DEFAULT_SETTINGS = {
   min: -100,
   max: 100,
   defaultActorMode: "manual",
-  defaultFactionMode: "manual"
+  defaultFactionMode: "manual",
+  dynamicDispositionColors: true
 };
 
 export const DEFAULT_DATA = {
