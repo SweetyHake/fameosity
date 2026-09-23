@@ -15,6 +15,10 @@
         "name": "Habilitar sistema de reputación",
         "hint": "Activar o desactivar el sistema de reputación"
       },
+      "tokenHud": {
+        "name": "Panel en el Token HUD",
+        "hint": "Mostrar el panel de reputación dentro del Token HUD"
+      },
       "displayMode": {
         "name": "Modo de visualización",
         "hint": "Cómo se muestran los cambios de reputación a los jugadores",

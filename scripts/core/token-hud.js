@@ -34,7 +34,34 @@ function _tip(key, args = {}) {
   return _escapeAttr(game.i18n.format(`${MODULE_ID}.tooltips.${key}`, args));
 }
 
+// does the element itself paint anything (background/border/shadow/text/glyph)?
+// layout containers like the HUD columns must not count as obstacles
+function _paints(el) {
+  const style = getComputedStyle(el);
+  if (style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0) return false;
+  const tag = el.tagName.toUpperCase();
+  if (['IMG', 'INPUT', 'SELECT', 'TEXTAREA', 'BUTTON', 'SVG'].includes(tag)) return true;
+  if (!el.firstElementChild) {
+    if (el.textContent.trim()) return true;
+    // font icons and other pseudo-element glyphs
+    if (getComputedStyle(el, '::before').content !== 'none') return true;
+    if (getComputedStyle(el, '::after').content !== 'none') return true;
+  }
+  const bg = style.backgroundColor;
+  if (bg && bg !== 'transparent' && !/rgba\(\s*0\s*,\s*0\s*,\s*0\s*,\s*0\s*\)/.test(bg)) return true;
+  if (style.boxShadow !== 'none') return true;
+  const sides = ['Top', 'Right', 'Bottom', 'Left'];
+  const borderWidth = sides.reduce((sum, side) => sum + (parseFloat(style[`border${side}Width`]) || 0), 0);
+  const bordered = sides.some(side => style[`border${side}Style`] !== 'none');
+  return borderWidth > 0 && bordered;
+}
+
 const FameTokenHudMixin = (BaseHUD) => class FameTokenHud extends BaseHUD {
+  #mutationObserver = null;
+  #resizeObserver = null;
+  #observedForm = null;
+  #repositionQueued = false;
+
   static DEFAULT_OPTIONS = foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
     actions: {
       fameOpenRelations: function () {
@@ -66,8 +93,13 @@ const FameTokenHudMixin = (BaseHUD) => class FameTokenHud extends BaseHUD {
     hud.querySelector('.fame-token-hud')?.remove();
 
     if (!game.user.isGM) return;
-    if (!Data.getSettings().enabled) {
+    const settings = Data.getSettings();
+    if (!settings.enabled) {
       console.log(`${MODULE_ID} | HUD skip: system disabled`);
+      return;
+    }
+    if (!settings.tokenHud) {
+      console.log(`${MODULE_ID} | HUD skip: token HUD disabled by setting`);
       return;
     }
 
@@ -115,6 +147,81 @@ const FameTokenHudMixin = (BaseHUD) => class FameTokenHud extends BaseHUD {
 
     el.innerHTML = html;
     hud.appendChild(el);
+    this.#scheduleReposition();
+  }
+
+  // foreign panels land in the HUD after our _renderHTML (renderTokenHUD hooks), so
+  // position passes must run post-mount and re-run whenever the HUD content changes
+  #scheduleReposition() {
+    if (this.#repositionQueued) return;
+    this.#repositionQueued = true;
+    requestAnimationFrame(() => {
+      this.#repositionQueued = false;
+      this.#reposition();
+    });
+  }
+
+  #ensureWatching(form) {
+    this.#mutationObserver ??= new MutationObserver(records => {
+      const panel = this.element?.querySelector('.fame-token-hud');
+      // ignore mutations of our own panel so shifting never feeds back into itself
+      if (panel && records.every(record => panel === record.target || panel.contains(record.target))) return;
+      this.#scheduleReposition();
+    });
+    this.#resizeObserver ??= new ResizeObserver(() => this.#scheduleReposition());
+    if (this.#observedForm !== form) {
+      this.#mutationObserver.disconnect();
+      this.#resizeObserver.disconnect();
+      this.#mutationObserver.observe(form, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+      this.#resizeObserver.observe(form);
+      this.#observedForm = form;
+    }
+  }
+
+  #stopWatching() {
+    this.#mutationObserver?.disconnect();
+    this.#resizeObserver?.disconnect();
+    this.#observedForm = null;
+  }
+
+  // raise the panel above the topmost foreign HUD element over the token so panels
+  // injected by other modules never overlap ours; clamped to stay on screen
+  #reposition() {
+    const form = this.element;
+    const panel = form?.querySelector('.fame-token-hud');
+    if (!form || !panel) return;
+    if (!form.isConnected) {
+      this.#stopWatching();
+      return;
+    }
+    this.#ensureWatching(form);
+
+    const formRect = form.getBoundingClientRect();
+    if (!formRect.width || !formRect.height) return;
+    const scale = formRect.width / form.offsetWidth || 1;
+
+    let foreignTop = Infinity;
+    for (const el of form.querySelectorAll('*')) {
+      if (panel === el || panel.contains(el)) continue;
+      const rect = el.getBoundingClientRect();
+      if (!rect.width || !rect.height) continue;
+      // side columns hang left/right of the token strip and never block us
+      if (rect.right <= formRect.left || rect.left >= formRect.right) continue;
+      // only elements poking above the HUD top edge can collide with the panel
+      if (rect.top >= formRect.top) continue;
+      if (!_paints(el)) continue;
+      foreignTop = Math.min(foreignTop, rect.top);
+    }
+
+    const panelRect = panel.getBoundingClientRect();
+    const height = panelRect.height;
+
+    // rest 8px above the HUD; climb above foreign elements, but never off-screen
+    let bottom = Math.min(formRect.top - 8, foreignTop - 4);
+    bottom = Math.max(bottom, height + 4);
+
+    const shift = (bottom - formRect.top) / scale + 8;
+    panel.style.setProperty('--fame-hud-shift', `${Math.abs(shift) < 0.5 ? 0 : shift.toFixed(2)}px`);
   }
 
   async #applyPartyRep(delta) {

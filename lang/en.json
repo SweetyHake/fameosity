@@ -15,6 +15,10 @@
         "name": "Enable Reputation System",
         "hint": "Enable or disable the reputation system"
       },
+      "tokenHud": {
+        "name": "Token HUD Panel",
+        "hint": "Show the reputation panel inside the token HUD"
+      },
       "displayMode": {
         "name": "Display Mode",
         "hint": "How reputation changes are displayed to players",

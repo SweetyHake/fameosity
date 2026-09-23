@@ -105,6 +105,11 @@ export function registerSettings() {
     name: game.i18n.localize(`${MODULE_ID}.settings.reputationMax.name`),
     scope: "world", config: true, type: Number, default: DEFAULT_SETTINGS.max
   });
+  game.settings.register(MODULE_ID, "tokenHud", {
+    name: game.i18n.localize(`${MODULE_ID}.settings.tokenHud.name`),
+    hint: game.i18n.localize(`${MODULE_ID}.settings.tokenHud.hint`),
+    scope: "world", config: true, type: Boolean, default: true
+  });
   game.settings.register(MODULE_ID, "displayMode", {
     name: game.i18n.localize(`${MODULE_ID}.settings.displayMode.name`),
     hint: game.i18n.localize(`${MODULE_ID}.settings.displayMode.hint`),
@@ -246,8 +251,10 @@ export function registerHooks() {
       const settingName = key.slice(MODULE_ID.length + 1);
       if (settingName === 'relationTiers') {
         invalidateTiersCache();
-      } else if (['enabled', 'min', 'max', 'displayMode', 'defaultActorMode', 'defaultFactionMode', 'dynamicDispositionColors'].includes(settingName)) {
+      } else if (['enabled', 'tokenHud', 'min', 'max', 'displayMode', 'defaultActorMode', 'defaultFactionMode', 'dynamicDispositionColors'].includes(settingName)) {
         invalidateSettingsCache();
+        // apply HUD toggles to an already-open token HUD without waiting for reselection
+        if (['enabled', 'tokenHud'].includes(settingName) && canvas.tokens?.hud?.rendered) canvas.tokens.hud.render();
       } else if (settingName && !CACHE_MANAGED_SETTINGS.has(settingName)) {
         invalidateCache();
       }

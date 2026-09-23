@@ -178,7 +178,9 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: -8px;
+  /* --fame-hud-shift is raised by JS so the panel climbs above elements that other
+     modules inject into the space between the HUD and the panel */
+  top: calc(-8px + var(--fame-hud-shift, 0px));
   transform: translateY(-100%);
   display: flex;
   flex-direction: column;
