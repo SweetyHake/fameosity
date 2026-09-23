@@ -23,6 +23,7 @@ export const DEFAULT_TIER_KEYS = [
 
 export const DEFAULT_SETTINGS = {
   enabled: true,
+  tokenHud: true,
   displayMode: "show",
   min: -100,
   max: 100,

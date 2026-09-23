@@ -1,7 +1,7 @@
 import { MODULE_ID, DEFAULT_SETTINGS, DEFAULT_TIER_KEYS } from '../constants.js';
 import { ReputationEvents } from '../events.js';
 
-const GRANULAR_SETTINGS = ['enabled', 'min', 'max', 'displayMode', 'defaultActorMode', 'defaultFactionMode', 'dynamicDispositionColors'];
+const GRANULAR_SETTINGS = ['enabled', 'tokenHud', 'min', 'max', 'displayMode', 'defaultActorMode', 'defaultFactionMode', 'dynamicDispositionColors'];
 
 let _settingsCache = null;
 let _tiersCache = null;
