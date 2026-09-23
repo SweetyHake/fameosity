@@ -52,6 +52,20 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
   _onFirstRender() {
     this._subscribeToEvents();
     if (game.user.isGM) Core.ensureActiveParty();
+    this._blockWheelSpin();
+  }
+
+  /* #15: range/number inputs stay focused after a click and keep spinning on the
+   * mouse wheel, so scrolling a faction page silently nudged attitude values.
+   * The wheel never changes values now — drag, arrow keys and the counters only;
+   * blurring a focused input lets the page keep scrolling with the next tick. */
+  _blockWheelSpin() {
+    this.element.addEventListener('wheel', event => {
+      const input = event.target.closest?.('input[type="range"], input[type="number"]');
+      if (!input) return;
+      event.preventDefault();
+      if (document.activeElement === input) input.blur();
+    }, { capture: true, passive: false });
   }
 
   _subscribeToEvents() {
