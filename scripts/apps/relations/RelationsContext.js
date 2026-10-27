@@ -422,7 +422,7 @@ export async function buildAndShowContextMenu(event, entityType, entityId, app) 
         app._busy = true;
         if (entityType === 'faction') await Core.deleteFaction(entityId);
         else if (entityType === 'location') await Core.deleteLocation(entityId);
-        else await Core.removeTracked(entityId);
+        else await Core.removeFromTrackedOrParty(entityId);
         
         if (app.selectedId === entityId) {
           app.selectedType = null;

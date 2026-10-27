@@ -132,10 +132,11 @@
     <div class="fame-detail-section-body">
       {{#if detail.actorsList.length}}
         {{#each detail.actorsList}}
-          <div class="fame-detail-rel-row {{#if locItemHidden}}is-hidden{{/if}}">
+          <div class="fame-detail-rel-row {{#if locItemHidden}}is-hidden{{/if}} {{#if hidden}}is-hidden{{/if}}">
             <div class="fame-detail-rel-left">
               <img class="fame-detail-rel-img" src="{{img}}">
               <span class="fame-detail-rel-name clickable" data-action="selectEntity" data-entity-type="actor" data-entity-id="{{id}}">{{name}}</span>
+              {{#if hidden}}<i class="fa-solid fa-eye-slash fame-nav-badge hidden"></i>{{/if}}
             </div>
             <div class="fame-detail-rel-center">
               {{{tierBadge tier true}}}

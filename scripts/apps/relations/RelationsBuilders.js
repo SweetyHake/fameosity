@@ -46,7 +46,7 @@ export function canOpenSheet(actorId) {
   return actor?.isOwner ?? false;
 }
 
-export async function buildActorData(id, min, max, pcs, rawFactions) {
+export async function buildActorData(id, min, max, pcs, rawFactions, isGM = game.user.isGM) {
   const actor = game.actors.get(id);
   if (!actor) return null;
 
@@ -80,7 +80,9 @@ export async function buildActorData(id, min, max, pcs, rawFactions) {
 
   for (const targetId of allTracked) {
     if (targetId === id) continue;
-    if (Core.isHidden('actor', targetId)) continue;
+    // "hide from players" never hides anything from the GM — rows stay visible, dimmed via targetHidden
+    const targetHidden = Core.isHidden('actor', targetId);
+    if (targetHidden && !isGM) continue;
     const targetActor = game.actors.get(targetId);
     if (!targetActor) continue;
 
@@ -98,6 +100,7 @@ export async function buildActorData(id, min, max, pcs, rawFactions) {
         value,
         tier: Data.getTier(value),
         hidden: Core.isRelationHidden('individual', id, targetId),
+        targetHidden,
         isPC: targetIsPC,
         online: targetOwnerOnline
       });
@@ -113,6 +116,7 @@ export async function buildActorData(id, min, max, pcs, rawFactions) {
         value,
         tier: Data.getTier(value),
         hidden: relHidden,
+        targetHidden,
         isPC: targetIsPC,
         online: targetOwnerOnline
       });
@@ -206,7 +210,9 @@ export async function buildFactionData(faction, pcs, min, max, isGM) {
 
   for (const targetId of allTracked) {
     if (memberSet.has(targetId)) continue;
-    if (Core.isHidden('actor', targetId)) continue;
+    // same GM rule as actor relations: hidden targets stay listed for the GM, dimmed
+    const targetHidden = Core.isHidden('actor', targetId);
+    if (targetHidden && !isGM) continue;
     const targetActor = game.actors.get(targetId);
     if (!targetActor) continue;
 
@@ -220,6 +226,7 @@ export async function buildFactionData(faction, pcs, min, max, isGM) {
         pcId: targetId, pcName: Core.getDisplayName(targetId), pcImg: targetActor.img,
         value, tier: Data.getTier(value),
         hidden: Core.isRelationHidden('faction', faction.id, targetId),
+        targetHidden,
         isPC: targetIsPC
       });
     } else {
@@ -230,6 +237,7 @@ export async function buildFactionData(faction, pcs, min, max, isGM) {
         pcId: targetId, pcName: Core.getDisplayName(targetId), pcImg: targetActor.img,
         value, tier: Data.getTier(value),
         hidden: relHidden,
+        targetHidden,
         isPC: targetIsPC
       });
     }
@@ -263,7 +271,8 @@ export async function buildFactionData(faction, pcs, min, max, isGM) {
 
   const partyId = Core.getActivePartyId();
   const members = (faction.members || []).map(id => {
-    if (Core.isHidden('actor', id)) return null;
+    const actorHidden = Core.isHidden('actor', id);
+    if (actorHidden && !isGM) return null;
     const actor = game.actors.get(id);
     if (!actor) return null;
     const memberRep = partyId ? Core.getActorFactionRel(id, partyId) : 0;
@@ -272,7 +281,7 @@ export async function buildFactionData(faction, pcs, min, max, isGM) {
       rank: Core.getFactionRank(faction.id, id),
       manualRankId: faction.memberRanks?.[id] || null,
       hidden: Core.isMemberHidden(faction.id, id),
-      actorHidden: false,
+      actorHidden,
       sourceName: null, sourceFactionId: faction.id,
       tier: Data.getTier(memberRep)
     };
@@ -284,7 +293,8 @@ export async function buildFactionData(faction, pcs, min, max, isGM) {
     for (const childFac of descendantGroups) {
       for (const childMemberId of (childFac.members || [])) {
         if (existingMemberIds.has(childMemberId)) continue;
-        if (Core.isHidden('actor', childMemberId)) continue;
+        const childActorHidden = Core.isHidden('actor', childMemberId);
+        if (childActorHidden && !isGM) continue;
         const actor = game.actors.get(childMemberId);
         if (!actor) continue;
         existingMemberIds.add(childMemberId);
@@ -294,7 +304,7 @@ export async function buildFactionData(faction, pcs, min, max, isGM) {
           rank: Core.getFactionRank(childFac.id, childMemberId),
           manualRankId: childFac.memberRanks?.[childMemberId] || null,
           hidden: Core.isMemberHidden(childFac.id, childMemberId),
-          actorHidden: false,
+          actorHidden: childActorHidden,
           sourceName: Data.cleanName(childFac.name), sourceFactionId: childFac.id,
           tier: Data.getTier(memberRep)
         });

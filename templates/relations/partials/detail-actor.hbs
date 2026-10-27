@@ -126,7 +126,7 @@
           <div class="fame-detail-subsection-body">
           {{#each detail.playerRelations}}
             {{> "relations/partials/rel-row"
-              relId=pcId relName=pcName relImg=pcImg relValue=value relTier=tier relHidden=hidden
+              relId=pcId relName=pcName relImg=pcImg relValue=value relTier=tier relHidden=hidden targetHidden=targetHidden
               relType="individual" barId=(concat ../detail.id ":" pcId)
               entityType="actor" entityId=pcId
               canEdit=(or @root.isGM ../detail.canEdit)
@@ -140,7 +140,7 @@
       {{/if}}
       {{#each detail.npcRelations}}
         {{> "relations/partials/rel-row"
-          relId=pcId relName=pcName relImg=pcImg relValue=value relTier=tier relHidden=hidden
+          relId=pcId relName=pcName relImg=pcImg relValue=value relTier=tier relHidden=hidden targetHidden=targetHidden
           relType="individual" barId=(concat ../detail.id ":" pcId)
           entityType="actor" entityId=pcId
           canEdit=(or @root.isGM ../detail.canEdit)
@@ -164,7 +164,7 @@
     <div class="fame-detail-section-body fame-relation-drop-zone" data-entity-id="{{detail.id}}" data-rel-type="actorFaction">
       {{#each detail.factionRelations}}
         {{> "relations/partials/rel-row"
-          relId=factionId relName=factionName relImg=factionImg relValue=value relTier=tier relHidden=(or hidden factionHidden)
+          relId=factionId relName=factionName relImg=factionImg relValue=value relTier=tier relHidden=hidden targetHidden=factionHidden
           relType="actor-faction" barId=(concat ../detail.id ":" factionId)
           entityType="faction" entityId=factionId
           canEdit=(or @root.isGM ../detail.canEdit)

@@ -124,7 +124,7 @@
       <div class="fame-detail-section-body">
         {{#each detail.factionPcRels}}
           {{> "relations/partials/rel-row"
-            relId=pcId relName=pcName relImg=pcImg relValue=value relTier=tier relHidden=hidden
+            relId=pcId relName=pcName relImg=pcImg relValue=value relTier=tier relHidden=hidden targetHidden=targetHidden
             relType="faction-rel" barId=(concat ../detail.id ":" pcId)
             entityType="actor" entityId=pcId
             canEdit=@root.isGM
@@ -150,7 +150,7 @@
       <div class="fame-detail-section-body fame-relation-drop-zone" data-entity-id="{{detail.id}}" data-rel-type="faction">
         {{#each detail.factionNpcRels}}
           {{> "relations/partials/rel-row"
-            relId=pcId relName=pcName relImg=pcImg relValue=value relTier=tier relHidden=hidden
+            relId=pcId relName=pcName relImg=pcImg relValue=value relTier=tier relHidden=hidden targetHidden=targetHidden
             relType="faction-rel" barId=(concat ../detail.id ":" pcId)
             entityType="actor" entityId=pcId
             canEdit=@root.isGM
@@ -176,7 +176,7 @@
       <div class="fame-detail-section-body fame-relation-drop-zone" data-entity-id="{{detail.id}}" data-rel-type="factionToFaction">
         {{#each detail.factionToFactionRels}}
           {{> "relations/partials/rel-row"
-            relId=targetFactionId relName=targetFactionName relImg=targetFactionImg relValue=value relTier=tier relHidden=(or hidden targetHidden)
+            relId=targetFactionId relName=targetFactionName relImg=targetFactionImg relValue=value relTier=tier relHidden=hidden targetHidden=targetHidden
             relType="faction-to-faction" barId=(concat ../detail.id ":" targetFactionId)
             entityType="faction" entityId=targetFactionId
             canEdit=@root.isGM

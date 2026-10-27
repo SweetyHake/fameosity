@@ -3,7 +3,7 @@ import { ReputationEvents } from '../events.js';
 import { getIndRel } from './relations.js';
 import { getActorFactionRel } from './relations.js';
 import { getFactionToFactionRel } from './relations.js';
-import { isHidden, isRelationHidden } from './visibility.js';
+import { isRelationHidden } from './visibility.js';
 
 export function getMode(id, type) {
   const data = Data.getData();
@@ -51,7 +51,9 @@ function _getParty() {
 function _getPartyMembers(excludeId = null) {
   const party = _getParty();
   if (!party) return [];
-  return (party.members || []).filter(id => id !== excludeId && !isHidden('actor', id));
+  // hidden-from-players members still count here: hiding must not change how the
+  // GM's auto/hybrid reputation math works, only what players see
+  return (party.members || []).filter(id => id !== excludeId);
 }
 
 /**
@@ -110,7 +112,6 @@ function _calcAutoFaction(factionId) {
 
   for (const memberId of faction.members) {
     if (!tracked.includes(memberId)) continue;
-    if (isHidden('actor', memberId)) continue;
     const memberRep = getRep(memberId, 'actor');
     const rank = _getRankMultiplier(faction, memberId);
     weightedSum += memberRep * rank;

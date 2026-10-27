@@ -97,7 +97,7 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     const rawFactions = Core.getFactions();
 
     let allActorsFlat = (await Promise.all(
-      Core.getTracked().map(id => buildActorData(id, min, max, pcs, rawFactions))
+      Core.getTracked().map(id => buildActorData(id, min, max, pcs, rawFactions, isGM))
     )).filter(Boolean);
 
     // sidebar must list every active-party member, even if not added to tracking
@@ -106,7 +106,7 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     const untrackedPartyMembers = (earlyParty?.members || []).filter(id => !trackedSet.has(id));
     if (untrackedPartyMembers.length) {
       const extras = (await Promise.all(
-        untrackedPartyMembers.map(id => buildActorData(id, min, max, pcs, rawFactions))
+        untrackedPartyMembers.map(id => buildActorData(id, min, max, pcs, rawFactions, isGM))
       )).filter(Boolean);
       allActorsFlat.push(...extras);
     }
@@ -122,9 +122,9 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     if (!isGM) {
       allActorsFlat = allActorsFlat.filter(a => !a.hidden).map(a => ({
         ...a,
-        relations: a.relations.filter(r => !r.hidden),
-        playerRelations: a.playerRelations.filter(r => !r.hidden),
-        npcRelations: a.npcRelations.filter(r => !r.hidden),
+        relations: a.relations.filter(r => !r.hidden && !r.targetHidden),
+        playerRelations: a.playerRelations.filter(r => !r.hidden && !r.targetHidden),
+        npcRelations: a.npcRelations.filter(r => !r.hidden && !r.targetHidden),
         factionRelations: a.factionRelations.filter(r => !r.hidden && !r.factionHidden)
       }));
       allFactionsFlat = allFactionsFlat.filter(f => !f.hidden).map(f => ({
@@ -461,7 +461,7 @@ export class RelationsViewerApp extends foundry.applications.api.HandlebarsAppli
     if (!await Core.confirmDelete(game.i18n.localize(`${MODULE_ID}.confirm.delete-title`), game.i18n.localize(`${MODULE_ID}.confirm.delete-${type}`))) return;
     if (type === 'faction') await Core.deleteFaction(id);
     else if (type === 'location') await Core.deleteLocation(id);
-    else await Core.removeTracked(id);
+    else await Core.removeFromTrackedOrParty(id);
     if (this.selectedId === id) { this.selectedType = null; this.selectedId = null; this._saveState(); }
   }
 
